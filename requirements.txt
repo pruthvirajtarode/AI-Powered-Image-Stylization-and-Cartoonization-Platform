@@ -1,49 +1,27 @@
-# Core Dependencies
-streamlit==1.31.0
 Flask==3.0.0
-Flask-Cors==4.0.0
-opencv-python==4.9.0.80
-opencv-contrib-python==4.9.0.80
+flask-cors==4.0.0
+gunicorn==21.2.0
+python-dotenv==1.0.0
+
+# Image Processing
+opencv-python-headless==4.9.0.80
 numpy==1.24.3
 Pillow==10.2.0
 
-# Database (Built-in)
-# psycopg2-binary handles cloud DB
+# Database
+psycopg2-binary==2.9.9
 
 # Authentication & Security
 bcrypt==4.1.2
-python-dotenv==1.0.1
-cryptography==42.0.2
-google-auth==2.27.0
 requests==2.31.0
+google-auth==2.27.0
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
 
 # Payment Integration
-stripe==7.11.0
-razorpay
+razorpay==1.3.0
 
 # Utilities
 pandas==2.1.4
-matplotlib==3.8.2
-scikit-image==0.22.0
-
-# Testing
-pytest==7.4.4
-pytest-cov==4.1.0
-
-# Validation
-email-validator==2.1.0
-regex==2023.12.25
-
-# File Handling
-watchdog==4.0.0
-
-# Session Management
-streamlit-authenticator==0.2.3
-extra-streamlit-components==0.1.60
-
-# Image Processing Enhancements
-# Production Server
-gunicorn==21.2.0
-# Production Database
-psycopg2-binary==2.9.9
-scipy==1.11.4
+openpyxl==3.1.2
+twilio==9.0.0
