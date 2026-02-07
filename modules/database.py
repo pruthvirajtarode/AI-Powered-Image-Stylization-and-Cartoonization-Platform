@@ -25,6 +25,7 @@ class Database:
         self.db_path = db_path or settings.DATABASE_PATH
         self.db_url = os.getenv("DATABASE_URL")
         self.is_postgres = self.db_url is not None and HAS_POSTGRES
+        self.placeholder = "%s" if self.is_postgres else "?"
         self.init_database()
     
     def get_connection(self):
@@ -85,9 +86,9 @@ class Database:
             import bcrypt
             print("👤 Initializing System: Creating default administrator...")
             password_hash = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            cursor.execute("""
+            cursor.execute(f"""
                 INSERT INTO users (username, email, password_hash, full_name, role, is_verified)
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
             """, ("admin", "admin@toonify.ai", password_hash, "System Admin", "admin", 1 if not self.is_postgres else True))
             conn.commit()
         
@@ -107,9 +108,9 @@ class Database:
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(f"""
                 INSERT INTO users (username, email, password_hash, full_name)
-                VALUES (?, ?, ?, ?)
+                VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
             """, (username, email, password_hash, full_name))
             conn.commit()
             user_id = cursor.lastrowid
@@ -122,7 +123,7 @@ class Database:
         """Get user by username"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        cursor.execute(f"SELECT * FROM users WHERE username = {self.placeholder}", (username,))
         user = cursor.fetchone()
         conn.close()
         return dict(user) if user else None
@@ -131,7 +132,7 @@ class Database:
         """Get user by email"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+        cursor.execute(f"SELECT * FROM users WHERE email = {self.placeholder}", (email,))
         user = cursor.fetchone()
         conn.close()
         return dict(user) if user else None
@@ -140,7 +141,7 @@ class Database:
         """Get user by ID"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        cursor.execute(f"SELECT * FROM users WHERE id = {self.placeholder}", (user_id,))
         user = cursor.fetchone()
         conn.close()
         return dict(user) if user else None
