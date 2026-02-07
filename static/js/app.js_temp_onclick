@@ -1,0 +1,70 @@
+    // AI SaaS Processing Logic
+    processBtn.onclick = async () => {
+        if (!selectedFile) return;
+
+        loader.style.display = 'flex';
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        formData.append('style', selectedStyle);
+
+        try {
+            const response = await fetch('/api/process', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                window.currentImage = data.image_filename;
+                const path = `/data/processed/${data.image_filename}`;
+
+                // Update Views
+                document.getElementById('viewOriginal').src = uploadPreview.src;
+                document.getElementById('viewProcessed').src = path;
+                document.getElementById('sliderOriginal').src = uploadPreview.src;
+                document.getElementById('sliderProcessed').src = path;
+
+                document.getElementById('placeholder').style.display = 'none';
+                document.getElementById('resultView').style.display = 'grid';
+                document.getElementById('downloadArea').style.display = 'block';
+
+                // Initial Tab Setup
+                const tabSide = document.getElementById('tabSideBySide');
+                const tabDynamic = document.getElementById('tabDynamic');
+                const sideView = document.getElementById('resultView');
+                const sliderView = document.getElementById('sliderView');
+
+                tabSide.onclick = () => {
+                    tabSide.classList.add('active');
+                    tabDynamic.classList.remove('active');
+                    sideView.style.display = 'grid';
+                    sliderView.style.display = 'none';
+                };
+
+                tabDynamic.onclick = () => {
+                    tabDynamic.classList.add('active');
+                    tabSide.classList.remove('active');
+                    sideView.style.display = 'none';
+                    sliderView.style.display = 'flex';
+                };
+
+                // Slider Interaction
+                const slider = document.getElementById('compareSlider');
+                const imgAfter = document.querySelector('.img-after');
+                const handle = document.querySelector('.slider-handle');
+
+                slider.oninput = () => {
+                    const val = slider.value;
+                    imgAfter.style.clipPath = `inset(0 0 0 ${val}%)`;
+                    handle.style.left = `${val}%`;
+                };
+            } else {
+                alert("Neural Logic Error: " + data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Connection lost during neural stylization.");
+        } finally {
+            loader.style.display = 'none';
+        }
+    };

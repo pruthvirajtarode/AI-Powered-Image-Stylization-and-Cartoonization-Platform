@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toonify | Help & Support Center</title>
+    <link rel="stylesheet" href="/static/css/styles.css?v=212">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .help-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 100px 5%;
+            text-align: center;
+            color: white;
+        }
+
+        .help-hero h1 {
+            font-family: 'Baloo 2';
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .help-hero p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-container {
+            max-width: 700px;
+            margin: -40px auto 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 25px 35px;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 80px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .help-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid #e2e8f0;
+            transition: 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .help-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .help-card i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .help-card h3 {
+            font-family: 'Baloo 2';
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .help-card p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .faq-section {
+            background: #f8fafc;
+            padding: 80px 5%;
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .faq-item h4 {
+            font-family: 'Baloo 2';
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .faq-item p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar"
+        style="padding: 12px 5%; height: 75px; background: white; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+        <a href="/" class="logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+            <div
+                style="background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                <i class="fas fa-wand-sparkles"></i>
+            </div>
+            <span class="logo-text"
+                style="font-family: 'Baloo 2'; font-size: 1.8rem; font-weight: 800; color: #1e293b;">Toonify<span
+                    style="color: var(--primary);">.AI</span></span>
+        </a>
+        <a href="/" class="btn-auth"
+            style="text-decoration: none; padding: 10px 24px; border-radius: 10px; font-weight: 700;">Back to Editor</a>
+    </nav>
+
+    <div class="help-hero">
+        <h1>Billing & <span>Subscription</span></h1>
+        <p>Manage your Elite membership, invoices, and payment methods with our secure neural gateway.</p>
+    </div>
+
+    <div class="faq-section">
+        <div class="faq-container">
+            <h2 style="font-family:'Baloo 2'; font-size: 2.5rem; text-align: center; margin-bottom: 50px;">Subscription
+                Details</h2>
+            <div class="faq-item">
+                <h4>What is the Toonify Pro plan?</h4>
+                <p>Pro members get unlimited HD downloads, commercial licenses, and early access to new AI styles. Our
+                    system uses a high-speed neural cluster for faster processing.</p>
+            </div>
+            <div class="faq-item">
+                <h4>How do I download my invoices?</h4>
+                <p>Go to your Profile Pill > Billing History. All invoices are automatically generated and stored as
+                    secure PDF assets.</p>
+            </div>
+            <div class="faq-item">
+                <h4>Is my payment information secure?</h4>
+                <p>Absolutely. We use Stripe and Razorpay for industry-standard encryption. Your credit card data never
+                    touches our servers.</p>
+            </div>
+            <div class="faq-item" style="border: 2px solid var(--primary); background: rgba(255,126,95,0.05);">
+                <h4>🔥 Elite Agency Plan</h4>
+                <p>Looking for API access or batch processing for your business? Contact our enterprise team for a
+                    custom quota based on your volume.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSupportMessage(msg) {
+            alert("💠 Support Portal Status: " + msg);
+        }
+    </script>
+
+    <div class="faq-section">
+        <div class="faq-container">
+            <h2 style="font-family:'Baloo 2'; font-size: 2.5rem; text-align: center; margin-bottom: 50px;">Popular
+                Questions</h2>
+            <div class="faq-item">
+                <h4>Is my data private?</h4>
+                <p>Yes. All original and processed images are encrypted and automatically deleted from our cloud servers
+                    after 24 hours.</p>
+            </div>
+            <div class="faq-item">
+                <h4>Can I use the images commercially?</h4>
+                <p>Pro and Elite members receive a full commercial license for all generated artworks.</p>
+            </div>
+            <div class="faq-item">
+                <h4>How does the Google Login work?</h4>
+                <p>We use the official Google OAuth 2.0 protocol. We never see your password; Google only sends us a
+                    secure "Digital Stamp" of your identity.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer style="padding: 60px 5%; text-align: center; border-top: 1px solid #e2e8f0;">
+        <p style="color: #64748b;">&copy; 2026 Toonify Help Center | Still need help? <a href="#"
+                style="color: var(--primary); font-weight: 700; text-decoration: none;">Contact Support</a></p>
+    </footer>
+</body>
+
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toonify | Professional Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #f8fafc;
+            --admin-sidebar: #0f172a;
+            --admin-primary: #6366f1;
+            --admin-success: #10b981;
+            --admin-warning: #f59e0b;
+            --admin-danger: #ef4444;
+            --slate: #1e293b;
+            --slate-soft: #f1f5f9;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 280px;
+            background: var(--admin-sidebar);
+            color: white;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            font-family: 'Baloo 2';
+            font-size: 2rem;
+            margin-bottom: 50px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .nav-item i {
+            font-size: 1.1rem;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item.active {
+            border-left: 4px solid var(--primary);
+        }
+
+        /* --- Main Layout --- */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-family: 'Baloo 2';
+            font-size: 2.2rem;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-card .label {
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .stat-card i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card h3 {
+            font-family: 'Baloo 2';
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        /* --- Tables --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 15px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 18px 10px;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-info {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .log-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .log-item:last-child {
+            border: none;
+        }
+
+        .log-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .log-info {
+            flex: 1;
+        }
+
+        .log-time {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        /* --- Modal --- */
+        #userModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            width: 550px;
+            padding: 40px;
+            border-radius: 32px;
+            box-shadow: 0 40px 60px -15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-header {
+            font-family: 'Baloo 2';
+            font-size: 2rem;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .detail-label {
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .detail-value {
+            color: var(--slate);
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- User Details Modal -->
+    <div id="userModal">
+        <div class="modal-content">
+            <i class="fas fa-times close-modal" onclick="closeUserModal()"></i>
+            <div class="modal-header">Session Activity <span style="color: var(--primary);">Logs</span></div>
+            <div id="modalDetails"></div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-magic"></i>
+            <span>Toonify Admin</span>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" onclick="switchTab('dashboard')">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </li>
+            <li class="nav-item" onclick="switchTab('users')">
+                <i class="fas fa-users"></i> Users
+            </li>
+            <li class="nav-item" onclick="switchTab('payments')">
+                <i class="fas fa-credit-card"></i> Payments
+            </li>
+            <li class="nav-item" onclick="switchTab('logs')">
+                <i class="fas fa-history"></i> Pulse Logs
+            </li>
+        </ul>
+        <div style="margin-top: auto;">
+            <a href="/" class="nav-item" style="color: #fca5a5; text-decoration: none;">
+                <i class="fas fa-sign-out-alt"></i> Back to Studio
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1 id="tabTitle">System Dashboard</h1>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-auth"
+                    style="background: white; color: var(--slate); border: 1px solid #e2e8f0; padding: 10px 20px;"
+                    onclick="refreshData()">
+                    <i class="fas fa-sync-alt" id="refreshIcon"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <div class="label">Total Users</div>
+                <div class="value" id="stat-users">0</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-palette"></i>
+                <div class="label">Art Creations</div>
+                <div class="value" id="stat-creations">0</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-money-bill-wave"></i>
+                <div class="label">Total Revenue</div>
+                <div class="value" id="stat-revenue">₹0</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-clock"></i>
+                <div class="label">Active Today</div>
+                <div class="value" id="stat-active">0</div>
+            </div>
+        </div>
+
+        <div id="dashboardTab" class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Transactions</h3>
+                    <a href="#" onclick="switchTab('payments')"
+                        style="color: var(--primary); font-weight: 700; text-decoration:none;">View All</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentTransactions"></tbody>
+                </table>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Activity</h3>
+                </div>
+                <div id="recentLogs"></div>
+            </div>
+        </div>
+
+        <div id="usersTab" class="card" style="display:none;">
+            <div class="card-header">
+                <h3>User Directory</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                        <th>Artworks</th>
+                        <th>Spent</th>
+                        <th>Monitor</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="paymentsTab" class="card" style="display:none;">
+            <div class="card-header">
+                <h3>Financial Monitoring</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Trans ID</th>
+                        <th>User</th>
+                        <th>Amt</th>
+                        <th>Node</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody id="paymentTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="logsTab" class="card" style="display:none;">
+            <div class="card-header">
+                <h3>Full Kernel Pulse Logs</h3>
+            </div>
+            <div id="fullLogList"></div>
+        </div>
+    </div>
+
+    <script>
+        async function refreshData() {
+            const icon = document.getElementById('refreshIcon');
+            icon.classList.add('fa-spin');
+
+            try {
+                const statsRes = await fetch('/api/admin/stats');
+                const stats = await statsRes.json();
+                if (stats.success) {
+                    document.getElementById('stat-users').innerText = stats.stats.total_users;
+                    document.getElementById('stat-creations').innerText = stats.stats.total_creations;
+                    document.getElementById('stat-revenue').innerText = '₹' + stats.stats.total_revenue;
+                    document.getElementById('stat-active').innerText = stats.stats.active_today;
+                }
+
+                const transRes = await fetch('/api/admin/transactions');
+                const trans = await transRes.json();
+                if (trans.success) {
+                    const tbody = document.getElementById('recentTransactions');
+                    const fullTbody = document.getElementById('paymentTableBody');
+                    tbody.innerHTML = '';
+                    fullTbody.innerHTML = '';
+
+                    trans.transactions.forEach((t, i) => {
+                        const row = `
+                            <tr>
+                                <td><strong>@${t.username}</strong></td>
+                                <td>₹${t.amount}</td>
+                                <td><span class="badge ${t.status === 'completed' ? 'badge-success' : 'badge-warning'}">${t.status}</span></td>
+                                <td>${new Date(t.created_at).toLocaleDateString()}</td>
+                            </tr>
+                        `;
+                        if (i < 5) tbody.innerHTML += row;
+
+                        fullTbody.innerHTML += `
+                            <tr>
+                                <td style="font-family: monospace; font-size: 0.8rem; color: var(--admin-primary);">${t.transaction_id}</td>
+                                <td>${t.username}</td>
+                                <td>₹${t.amount}</td>
+                                <td>${t.payment_method}</td>
+                                <td><span class="badge ${t.status === 'completed' ? 'badge-success' : 'badge-warning'}">${t.status}</span></td>
+                                <td>${new Date(t.created_at).toLocaleString()}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                const logsRes = await fetch('/api/admin/logs');
+                const logs = await logsRes.json();
+                if (logs.success) {
+                    const logList = document.getElementById('recentLogs');
+                    const fullLogList = document.getElementById('fullLogList');
+                    logList.innerHTML = '';
+                    fullLogList.innerHTML = '';
+
+                    logs.logs.forEach((log, i) => {
+                        const color = log.action === 'login' ? '#6366f1' : log.action === 'logout' ? '#ef4444' : log.action === 'payment' ? '#10b981' : '#ff7e5f';
+                        const icon = log.action === 'login' ? 'fa-sign-in-alt' : log.action === 'logout' ? 'fa-sign-out-alt' : log.action === 'payment' ? 'fa-credit-card' : 'fa-magic';
+
+                        const logHtml = `
+                            <div class="log-item">
+                                <div class="log-icon" style="background: ${color}15; color: ${color}">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <div class="log-info">
+                                    <div style="font-weight: 700;">${log.username} <span style="font-weight: 400; color: #64748b;">${log.action}: ${log.details || ''}</span></div>
+                                    <div class="log-time">${new Date(log.created_at).toLocaleString()}</div>
+                                </div>
+                            </div>
+                        `;
+                        if (i < 8) logList.innerHTML += logHtml;
+                        fullLogList.innerHTML += logHtml;
+                    });
+                }
+
+                const userRes = await fetch('/api/admin/users');
+                const userData = await userRes.json();
+                window.usersCache = userData.users;
+                if (userData.success) {
+                    const userBody = document.getElementById('userTableBody');
+                    userBody.innerHTML = '';
+                    userData.users.forEach(u => {
+                        // High-Precision UTC/Local Logic
+                        let isOnline = false;
+                        let lastSeenText = 'Never';
+                        if (u.last_active) {
+                            const lastActiveDate = new Date(u.last_active.replace(' ', 'T') + 'Z');
+                            const diff = Math.floor((new Date() - lastActiveDate) / 1000);
+                            isOnline = diff >= 0 && diff < 90;
+                            lastSeenText = diff < 60 ? `${Math.max(0, diff)}s ago` :
+                                diff < 3600 ? `${Math.floor(diff / 60)}m ago` :
+                                    lastActiveDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        }
+
+                        userBody.innerHTML += `
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div class="user-avatar" style="background:${isOnline ? 'rgba(16,185,129,0.1)' : '#f1f5f9'}; color:${isOnline ? '#10b981' : '#94a3b8'};">
+                                            ${u.username ? u.username[0].toUpperCase() : '?'}
+                                        </div>
+                                        <div>
+                                            <div style="font-weight:700;">@${u.username}</div>
+                                            <div style="font-size:0.7rem; color:#94a3b8;">ID: ${u.id}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>${u.email}</td>
+                                <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                                <td>
+                                    <div style="display:flex; flex-direction:column; align-items:center;">
+                                        <span class="badge ${isOnline ? 'badge-success' : ''}" style="${!isOnline ? 'background:#f1f5f9; color:#94a3b8;' : ''}">
+                                            ${isOnline ? 'Online' : 'Offline'}
+                                        </span>
+                                        <small style="font-size:0.65rem; color:#94a3b8; margin-top:4px; font-weight:700;">${lastSeenText}</small>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-info">${u.total_creations}</span></td>
+                                <td>₹${u.total_spent}</td>
+                                <td>
+                                    <button class="btn-auth" style="padding:5px 12px; font-size:0.75rem; background:var(--slate);" onclick="showUserDetails(${u.id})">
+                                        <i class="fas fa-search"></i> Audit
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+            } finally {
+                setTimeout(() => icon.classList.remove('fa-spin'), 500);
+            }
+        }
+
+        // --- LIVE MONITORING AUTO-REFRESH ---
+        // Refresh all kernel data every 10 seconds for real-time tracking
+        setInterval(refreshData, 10000);
+
+        function showUserDetails(id) {
+            const user = window.usersCache.find(u => u.id === id);
+            const container = document.getElementById('modalDetails');
+
+            container.innerHTML = `
+                <div class="detail-row"><span class="detail-label">Identity Hash</span><span class="detail-value">${user.username}</span></div>
+                <div class="detail-row"><span class="detail-label">Email Node</span><span class="detail-value">${user.email}</span></div>
+                <div class="detail-row"><span class="detail-label">Time-In (Last Login)</span><span class="detail-value">${user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}</span></div>
+                <div class="detail-row"><span class="detail-label">Time-Out (Last Logout)</span><span class="detail-value">${user.last_logout ? new Date(user.last_logout).toLocaleString() : '<span style="color:var(--admin-success)">Active Session</span>'}</span></div>
+                <div class="detail-row"><span class="detail-label">Current Node Path</span><span class="detail-value">/studio/neural-editor</span></div>
+                <div class="detail-row"><span class="detail-label">Security Signature</span><span class="detail-value" style="font-size: 0.7rem;">${user.password_hash}</span></div>
+                <div style="background: var(--slate-soft); padding: 15px; border-radius: 12px; margin-top: 20px;">
+                    <p style="margin: 0; font-size: 0.85rem; color: #64748b; font-weight: 600;">Full Audit Trail is active for this user node. All style injections and payment handshakes are monitored.</p>
+                </div>
+            `;
+            document.getElementById('userModal').style.display = 'flex';
+        }
+
+        function closeUserModal() { document.getElementById('userModal').style.display = 'none'; }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.card, .dashboard-grid').forEach(c => {
+                if (c.id !== 'dashboardTab' && c.id !== 'usersTab' && c.id !== 'paymentsTab' && c.id !== 'logsTab') return;
+                c.style.display = 'none';
+            });
+
+            const title = {
+                'dashboard': 'System Dashboard',
+                'users': 'User Identity Directory',
+                'payments': 'Revenue Monitoring',
+                'logs': 'Global Event Kernel Logs'
+            };
+
+            document.getElementById('tabTitle').innerText = title[tab];
+            document.getElementById(tab + 'Tab').style.display = tab === 'dashboard' ? 'grid' : 'block';
+            event.currentTarget.classList.add('active');
+        }
+
+        refreshData();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | Toonify AI</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .info-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 120px 5%;
+            text-align: center;
+            color: white;
+        }
+
+        .info-hero h1 {
+            font-family: 'Baloo 2';
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .info-content {
+            max-width: 900px;
+            margin: -60px auto 100px;
+            background: white;
+            padding: 60px;
+            border-radius: 32px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1);
+            line-height: 1.8;
+            color: #334155;
+        }
+
+        .info-content h2 {
+            font-family: 'Baloo 2';
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin: 40px 0 20px;
+        }
+
+        .info-content p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .policy-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .policy-list li {
+            margin-bottom: 25px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .policy-list li::before {
+            content: "\f058";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: #10b981;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <i class="fas fa-magic"></i>
+            <span class="logo-text">Toonify<span style="color: var(--primary);">.AI</span></span>
+        </a>
+        <a href="/" class="btn-auth">Back to Studio</a>
+    </nav>
+
+    <div class="info-hero">
+        <h1>Privacy <span>Policy</span></h1>
+        <p>Transparency is our first principle. Learn how we protect your digital identity.</p>
+    </div>
+
+    <div class="info-content">
+        <h2>Our Commitment</h2>
+        <p>At Toonify AI, your privacy isn't just a checkbox—it's the foundation of everything we build. We process
+            millions of artistic transformations daily, and we treat every single image with the same rigorous security
+            standards.</p>
+
+        <h2>How We Handle Your Data</h2>
+        <ul class="policy-list">
+            <li><strong>Neural-Only Processing:</strong> Images are processed in a volatile RAM buffer. Once the
+                transformation is complete, the original raw data is purged from the buffer.</li>
+            <li><strong>24-Hour Auto-Delete:</strong> Processed images are stored in an encrypted cloud bucket for 24
+                hours to allow for user downloads, after which they are permanently deleted.</li>
+            <li><strong>No Face Recognition:</strong> Our neural networks analyze geometry for stylization—we never
+                store facial biometric data or use it for identification.</li>
+            <li><strong>Third-Party Security:</strong> We use official Google OAuth for identity management, meaning we
+                never see or store your Google password.</li>
+        </ul>
+
+        <h2>Your Rights</h2>
+        <p>You have the absolute right to request a full dump of your account data or an immediate account deletion. To
+            exercise these rights, simply visit your Security Dashboard or contact our privacy officer at
+            privacy@toonify.ai.</p>
+
+        <div
+            style="background: #f8fafc; padding: 30px; border-radius: 20px; margin-top: 50px; border: 1px solid #e2e8f0;">
+            <p style="margin-bottom: 0; font-size: 0.95rem; opacity: 0.8;">Last Updated: February 6, 2026. This policy
+                is compliant with GDPR, CCPA, and global digital privacy standards.</p>
+        </div>
+    </div>
+
+    <footer
+        style="padding: 60px 5%; text-align: center; border-top: 1px solid #e2e8f0; background: #0f172a; color: white;">
+        <p>&copy; 2026 Toonify Creative Inc. | Professional Neural Stylization</p>
+    </footer>
+</body>
+
+</html>

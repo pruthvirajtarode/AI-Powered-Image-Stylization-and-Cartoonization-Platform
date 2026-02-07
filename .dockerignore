@@ -1,0 +1,15 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.git/
+data/
+*.db
+*.log
+tests/
+.agent/
+.gemini/
+.vscode/
+node_modules/
+dist/
+build/

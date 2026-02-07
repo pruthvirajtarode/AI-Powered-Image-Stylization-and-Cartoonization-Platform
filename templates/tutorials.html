@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toonify | Video Masterclass & Tutorials</title>
+    <link rel="stylesheet" href="/static/css/styles.css?v=213">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .tutorial-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 5%;
+        }
+
+        .video-hero {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
+            margin-bottom: 60px;
+        }
+
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.4) 100%);
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .play-btn {
+            width: 100px;
+            height: 100px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            box-shadow: 0 0 40px var(--primary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 126, 95, 0.7);
+            }
+
+            70% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 20px rgba(255, 126, 95, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 126, 95, 0);
+            }
+        }
+
+        .step-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        .step-card {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -20px;
+            left: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            font-family: 'Baloo 2';
+        }
+
+        .step-card h3 {
+            margin-top: 20px;
+            font-family: 'Baloo 2';
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .step-card p {
+            color: #64748b;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .tutorial-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .tutorial-header h1 {
+            font-family: 'Baloo 2';
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .tutorial-header p {
+            font-size: 1.2rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+
+<body style="background: #fdfdfd;">
+    <nav class="navbar"
+        style="padding: 12px 5%; height: 75px; background: white; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+        <a href="/" class="logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+            <div
+                style="background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                <i class="fas fa-wand-sparkles"></i>
+            </div>
+            <span class="logo-text"
+                style="font-family: 'Baloo 2'; font-size: 1.8rem; font-weight: 800; color: #1e293b;">Toonify<span
+                    style="color: var(--primary);">.AI</span></span>
+        </a>
+        <div style="display: flex; gap: 20px;">
+            <a href="/docs" style="text-decoration: none; color: #64748b; font-weight: 600; padding: 10px;">Help
+                Center</a>
+            <a href="/" class="btn-auth"
+                style="text-decoration: none; padding: 10px 24px; border-radius: 10px; font-weight: 700;">Back to
+                Editor</a>
+        </div>
+    </nav>
+
+    <div class="tutorial-container">
+        <div class="tutorial-header">
+            <p style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">
+                Masterclass</p>
+            <h1>Video <span>Mastery</span> Guide</h1>
+            <p>Watch this tutorial to unlock the full power of our Neural AI Engine.</p>
+        </div>
+
+        <div class="video-hero" id="videoWrapper" style="background:#000;">
+
+
+            <!-- High-End Branded Cover (Matches User Input) -->
+            <div id="videoPlaceholder"
+                style="width: 100%; height: 100%; position: absolute; top:0; left:0; background: #0a0b10; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 32px;">
+
+                <!-- Tech Neon Accents -->
+                <div
+                    style="position: absolute; top: 15%; left: 0; width: 300px; height: 1px; background: linear-gradient(90deg, #ff00ff, transparent); opacity: 0.4;">
+                </div>
+                <div
+                    style="position: absolute; top: 25%; right: 0; width: 250px; height: 1px; background: linear-gradient(-90deg, #00ffff, transparent); opacity: 0.3;">
+                </div>
+                <div
+                    style="position: absolute; bottom: 20%; left: 15%; width: 400px; height: 1px; background: linear-gradient(90deg, transparent, #ff00ff, transparent); opacity: 0.2;">
+                </div>
+                <div
+                    style="position: absolute; bottom: 40%; right: 5%; width: 200px; height: 1px; background: linear-gradient(-90deg, #00ffff, transparent); opacity: 0.3;">
+                </div>
+
+                <!-- Central Branding Stack -->
+                <div style="text-align: center; z-index: 10; cursor: pointer;" onclick="playTutorial()">
+                    <div style="margin-bottom: 15px; display: flex; justify-content: center;">
+                        <div
+                            style="border: 2px solid #00ffff; padding: 10px; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);">
+                            <i class="fas fa-gem" style="color: #00ffff; font-size: 1.2rem;"></i>
+                        </div>
+                    </div>
+                    <h2
+                        style="font-family: 'Baloo 2'; font-size: 4.8rem; color: #fff; text-shadow: 0 0 30px rgba(255, 0, 255, 0.6); margin: 0; line-height: 1; letter-spacing: 2px;">
+                        TOONIFY.AI</h2>
+                    <p
+                        style="font-size: 1.2rem; color: #00ffff; letter-spacing: 5px; font-weight: 700; text-transform: uppercase; margin-top: 10px;">
+                        Start Your Journey Today</p>
+
+                    <div
+                        style="margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                        <div class="play-btn" style="transform: scale(0.9);">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <span
+                            style="color: white; font-weight: 700; letter-spacing: 1px; opacity: 0.8; font-size: 1.1rem;">Launch
+                            Masterclass</span>
+                    </div>
+                </div>
+
+                <!-- Vignette Overlay -->
+                <div
+                    style="position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.6) 100%); pointer-events: none;">
+                </div>
+            </div>
+
+            <div id="videoControlsOverlay"
+                style="display:none; position:absolute; top:20px; right:20px; background: rgba(0,0,0,0.7); padding: 10px 24px; border-radius: 12px; color: #4caf50; font-weight:700; font-size: 0.75rem; border: 1px solid #4caf50;">
+                <i class="fas fa-circle" style="font-size: 8px; margin-right: 8px; animation: pulse 1s infinite;"></i>
+                LIVE: NEURAL ENGINE MASTERCLASS
+            </div>
+
+            <script>
+                function playTutorial() {
+                    console.log("Custom Masterclass Activation Sequence Started...");
+                    const wrapper = document.getElementById('videoWrapper');
+
+                    // Injecting the User's Custom HD Tutorial Video
+                    wrapper.innerHTML = `
+                    <div style="position: relative; width: 100%; height: 100%; border-radius: 32px; overflow: hidden; background: #000; box-shadow: 0 0 50px rgba(255,126,95,0.4);">
+                        <video width="100%" height="100%" controls autoplay style="border-radius: 32px; object-fit: cover;">
+                            <source src="/static/videos/tutorial.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div id="videoControlsOverlay" style="position:absolute; top:20px; right:20px; background: rgba(0,0,0,0.8); padding: 10px 24px; border-radius: 12px; color: #4caf50; font-weight:700; font-size: 0.75rem; border: 1px solid #4caf50; pointer-events: none; z-index: 10;">
+                            <i class="fas fa-circle" style="font-size: 8px; margin-right: 8px; animation: pulse 1s infinite;"></i> PRO: USER CUSTOM MASTERCLASS
+                        </div>
+                    </div>
+                `;
+
+                    console.log("Local Custom Masterclass Active.");
+                }
+            </script>
+
+        </div>
+
+        <footer style="padding: 60px 5%; text-align: center; background: #0f172a; color: white; margin-top: 100px;">
+            <h2 style="font-family:'Baloo 2'; margin-bottom: 20px;">Ready to create your first <span>Masterpiece?</span>
+            </h2>
+            <a href="/" class="btn-auth"
+                style="display:inline-block; text-decoration:none; padding: 15px 40px; font-size: 1.1rem;">Get Started
+                Now</a>
+            <p style="margin-top: 40px; opacity: 0.5;">&copy; 2026 Toonify AI | Professional Neural Stylization</p>
+        </footer>
+</body>
+
+</html>

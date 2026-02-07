@@ -1,0 +1,499 @@
+"""
+Database operations for user management
+"""
+import sqlite3
+from datetime import datetime
+from pathlib import Path
+from typing import Optional, Dict, List
+import config.settings as settings
+
+
+class Database:
+    """Handle all database operations"""
+    
+    def __init__(self, db_path: str = None):
+        """Initialize database connection"""
+        self.db_path = db_path or settings.DATABASE_PATH
+        self.init_database()
+    
+    def get_connection(self):
+        """Get database connection"""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row  # Enable column access by name
+        return conn
+    
+    def init_database(self):
+        """Initialize database tables"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Users table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                full_name TEXT,
+                role TEXT DEFAULT 'user',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP,
+                is_active BOOLEAN DEFAULT 1,
+                is_verified BOOLEAN DEFAULT 0,
+                last_logout TIMESTAMP,
+                last_active TIMESTAMP
+            )
+        """)
+
+        # Migration: Add role if it doesn't exist
+        try:
+            cursor.execute("SELECT role FROM users LIMIT 1")
+        except sqlite3.OperationalError:
+            print("🚀 Migrating Database: Adding 'role' column to users table...")
+            cursor.execute("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'")
+            conn.commit()
+
+        # Migration: Add last_logout if it doesn't exist
+        try:
+            cursor.execute("SELECT last_logout FROM users LIMIT 1")
+        except sqlite3.OperationalError:
+            print("🚀 Migrating Database: Adding 'last_logout' column to users table...")
+            cursor.execute("ALTER TABLE users ADD COLUMN last_logout TIMESTAMP")
+            conn.commit()
+
+        # Migration: Add last_active if it doesn't exist
+        try:
+            cursor.execute("SELECT last_active FROM users LIMIT 1")
+        except sqlite3.OperationalError:
+            print("🚀 Migrating Database: Adding 'last_active' column to users table...")
+            cursor.execute("ALTER TABLE users ADD COLUMN last_active TIMESTAMP")
+            conn.commit()
+
+        # Migration: Add is_verified if it doesn't exist
+        try:
+            cursor.execute("SELECT is_verified FROM users LIMIT 1")
+        except sqlite3.OperationalError:
+            print("🚀 Migrating Database: Adding 'is_verified' column to users table...")
+            cursor.execute("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0")
+            conn.commit()
+
+        # Create or Update Default Admin User
+        admin_user = cursor.execute("SELECT * FROM users WHERE username = 'admin'").fetchone()
+        if not admin_user:
+            import bcrypt
+            print("👤 Initializing System: Creating default administrator...")
+            # Default password: admin123
+            salt = bcrypt.gensalt()
+            password_hash = bcrypt.hashpw("admin123".encode('utf-8'), salt).decode('utf-8')
+            cursor.execute("""
+                INSERT INTO users (username, email, password_hash, full_name, role, is_verified)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, ("admin", "admin@toonify.ai", password_hash, "System Admin", "admin", 1))
+            conn.commit()
+        else:
+            # Ensure the 'admin' user always has the 'admin' role
+            if admin_user['role'] != 'admin':
+                print("🛡️ Security Patch: Restoring admin privileges for 'admin' user...")
+                cursor.execute("UPDATE users SET role = 'admin' WHERE username = 'admin'")
+                conn.commit()
+        
+        # Verification Codes table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS verification_codes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                code TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP NOT NULL
+            )
+        """)
+        
+        # Transactions table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                transaction_id TEXT UNIQUE NOT NULL,
+                amount REAL NOT NULL,
+                currency TEXT DEFAULT 'usd',
+                status TEXT DEFAULT 'pending',
+                payment_method TEXT,
+                image_filename TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        """)
+        
+        # User sessions table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                session_token TEXT UNIQUE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        """)
+        
+        # Image processing history
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS processing_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                original_filename TEXT NOT NULL,
+                processed_filename TEXT NOT NULL,
+                style TEXT NOT NULL,
+                processing_time REAL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        """)
+        
+        # User logs table for admin monitoring
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                action TEXT NOT NULL,
+                details TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        """)
+
+        conn.commit()
+        conn.close()
+    
+    # User Operations
+    def create_user(self, username: str, email: str, password_hash: str, 
+                   full_name: str = None) -> Optional[int]:
+        """Create a new user"""
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO users (username, email, password_hash, full_name)
+                VALUES (?, ?, ?, ?)
+            """, (username, email, password_hash, full_name))
+            conn.commit()
+            user_id = cursor.lastrowid
+            conn.close()
+            return user_id
+        except sqlite3.IntegrityError:
+            return None
+    
+    def get_user_by_username(self, username: str) -> Optional[Dict]:
+        """Get user by username"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user = cursor.fetchone()
+        conn.close()
+        return dict(user) if user else None
+    
+    def get_user_by_email(self, email: str) -> Optional[Dict]:
+        """Get user by email"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
+        conn.close()
+        return dict(user) if user else None
+    
+    def get_user_by_id(self, user_id: int) -> Optional[Dict]:
+        """Get user by ID"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        user = cursor.fetchone()
+        conn.close()
+        return dict(user) if user else None
+    
+    def update_last_login(self, user_id: int):
+        """Update user's last login timestamp and log it"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE users SET last_login = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (user_id,))
+        conn.commit()
+        conn.close()
+        self.log_user_activity(user_id, "login", "User signed into the platform")
+
+    def update_last_logout(self, user_id: int):
+        """Update user's last logout timestamp and log it"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE users SET last_logout = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (user_id,))
+        conn.commit()
+        conn.close()
+        self.log_user_activity(user_id, "logout", "User signed out (Time-out)")
+
+    def update_last_active(self, user_id: int):
+        """Silently update user's last activity heartbeat"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE users SET last_active = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (user_id,))
+        conn.commit()
+        conn.close()
+
+    def log_user_activity(self, user_id: int, action: str, details: str = None):
+        """Log user activity for admin monitoring"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO user_logs (user_id, action, details)
+            VALUES (?, ?, ?)
+        """, (user_id, action, details))
+        conn.commit()
+        conn.close()
+    
+    def update_user_profile(self, user_id: int, **kwargs):
+        """Update user profile information"""
+        allowed_fields = ['full_name', 'email']
+        updates = {k: v for k, v in kwargs.items() if k in allowed_fields}
+        
+        if not updates:
+            return False
+        
+        set_clause = ", ".join([f"{k} = ?" for k in updates.keys()])
+        values = list(updates.values()) + [user_id]
+        
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE users SET {set_clause} WHERE id = ?", values)
+        conn.commit()
+        conn.close()
+        return True
+    
+    # Transaction Operations
+    def create_transaction(self, user_id: int, transaction_id: str, 
+                          amount: float, image_filename: str = None, 
+                          payment_method: str = None) -> int:
+        """Create a new transaction record"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO transactions 
+            (user_id, transaction_id, amount, image_filename, payment_method)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_id, transaction_id, amount, image_filename, payment_method))
+        conn.commit()
+        trans_id = cursor.lastrowid
+        conn.close()
+        return trans_id
+    
+    def update_transaction_status(self, transaction_id: str, status: str):
+        """Update transaction status"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE transactions SET status = ?
+            WHERE transaction_id = ?
+        """, (status, transaction_id))
+        conn.commit()
+        conn.close()
+    
+    def get_user_transactions(self, user_id: int) -> List[Dict]:
+        """Get all transactions for a user"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT * FROM transactions 
+            WHERE user_id = ? 
+            ORDER BY created_at DESC
+        """, (user_id,))
+        transactions = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return transactions
+    
+    def get_transaction_by_id(self, transaction_id: str) -> Optional[Dict]:
+        """Get transaction by transaction ID"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT * FROM transactions WHERE transaction_id = ?
+        """, (transaction_id,))
+        transaction = cursor.fetchone()
+        conn.close()
+        return dict(transaction) if transaction else None
+    
+    # Processing History Operations
+    def add_processing_history(self, user_id: int, original_filename: str,
+                               processed_filename: str, style: str,
+                               processing_time: float = None) -> int:
+        """Add image processing history record"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO processing_history 
+            (user_id, original_filename, processed_filename, style, processing_time)
+            VALUES (?, ?, ?, ?, ?)
+        """, (user_id, original_filename, processed_filename, style, processing_time))
+        conn.commit()
+        history_id = cursor.lastrowid
+        conn.close()
+        return history_id
+    
+    def get_user_history(self, user_id: int, limit: int = 10) -> List[Dict]:
+        """Get user's processing history"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT * FROM processing_history 
+            WHERE user_id = ? 
+            ORDER BY created_at DESC 
+            LIMIT ?
+        """, (user_id, limit))
+        history = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return history
+    
+    # Statistics
+    def get_user_stats(self, user_id: int) -> Dict:
+        """Get user statistics"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Total images processed
+        cursor.execute("""
+            SELECT COUNT(*) as total_processed FROM processing_history
+            WHERE user_id = ?
+        """, (user_id,))
+        total_processed = cursor.fetchone()['total_processed']
+        
+        # Total transactions
+        cursor.execute("""
+            SELECT COUNT(*) as total_transactions, 
+                   COALESCE(SUM(amount), 0) as total_spent
+            FROM transactions
+            WHERE user_id = ? AND status = 'completed'
+        """, (user_id,))
+        trans_data = cursor.fetchone()
+        
+        conn.close()
+        
+        return {
+            'total_processed': total_processed,
+            'total_transactions': trans_data['total_transactions'],
+            'total_spent': trans_data['total_spent']
+        }
+
+    # Verification Operations
+    def store_verification_code(self, email: str, code: str, expires_at: datetime):
+        """Store a verification code for an email"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        # Delete any existing codes for this email
+        cursor.execute("DELETE FROM verification_codes WHERE email = ?", (email,))
+        cursor.execute("""
+            INSERT INTO verification_codes (email, code, expires_at)
+            VALUES (?, ?, ?)
+        """, (email, code, expires_at))
+        conn.commit()
+        conn.close()
+
+    def get_verification_code(self, email: str) -> Optional[Dict]:
+        """Get the latest verification code for an email"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT * FROM verification_codes 
+            WHERE email = ? 
+            ORDER BY created_at DESC LIMIT 1
+        """, (email,))
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+
+    def verify_user_email(self, email: str):
+        """Mark a user as verified"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET is_verified = 1 WHERE email = ?", (email,))
+        # Also delete the used code
+        cursor.execute("DELETE FROM verification_codes WHERE email = ?", (email,))
+        conn.commit()
+        conn.close()
+
+    # --- ADMIN DASHBOARD OPERATIONS ---
+    def get_admin_dashboard_stats(self) -> Dict:
+        """Get global stats for admin dashboard"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT COUNT(*) as total FROM users")
+        total_users = cursor.fetchone()['total']
+        
+        cursor.execute("SELECT COUNT(*) as total FROM processing_history")
+        total_creations = cursor.fetchone()['total']
+        
+        cursor.execute("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE status = 'completed'")
+        total_revenue = cursor.fetchone()['total']
+        
+        cursor.execute("SELECT COUNT(*) as total FROM users WHERE last_login >= datetime('now', '-24 hours')")
+        active_today = cursor.fetchone()['total']
+        
+        conn.close()
+        return {
+            "total_users": total_users,
+            "total_creations": total_creations,
+            "total_revenue": total_revenue,
+            "active_today": active_today
+        }
+
+    def get_recent_activity_logs(self, limit: int = 50) -> List[Dict]:
+        """Get latest user logs for admin"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT l.*, u.username, u.email 
+            FROM user_logs l
+            JOIN users u ON l.user_id = u.id
+            ORDER BY l.created_at DESC
+            LIMIT ?
+        """, (limit,))
+        logs = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return logs
+
+    def get_all_transactions_admin(self) -> List[Dict]:
+        """Get all transactions with user details"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT t.*, u.username, u.email 
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            ORDER BY t.created_at DESC
+        """)
+        transactions = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return transactions
+
+    def get_all_users_admin(self) -> List[Dict]:
+        """Get all users with their summary stats"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT u.*, 
+                   (SELECT COUNT(*) FROM processing_history WHERE user_id = u.id) as total_creations,
+                   (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND status = 'completed') as total_spent
+            FROM users u
+            ORDER BY u.created_at DESC
+        """)
+        users = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return users
+
+
+# Global database instance
+db = Database()

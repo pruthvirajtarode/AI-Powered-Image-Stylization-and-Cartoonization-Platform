@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: toonify-ai-saas
+    env: docker
+    plan: free
+    region: oregon 
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: DEBUG
+        value: "False"
+      - key: APP_NAME
+        value: Toonify
+      - key: DATABASE_PATH
+        value: /etc/secrets/data/users.db
+    disk:
+      name: toonify-data
+      mountPath: /app/data
+      sizeGB: 1

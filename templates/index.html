@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Identity SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <title>Toonify SaaS | Professional AI Image Stylization</title>
+    <link rel="stylesheet" href="/static/css/styles.css?v=210">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Premium Decorative Elements -->
+    <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=800"
+        class="bg-art art-top-right" alt="">
+    <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=800"
+        class="bg-art art-bottom-left" alt="">
+
+    <!-- SaaS Navbar -->
+    <nav class="navbar" style="padding: 12px 5%; height: 75px; background: white; border-bottom: 1px solid #f1f5f9;">
+        <a href="/" class="logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+            <div
+                style="background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                <i class="fas fa-wand-sparkles"></i>
+            </div>
+            <span class="logo-text"
+                style="font-family: 'Baloo 2'; font-size: 1.8rem; font-weight: 800; color: #1e293b;">Toonify<span
+                    style="color: var(--primary);">.AI</span></span>
+        </a>
+
+        <div class="nav-links">
+            <a href="/">
+                <i class="fas fa-rocket"></i> Home
+            </a>
+            <a href="#app">
+                <i class="fas fa-wand-magic-sparkles"></i> Neural Editor
+            </a>
+            <a href="#gallery">
+                <i class="fas fa-palette"></i> Art Gallery
+            </a>
+            <a href="#features">
+                <i class="fas fa-layer-group"></i> AI Styles
+            </a>
+            <a href="/docs">
+                <i class="fas fa-book-open"></i> Docs
+            </a>
+        </div>
+
+        <div class="auth-section">
+            <button class="btn-auth" onclick="toggleAuth(event, 'login')">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </div>
+
+        <div class="menu-toggle" id="menuToggle"
+            style="display: none; cursor: pointer; font-size: 1.5rem; color: var(--dark); margin-left: 20px;">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <!-- SaaS Hero with Automatic Carousel -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Transform Your <span>Photos</span> into Art</h1>
+            <p>The world's most advanced AI stylization engine for creators. Turn any portrait, landscape, or pet photo
+                into a professional cartoon masterpiece in seconds.</p>
+            <div class="hero-cta">
+                <a href="#app" class="btn-auth" style="padding: 1rem 3rem; font-size: 1.25rem;">Open AI Editor <i
+                        class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item"><strong>2M+</strong> Projects Created</div>
+                <div class="stat-item"><strong>99%</strong> Satisfaction</div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-card-stack" id="heroCarousel">
+                <!-- Slide 1: Portrait Pro -->
+                <div class="hero-slide active">
+                    <img src="https://images.unsplash.com/photo-1554151228-14d9def656e4?auto=format&fit=crop&q=80&w=600"
+                        class="hero-img img-1" alt="Original Portrait">
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600"
+                        class="hero-img img-2" alt="Neural Styled Portrait">
+                </div>
+                <!-- Slide 2: Nature Pro -->
+                <div class="hero-slide">
+                    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=600"
+                        class="hero-img img-1" alt="Original Landscape">
+                    <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=600"
+                        class="hero-img img-2" alt="Artistic Landscape">
+                </div>
+                <!-- Slide 3: Artistic Mastery -->
+                <div class="hero-slide">
+                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=600"
+                        class="hero-img img-1" alt="Original Subject">
+                    <img src="https://images.unsplash.com/photo-1566753323558-f4e0952af115?auto=format&fit=crop&q=80&w=600"
+                        class="hero-img img-2" alt="Neural Styled Subject">
+                </div>
+
+                <div class="ai-badge">AI Neural Engine</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Professional Gallery Section with Slider -->
+    <section class="gallery-section-main" id="gallery">
+        <div class="section-title">
+            <h2>Artistic <span>Possibilities</span></h2>
+            <p>Explore what our neural engine can create with different styles.</p>
+        </div>
+
+        <div class="gallery-slider-container">
+            <div class="gallery-track" id="galleryTrack">
+                <div class="gallery-card">
+                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400" alt="Style 1">
+                    <div class="card-overlay"><span>3D Cartoon</span></div>
+                </div>
+                <div class="gallery-card">
+                    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400" alt="Style 2">
+                    <div class="card-overlay"><span>Sketch Art</span></div>
+                </div>
+                <div class="gallery-card">
+                    <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400" alt="Style 3">
+                    <div class="card-overlay"><span>Oil Painting</span></div>
+                </div>
+                <div class="gallery-card">
+                    <img src="https://images.unsplash.com/photo-1549490349-8643362247b5?w=400" alt="Style 4">
+                    <div class="card-overlay"><span>Portrait Art</span></div>
+                </div>
+                <!-- Additional Images for Slider -->
+                <div class="gallery-card">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400" alt="Style 5">
+                    <div class="card-overlay"><span>Cyber Toon</span></div>
+                </div>
+                <div class="gallery-card">
+                    <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400" alt="Style 6">
+                    <div class="card-overlay"><span>Charcoal</span></div>
+                </div>
+                <div class="gallery-card">
+                    <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400" alt="Style 7">
+                    <div class="card-overlay"><span>Anime View</span></div>
+                </div>
+                <div class="gallery-card">
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400" alt="Style 8">
+                    <div class="card-overlay"><span>Digital Oil</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SaaS App Dashboard Section -->
+    <section class="app-section" id="app">
+        <div class="app-container">
+            <aside class="app-sidebar">
+                <div class="sidebar-group">
+                    <h3><i class="fas fa-layer-group"></i> Effect Style</h3>
+                    <div class="style-grid">
+                        <div class="style-item active" data-style="cartoon">
+                            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="3D Pixar">
+                            <span>3D Pixar</span>
+                        </div>
+                        <div class="style-item" data-style="sketch">
+                            <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="Lead Sketch">
+                            <span>Lead Sketch</span>
+                        </div>
+                        <div class="style-item" data-style="pencil_color">
+                            <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="Color Pencil">
+                            <span>Color Pencil</span>
+                        </div>
+                        <div class="style-item" data-style="oil_painting">
+                            <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="Oil Master">
+                            <span>Oil Master</span>
+                        </div>
+                        <div class="style-item" data-style="watercolor">
+                            <img src="https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="Watercolor">
+                            <span>💧 Watercolor</span>
+                        </div>
+                        <div class="style-item" data-style="pop_art">
+                            <img src="https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="Pop Art">
+                            <span>🎪 Pop Art</span>
+                        </div>
+                        <div class="style-item" data-style="vintage">
+                            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="Vintage">
+                            <span>📷 Vintage</span>
+                        </div>
+                        <div class="style-item" data-style="anime">
+                            <img src="https://images.unsplash.com/photo-1613323593608-abc90fec84ff?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="Anime">
+                            <span>🌸 Anime</span>
+                        </div>
+                        <div class="style-item" data-style="ghibli">
+                            <img src="https://images.unsplash.com/photo-1541512946848-7ad73e776dae?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="Studio Ghibli">
+                            <span>🌿 Ghibli Art</span>
+                        </div>
+                        <div class="style-item" data-style="comic_book">
+                            <img src="https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?auto=format&fit=crop&q=80&w=200&h=200"
+                                alt="Comic Book">
+                            <span>💥 Comic Book</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-group">
+                    <h3><i class="fas fa-file-import"></i> Media Asset</h3>
+                    <div class="upload-card" id="dropZone">
+                        <input type="file" id="fileInput" hidden accept="image/*">
+                        <div id="uploadText">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            <p><strong>Upload Photo</strong></p>
+                            <p style="font-size:11px; opacity:0.6;">Ready for AI analysis</p>
+                        </div>
+                        <img id="uploadPreview" class="upload-preview-small" src="" alt="">
+                    </div>
+                </div>
+
+                <button id="processBtn" class="btn-convert" disabled>
+                    Launch Transformation <i class="fas fa-sparkles"></i>
+                </button>
+            </aside>
+
+            <main class="app-canvas">
+                <div class="canvas-header">
+                    <h3>Neural Production Stage</h3>
+                    <div class="view-controls">
+                        <div class="view-tab active" id="tabSideBySide">Side-by-Side</div>
+                        <div class="view-tab" id="tabDynamic">Dynamic Comparison</div>
+                    </div>
+                </div>
+
+                <div class="main-stage">
+                    <div class="placeholder-view" id="placeholder">
+                        <i class="fas fa-microchip" style="font-size: 5rem; color: var(--primary);"></i>
+                        <h2 style="margin-top: 20px;">Ready for Production</h2>
+                        <p>Upload your scene from the sidebar to begin the neural process</p>
+                    </div>
+
+                    <!-- Side-by-Side View -->
+                    <div class="comparison-view" id="resultView">
+                        <div class="compare-item">
+                            <img id="viewOriginal" src="" alt="Source">
+                            <span class="compare-label">REALITY</span>
+                        </div>
+                        <div class="compare-item">
+                            <img id="viewProcessed" src="" alt="Output">
+                            <span class="compare-label" style="background:var(--primary)">ARTISTRY</span>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Slider View -->
+                    <div class="slider-view" id="sliderView" style="display:none;">
+                        <div class="slider-container">
+                            <div class="slider-img img-before">
+                                <img id="sliderOriginal" src="" alt="Before">
+                                <span class="slider-label">REALITY</span>
+                            </div>
+                            <div class="slider-img img-after">
+                                <img id="sliderProcessed" src="" alt="After">
+                                <span class="slider-label" style="background:var(--primary)">ARTISTRY</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider-range" id="compareSlider">
+                            <div class="slider-handle">
+                                <i class="fas fa-arrows-left-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="downloadArea" style="display:none; margin-top:2rem;">
+                    <button class="btn-auth" id="downloadBtn"
+                        style="width:100%; border-radius:12px; height:64px; font-size:1.1rem;">
+                        <i class="fas fa-download"></i> Save Ultra-HD Export
+                    </button>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- Social Proof / Features -->
+    <section class="features" id="features">
+        <div class="feat-item">
+            <div class="feat-img"><img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200" alt="">
+            </div>
+            <h3>Creative Control</h3>
+            <p>Fine-tune every aspect of your cartoon output with our advanced neural modifiers.</p>
+        </div>
+        <div class="feat-item">
+            <div class="feat-img"><img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200" alt="">
+            </div>
+            <h3>Speed & Precision</h3>
+            <p>Under 0.5s processing time with dedicated GPU-accelerated cloud nodes.</p>
+        </div>
+        <div class="feat-item">
+            <div class="feat-img"><img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=200" alt="">
+            </div>
+            <h3>Global Community</h3>
+            <p>Join millions of users who are already transforming their digital presence.</p>
+        </div>
+    </section>
+
+    <!-- SaaS Pricing Table -->
+    <section class="pricing" id="pricing">
+        <div class="section-title">
+            <h2>Ready to <span>Upgrade?</span></h2>
+            <p>Choose the plan that fits your creative workflow.</p>
+        </div>
+        <div class="price-grid">
+            <div class="price-card">
+                <h4>Starter</h4>
+                <div class="amount">$0</div>
+                <ul>
+                    <li><i class="fas fa-check"></i> Standard Quality</li>
+                    <li><i class="fas fa-check"></i> 5 Generations / Day</li>
+                    <li><i class="fas fa-check"></i> Basic Styles</li>
+                </ul>
+                <button class="btn-auth" onclick="showStarterPlan()"
+                    style="background:var(--slate); width:100%;">Current Plan</button>
+            </div>
+            <div class="price-card popular">
+                <div class="popular-badge">BEST VALUE</div>
+                <h4>Creator Pro</h4>
+                <div class="amount">$19</div>
+                <ul>
+                    <li><i class="fas fa-check"></i> 4K Ultra-HD Export</li>
+                    <li><i class="fas fa-check"></i> Unlimited Generations</li>
+                    <li><i class="fas fa-check"></i> Priority Neural Processing</li>
+                </ul>
+                <button class="btn-auth" onclick="upgradeToPro()" style="width:100%;">Get Started Now</button>
+            </div>
+            <div class="price-card">
+                <h4>Agency Elite</h4>
+                <div class="amount">$49</div>
+                <ul>
+                    <li><i class="fas fa-check"></i> Team Collaboration</li>
+                    <li><i class="fas fa-check"></i> API Integration Access</li>
+                    <li><i class="fas fa-check"></i> Custom Neural Training</li>
+                </ul>
+                <button class="btn-auth" onclick="contactSales()" style="background:var(--slate); width:100%;">Contact
+                    Sales</button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div>
+            <div class="footer-logo"><i class="fas fa-magic"></i> Toonify AI</div>
+            <p class="footer-text">The world's #1 AI platform for image stylization. © 2026 Toonify Creative Inc.</p>
+        </div>
+        <div>
+            <h4>Product</h4>
+            <ul>
+                <li><a href="#app" style="color: #64748b; text-decoration: none;">Editor Dashboard</a></li>
+                <li><a href="#gallery" style="color: #64748b; text-decoration: none;">Art Gallery</a></li>
+                <li><a href="/docs" style="color: #64748b; text-decoration: none;">Documentation Center</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Company</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li><a href="/our-story" style="color: #64748b; text-decoration: none;">Our Story</a></li>
+                <li><a href="/privacy-policy" style="color: #64748b; text-decoration: none;">Privacy Policy</a></li>
+                <li><a href="/terms-of-service" style="color: #64748b; text-decoration: none;">Terms of Service</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Connect</h4>
+            <div class="social-icons">
+                <i class="fab fa-twitter"></i>
+                <i class="fab fa-instagram"></i>
+                <i class="fab fa-discord"></i>
+            </div>
+        </div>
+    </footer>
+
+    <div id="loader" class="loader-overlay">
+        <div class="spinner"></div>
+        <h3 style="margin-top:2rem; font-family:'Baloo 2'; color:var(--primary); font-size:2.2rem;">Neural Artist at
+            Work...</h3>
+    </div>
+
+    <!-- Modals -->
+    <!-- Authentication Modals -->
+    <div id="authModal" class="loader-overlay"
+        style="background: rgba(15, 23, 42, 0.85); display: none; z-index: 9999; backdrop-filter: blur(12px);">
+        <div class="auth-card"
+            style="display: flex; max-width: 1000px; width: 92%; background: white; border-radius: 32px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; min-height: 600px;">
+
+            <!-- Left Branding Side -->
+            <div class="auth-left"
+                style="flex: 1; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); display: flex; align-items: center; justify-content: center; padding: 40px; position: relative; border-right: 1px solid #e2e8f0;">
+                <div style="text-align: center;">
+                    <div style="position: relative; animation: float 6s ease-in-out infinite;">
+                        <img src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&q=80&w=800"
+                            alt="Auth Branding" style="width: 100%; max-width: 420px; border-radius: 20px;">
+                    </div>
+                    <h3
+                        style="margin-top: 40px; color: #1e293b; font-size: 2rem; font-family: 'Baloo 2'; font-weight: 800; letter-spacing: -0.5px;">
+                        Unleash Your <span
+                            style="background: linear-gradient(90deg, #ff7e5f, #feb47b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Creativity</span>
+                    </h3>
+                    <p
+                        style="color: #64748b; margin-top: 15px; font-size: 1.15rem; line-height: 1.6; font-weight: 500;">
+                        Experience the power of <br><span style="color: #4f46e5; font-weight: 700;">Neural Stylization
+                            Engine</span></p>
+                </div>
+            </div>
+
+            <!-- Right Form Side -->
+            <div class="auth-right"
+                style="flex: 1.1; padding: 50px 70px; position: relative; background: white; display: flex; flex-direction: column; justify-content: center;">
+                <button class="close-modal"
+                    style="position:absolute; top:30px; right:30px; background:#f1f5f9; border:none; font-size:1.2rem; cursor:pointer; color: #475569; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s;"
+                    onclick="closeAuth()">&times;</button>
+
+                <div id="loginForm">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <h1
+                            style="font-family: 'Baloo 2'; color: var(--primary); font-size: 2.8rem; margin-bottom: 5px;">
+                            Toonify<span style="color:var(--dark);">.AI</span></h1>
+                        <p style="color: #64748b; font-size: 1.05rem;">Access your creative dashboard</p>
+                    </div>
+
+                    <div class="sidebar-group" style="gap: 1.5rem; display: flex; flex-direction: column;">
+                        <div>
+                            <label
+                                style="display:block; margin-bottom: 10px; font-weight: 700; font-size: 0.9rem; color: #1e293b;">Username
+                                or Email</label>
+                            <input type="text" id="loginUser" placeholder="e.g. creative.user@example.com"
+                                style="width:100%; padding:18px; border-radius:16px; border:1px solid #e2e8f0; background:#f8fafc; font-size: 1rem;">
+                        </div>
+                        <div>
+                            <label
+                                style="display:block; margin-bottom: 10px; font-weight: 700; font-size: 0.9rem; color: #1e293b;">Password</label>
+                            <div style="position: relative;">
+                                <input type="password" id="loginPass" placeholder="Enter your password"
+                                    style="width:100%; padding:18px 50px 18px 18px; border-radius:16px; border:1px solid #e2e8f0; background:#f8fafc; font-size: 1rem;">
+                                <i class="far fa-eye toggle-password" data-target="loginPass"
+                                    style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 1.2rem; cursor: pointer; transition: 0.2s;"></i>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; margin-top: -10px;">
+                            <a href="#"
+                                style="font-size: 0.85rem; color: var(--primary); font-weight: 700; text-decoration: none;">Forgot
+                                Password?</a>
+                        </div>
+
+                        <button class="btn-convert"
+                            style="padding: 18px; font-size: 1.1rem; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 12px;"
+                            onclick="handleLogin()">
+                            <i class="fas fa-check-circle"></i> Log In
+                        </button>
+
+                        <div style="text-align: center; margin: 15px 0; position: relative;">
+                            <hr style="border: 0; border-top: 1px solid #e2e8f0;">
+                            <span
+                                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 0 20px; color: #94a3b8; font-size: 0.9rem; font-weight: 500;">Or</span>
+                        </div>
+
+                        <div id="googleBtnContainer"
+                            style="width:100%; display: flex; justify-content: center; margin-top: 10px;"></div>
+
+                        <p style="margin-top: 30px; text-align: center; font-size: 1rem; color: #64748b;">Don't have an
+                            account? <a href="#" onclick="toggleAuth(event, 'register')"
+                                style="color:var(--primary); font-weight:700; text-decoration: none;">Sign up for
+                                free</a></p>
+                    </div>
+                </div>
+
+                <div id="verifyForm" style="display:none;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <h2 style="font-size: 2.2rem; font-family: 'Baloo 2'; color: var(--primary);">Verify
+                            <span>Email</span>
+                        </h2>
+                        <p style="color: #64748b; font-size: 1rem;">We've sent a 6-digit code to your email.</p>
+                    </div>
+                    <div class="sidebar-group" style="gap: 1.5rem; display: flex; flex-direction: column;">
+                        <div>
+                            <label
+                                style="display:block; margin-bottom: 10px; font-weight: 700; font-size: 0.9rem; color: #1e293b;">Verification
+                                Code</label>
+                            <input type="text" id="verifyCode" placeholder="Enter 6-digit code" maxlength="6"
+                                style="width:100%; padding:18px; border-radius:16px; border:1px solid #e2e8f0; background:#f8fafc; font-size: 1.5rem; text-align: center; letter-spacing: 15px; font-weight: 800;">
+                        </div>
+                        <button class="btn-convert" style="padding: 18px; font-size: 1.1rem; border-radius: 16px;"
+                            onclick="handleVerifyEmail()">
+                            Confirm Verification <i class="fas fa-shield-check" style="margin-left:10px;"></i>
+                        </button>
+                        <p style="text-align: center; font-size: 0.9rem; color: #64748b;">Didn't receive code? <a
+                                href="#" onclick="handleResendCode()"
+                                style="color:var(--primary); font-weight:700; text-decoration: none;">Resend Email</a>
+                        </p>
+                    </div>
+                </div>
+                <div id="registerForm" style="display:none;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <h2 style="font-size: 2.2rem; font-family: 'Baloo 2'; color: var(--primary);">Join the
+                            <span>Studio</span>
+                        </h2>
+                        <p style="color: #64748b; font-size: 1rem;">Start creating digital masterpieces today.</p>
+                    </div>
+
+                    <div class="sidebar-group" style="gap: 0.6rem; display: flex; flex-direction: column;">
+                        <input type="text" id="regUser" placeholder="Choose a username"
+                            style="width:100%; padding:14px; border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc;">
+                        <div id="userNote"
+                            style="font-size: 11px; height: 12px; color: var(--slate); padding-left: 5px;"></div>
+
+                        <input type="email" id="regEmail" placeholder="Your email address"
+                            style="width:100%; padding:14px; border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc;">
+                        <div id="emailNote"
+                            style="font-size: 11px; height: 12px; color: var(--slate); padding-left: 5px;"></div>
+
+                        <div style="position: relative;">
+                            <input type="password" id="regPass" placeholder="Create a secure password"
+                                style="width:100%; padding:14px 45px 14px 14px; border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc;">
+                            <i class="far fa-eye toggle-password" data-target="regPass"
+                                style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 1.1rem; cursor: pointer;"></i>
+                        </div>
+                        <div id="passNote"
+                            style="font-size: 11px; height: 12px; color: var(--slate); padding-left: 5px; margin-bottom: 2px;">
+                        </div>
+
+                        <input type="password" id="regConfirmPass" placeholder="Confirm your password"
+                            style="width:100%; padding:14px; border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc;">
+                        <div id="confirmNote"
+                            style="font-size: 11px; height: 12px; color: var(--slate); padding-left: 5px; margin-bottom: 5px;">
+                        </div>
+
+                        <div
+                            style="background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; margin: 5px 0;">
+                            <p
+                                style="font-size: 11px; color: #334155; margin-bottom: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Security Standards:</p>
+                            <div id="passRequirements"
+                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 10px; color: #64748b;">
+                                <div id="req-length"><i class="fas fa-circle"
+                                        style="font-size: 5px; margin-right: 8px;"></i> 8+ Chars</div>
+                                <div id="req-upper"><i class="fas fa-circle"
+                                        style="font-size: 5px; margin-right: 8px;"></i> Uppercase</div>
+                                <div id="req-number"><i class="fas fa-circle"
+                                        style="font-size: 5px; margin-right: 8px;"></i> Numbers</div>
+                                <div id="req-special"><i class="fas fa-circle"
+                                        style="font-size: 5px; margin-right: 8px;"></i> Symbols</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: flex-start; gap: 10px; margin: 10px 0;">
+                            <input type="checkbox" id="regTerms"
+                                style="width: 18px; height: 18px; cursor: pointer; border-radius: 4px; border: 1px solid #e2e8f0; accent-color: var(--primary);">
+                            <label for="regTerms"
+                                style="font-size: 0.85rem; color: #64748b; line-height: 1.4; cursor: pointer;">
+                                I agree to the <a href="#"
+                                    style="color: var(--primary); font-weight: 700; text-decoration: none;">Terms of
+                                    Service</a> and <a href="#"
+                                    style="color: var(--primary); font-weight: 700; text-decoration: none;">Privacy
+                                    Policy</a>.
+                            </label>
+                        </div>
+
+                        <button class="btn-convert"
+                            style="padding: 16px; font-size: 1.1rem; border-radius: 12px; margin-top: 5px;"
+                            onclick="handleRegister()">Get Started Free <i class="fas fa-user-plus"
+                                style="margin-left: 10px;"></i></button>
+                        <p style="margin-top: 20px; text-align: center; font-size: 1rem; color: #64748b;">Already have
+                            an account? <a href="#" onclick="toggleAuth(event, 'login')"
+                                style="color:var(--primary); font-weight:700; text-decoration: none;">Sign In</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="loader-overlay"
+        style="background: rgba(15, 23, 42, 0.9); display: none; z-index: 9999;">
+        <div class="app-container"
+            style="max-width: 500px; min-height: auto; grid-template-columns: 1fr; padding: 40px; text-align: center; position: relative;">
+            <h2 style="margin: 20px 0 10px;">Ready to <span>Download?</span></h2>
+            <div style="background: var(--light); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <h1 style="font-size: 3rem; color: var(--dark);">$4.99</h1>
+            </div>
+            <button class="btn-convert" id="payBtn" onclick="processPayment()">Complete Checkout <i
+                    class="fas fa-credit-card"></i></button>
+            <button class="btn-auth" style="background:transparent; color:var(--slate); margin-top:10px; border:none;"
+                onclick="closePayment()">Cancel</button>
+        </div>
+    </div>
+
+
+    <!-- Home Bar -->
+    <div
+        style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 100px; height: 4px; background: white; border-radius: 2px; opacity: 0.5;">
+    </div>
+    </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
+
+</html>
