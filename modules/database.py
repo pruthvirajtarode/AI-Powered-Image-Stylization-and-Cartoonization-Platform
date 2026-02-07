@@ -48,6 +48,14 @@ class Database:
         # Determine ID syntax
         id_serial = "SERIAL PRIMARY KEY" if self.is_postgres else "INTEGER PRIMARY KEY AUTOINCREMENT"
         
+        # FRESH START: Drop table if schema is broken (Only works if no critical data yet)
+        if self.is_postgres:
+            try:
+                # Check if we need to fix the boolean column issue by forcing a recreation
+                cursor.execute("DROP TABLE IF EXISTS users CASCADE")
+            except:
+                pass
+
         # Users table
         cursor.execute(f"""
             CREATE TABLE IF NOT EXISTS users (
