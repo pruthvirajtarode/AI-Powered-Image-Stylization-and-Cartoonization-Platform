@@ -12,9 +12,12 @@ services:
         value: "False"
       - key: APP_NAME
         value: Toonify
-      - key: DATABASE_PATH
-        value: /etc/secrets/data/users.db
-    disk:
-      name: toonify-data
-      mountPath: /app/data
-      sizeGB: 1
+      - fromDatabase:
+          name: toonify-db
+          property: connectionString
+        key: DATABASE_URL
+
+databases:
+  - name: toonify-db
+    plan: free
+    region: oregon

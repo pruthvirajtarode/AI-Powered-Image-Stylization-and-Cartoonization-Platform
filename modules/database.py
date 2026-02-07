@@ -2,10 +2,19 @@
 Database operations for user management
 """
 import sqlite3
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, List
 import config.settings as settings
+
+# Attempt PostgreSQL Import for Production
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    HAS_POSTGRES = True
+except ImportError:
+    HAS_POSTGRES = False
 
 
 class Database:
@@ -14,23 +23,32 @@ class Database:
     def __init__(self, db_path: str = None):
         """Initialize database connection"""
         self.db_path = db_path or settings.DATABASE_PATH
+        self.db_url = os.getenv("DATABASE_URL")
+        self.is_postgres = self.db_url is not None and HAS_POSTGRES
         self.init_database()
     
     def get_connection(self):
-        """Get database connection"""
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row  # Enable column access by name
-        return conn
+        """Get database connection (PostgreSQL or SQLite)"""
+        if self.is_postgres:
+            conn = psycopg2.connect(self.db_url, cursor_factory=RealDictCursor)
+            return conn
+        else:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row  # Enable column access by name
+            return conn
     
     def init_database(self):
         """Initialize database tables"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
+        # Determine ID syntax
+        id_serial = "SERIAL PRIMARY KEY" if self.is_postgres else "INTEGER PRIMARY KEY AUTOINCREMENT"
+        
         # Users table
-        cursor.execute("""
+        cursor.execute(f"""
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id {id_serial},
                 username TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
@@ -45,122 +63,39 @@ class Database:
             )
         """)
 
-        # Migration: Add role if it doesn't exist
-        try:
-            cursor.execute("SELECT role FROM users LIMIT 1")
-        except sqlite3.OperationalError:
-            print("🚀 Migrating Database: Adding 'role' column to users table...")
-            cursor.execute("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'")
-            conn.commit()
+        # Migration Helper
+        def add_column(table, column, type_def):
+            try:
+                cursor.execute(f"SELECT {column} FROM {table} LIMIT 1")
+            except:
+                print(f"🚀 Migrating {table}: Adding '{column}'...")
+                cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {type_def}")
+                conn.commit()
 
-        # Migration: Add last_logout if it doesn't exist
-        try:
-            cursor.execute("SELECT last_logout FROM users LIMIT 1")
-        except sqlite3.OperationalError:
-            print("🚀 Migrating Database: Adding 'last_logout' column to users table...")
-            cursor.execute("ALTER TABLE users ADD COLUMN last_logout TIMESTAMP")
-            conn.commit()
-
-        # Migration: Add last_active if it doesn't exist
-        try:
-            cursor.execute("SELECT last_active FROM users LIMIT 1")
-        except sqlite3.OperationalError:
-            print("🚀 Migrating Database: Adding 'last_active' column to users table...")
-            cursor.execute("ALTER TABLE users ADD COLUMN last_active TIMESTAMP")
-            conn.commit()
-
-        # Migration: Add is_verified if it doesn't exist
-        try:
-            cursor.execute("SELECT is_verified FROM users LIMIT 1")
-        except sqlite3.OperationalError:
-            print("🚀 Migrating Database: Adding 'is_verified' column to users table...")
-            cursor.execute("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0")
-            conn.commit()
+        add_column("users", "role", "TEXT DEFAULT 'user'")
+        add_column("users", "last_logout", "TIMESTAMP")
+        add_column("users", "last_active", "TIMESTAMP")
+        add_column("users", "is_verified", "BOOLEAN DEFAULT '0'")
 
         # Create or Update Default Admin User
-        admin_user = cursor.execute("SELECT * FROM users WHERE username = 'admin'").fetchone()
+        cursor.execute("SELECT * FROM users WHERE username = 'admin'")
+        admin_user = cursor.fetchone()
+        
         if not admin_user:
             import bcrypt
             print("👤 Initializing System: Creating default administrator...")
-            # Default password: admin123
-            salt = bcrypt.gensalt()
-            password_hash = bcrypt.hashpw("admin123".encode('utf-8'), salt).decode('utf-8')
+            password_hash = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             cursor.execute("""
                 INSERT INTO users (username, email, password_hash, full_name, role, is_verified)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, ("admin", "admin@toonify.ai", password_hash, "System Admin", "admin", 1))
+            """, ("admin", "admin@toonify.ai", password_hash, "System Admin", "admin", 1 if not self.is_postgres else True))
             conn.commit()
-        else:
-            # Ensure the 'admin' user always has the 'admin' role
-            if admin_user['role'] != 'admin':
-                print("🛡️ Security Patch: Restoring admin privileges for 'admin' user...")
-                cursor.execute("UPDATE users SET role = 'admin' WHERE username = 'admin'")
-                conn.commit()
         
-        # Verification Codes table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS verification_codes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT NOT NULL,
-                code TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                expires_at TIMESTAMP NOT NULL
-            )
-        """)
-        
-        # Transactions table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS transactions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                transaction_id TEXT UNIQUE NOT NULL,
-                amount REAL NOT NULL,
-                currency TEXT DEFAULT 'usd',
-                status TEXT DEFAULT 'pending',
-                payment_method TEXT,
-                image_filename TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            )
-        """)
-        
-        # User sessions table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS sessions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                session_token TEXT UNIQUE NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                expires_at TIMESTAMP NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            )
-        """)
-        
-        # Image processing history
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS processing_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                original_filename TEXT NOT NULL,
-                processed_filename TEXT NOT NULL,
-                style TEXT NOT NULL,
-                processing_time REAL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            )
-        """)
-        
-        # User logs table for admin monitoring
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS user_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                action TEXT NOT NULL,
-                details TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            )
-        """)
+        # Other Tables
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS verification_codes (id {id_serial}, email TEXT NOT NULL, code TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, expires_at TIMESTAMP NOT NULL)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS transactions (id {id_serial}, user_id INTEGER NOT NULL, transaction_id TEXT UNIQUE NOT NULL, amount REAL NOT NULL, currency TEXT DEFAULT 'usd', status TEXT DEFAULT 'pending', payment_method TEXT, image_filename TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS processing_history (id {id_serial}, user_id INTEGER NOT NULL, original_filename TEXT NOT NULL, processed_filename TEXT NOT NULL, style TEXT NOT NULL, processing_time REAL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS user_logs (id {id_serial}, user_id INTEGER NOT NULL, action TEXT NOT NULL, details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
 
         conn.commit()
         conn.close()

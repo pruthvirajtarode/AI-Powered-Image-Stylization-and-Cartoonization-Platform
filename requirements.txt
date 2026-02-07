@@ -43,4 +43,6 @@ extra-streamlit-components==0.1.60
 # Image Processing Enhancements
 # Production Server
 gunicorn==21.2.0
+# Production Database
+psycopg2-binary==2.9.9
 scipy==1.11.4
