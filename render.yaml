@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: toonify-ai-saas
+    name: toon-ai-engine
     env: docker
     plan: free
     region: oregon 
@@ -13,12 +13,12 @@ services:
       - key: APP_NAME
         value: Toonify
       - fromDatabase:
-          name: toonify-production-db
+          name: toon-cloud-db-final
           property: connectionString
         key: DATABASE_URL
 
 databases:
-  - name: toonify-production-db
-    databaseName: toonify_main_database
+  - name: toon-cloud-db-final
+    databaseName: toonify_production_v1
     plan: free
     region: oregon
