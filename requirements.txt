@@ -7,8 +7,8 @@ opencv-contrib-python==4.9.0.80
 numpy==1.24.3
 Pillow==10.2.0
 
-# Database
-sqlite3
+# Database (Built-in)
+# psycopg2-binary handles cloud DB
 
 # Authentication & Security
 bcrypt==4.1.2
