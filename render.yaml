@@ -13,11 +13,12 @@ services:
       - key: APP_NAME
         value: Toonify
       - fromDatabase:
-          name: toonify-db
+          name: toonify-production-db
           property: connectionString
         key: DATABASE_URL
 
 databases:
-  - name: toonify-db
+  - name: toonify-production-db
+    databaseName: toonify_main_database
     plan: free
     region: oregon
