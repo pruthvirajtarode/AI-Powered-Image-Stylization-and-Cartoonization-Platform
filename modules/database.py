@@ -150,9 +150,9 @@ class Database:
         """Update user's last login timestamp and log it"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             UPDATE users SET last_login = CURRENT_TIMESTAMP
-            WHERE id = ?
+            WHERE id = {self.placeholder}
         """, (user_id,))
         conn.commit()
         conn.close()
@@ -162,9 +162,9 @@ class Database:
         """Update user's last logout timestamp and log it"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             UPDATE users SET last_logout = CURRENT_TIMESTAMP
-            WHERE id = ?
+            WHERE id = {self.placeholder}
         """, (user_id,))
         conn.commit()
         conn.close()
@@ -174,9 +174,9 @@ class Database:
         """Silently update user's last activity heartbeat"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             UPDATE users SET last_active = CURRENT_TIMESTAMP
-            WHERE id = ?
+            WHERE id = {self.placeholder}
         """, (user_id,))
         conn.commit()
         conn.close()
@@ -185,9 +185,9 @@ class Database:
         """Log user activity for admin monitoring"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             INSERT INTO user_logs (user_id, action, details)
-            VALUES (?, ?, ?)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder})
         """, (user_id, action, details))
         conn.commit()
         conn.close()
@@ -205,7 +205,7 @@ class Database:
         
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute(f"UPDATE users SET {set_clause} WHERE id = ?", values)
+        cursor.execute(f"UPDATE users SET {set_clause} WHERE id = {self.placeholder}", values)
         conn.commit()
         conn.close()
         return True
@@ -217,10 +217,10 @@ class Database:
         """Create a new transaction record"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             INSERT INTO transactions 
             (user_id, transaction_id, amount, image_filename, payment_method)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
         """, (user_id, transaction_id, amount, image_filename, payment_method))
         conn.commit()
         trans_id = cursor.lastrowid
@@ -231,9 +231,9 @@ class Database:
         """Update transaction status"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            UPDATE transactions SET status = ?
-            WHERE transaction_id = ?
+        cursor.execute(f"""
+            UPDATE transactions SET status = {self.placeholder}
+            WHERE transaction_id = {self.placeholder}
         """, (status, transaction_id))
         conn.commit()
         conn.close()
@@ -242,9 +242,9 @@ class Database:
         """Get all transactions for a user"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT * FROM transactions 
-            WHERE user_id = ? 
+            WHERE user_id = {self.placeholder} 
             ORDER BY created_at DESC
         """, (user_id,))
         transactions = [dict(row) for row in cursor.fetchall()]
@@ -255,8 +255,8 @@ class Database:
         """Get transaction by transaction ID"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT * FROM transactions WHERE transaction_id = ?
+        cursor.execute(f"""
+            SELECT * FROM transactions WHERE transaction_id = {self.placeholder}
         """, (transaction_id,))
         transaction = cursor.fetchone()
         conn.close()
@@ -269,10 +269,10 @@ class Database:
         """Add image processing history record"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             INSERT INTO processing_history 
             (user_id, original_filename, processed_filename, style, processing_time)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
         """, (user_id, original_filename, processed_filename, style, processing_time))
         conn.commit()
         history_id = cursor.lastrowid
@@ -283,11 +283,11 @@ class Database:
         """Get user's processing history"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT * FROM processing_history 
-            WHERE user_id = ? 
+            WHERE user_id = {self.placeholder} 
             ORDER BY created_at DESC 
-            LIMIT ?
+            LIMIT {self.placeholder}
         """, (user_id, limit))
         history = [dict(row) for row in cursor.fetchall()]
         conn.close()
@@ -300,18 +300,18 @@ class Database:
         cursor = conn.cursor()
         
         # Total images processed
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT COUNT(*) as total_processed FROM processing_history
-            WHERE user_id = ?
+            WHERE user_id = {self.placeholder}
         """, (user_id,))
         total_processed = cursor.fetchone()['total_processed']
         
         # Total transactions
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT COUNT(*) as total_transactions, 
                    COALESCE(SUM(amount), 0) as total_spent
             FROM transactions
-            WHERE user_id = ? AND status = 'completed'
+            WHERE user_id = {self.placeholder} AND status = 'completed'
         """, (user_id,))
         trans_data = cursor.fetchone()
         
@@ -329,10 +329,10 @@ class Database:
         conn = self.get_connection()
         cursor = conn.cursor()
         # Delete any existing codes for this email
-        cursor.execute("DELETE FROM verification_codes WHERE email = ?", (email,))
-        cursor.execute("""
+        cursor.execute(f"DELETE FROM verification_codes WHERE email = {self.placeholder}", (email,))
+        cursor.execute(f"""
             INSERT INTO verification_codes (email, code, expires_at)
-            VALUES (?, ?, ?)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder})
         """, (email, code, expires_at))
         conn.commit()
         conn.close()
@@ -341,9 +341,9 @@ class Database:
         """Get the latest verification code for an email"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT * FROM verification_codes 
-            WHERE email = ? 
+            WHERE email = {self.placeholder} 
             ORDER BY created_at DESC LIMIT 1
         """, (email,))
         row = cursor.fetchone()
@@ -354,9 +354,9 @@ class Database:
         """Mark a user as verified"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("UPDATE users SET is_verified = 1 WHERE email = ?", (email,))
+        cursor.execute(f"UPDATE users SET is_verified = 1 WHERE email = {self.placeholder}", (email,))
         # Also delete the used code
-        cursor.execute("DELETE FROM verification_codes WHERE email = ?", (email,))
+        cursor.execute(f"DELETE FROM verification_codes WHERE email = {self.placeholder}", (email,))
         conn.commit()
         conn.close()
 
@@ -375,7 +375,8 @@ class Database:
         cursor.execute("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE status = 'completed'")
         total_revenue = cursor.fetchone()['total']
         
-        cursor.execute("SELECT COUNT(*) as total FROM users WHERE last_login >= datetime('now', '-24 hours')")
+        interval_sql = "NOW() - INTERVAL '24 HOURS'" if self.is_postgres else "datetime('now', '-24 hours')"
+        cursor.execute(f"SELECT COUNT(*) as total FROM users WHERE last_login >= {interval_sql}")
         active_today = cursor.fetchone()['total']
         
         conn.close()
@@ -390,12 +391,12 @@ class Database:
         """Get latest user logs for admin"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT l.*, u.username, u.email 
             FROM user_logs l
             JOIN users u ON l.user_id = u.id
             ORDER BY l.created_at DESC
-            LIMIT ?
+            LIMIT {self.placeholder}
         """, (limit,))
         logs = [dict(row) for row in cursor.fetchall()]
         conn.close()
