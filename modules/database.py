@@ -26,6 +26,8 @@ class Database:
         self.db_url = os.getenv("DATABASE_URL")
         self.is_postgres = self.db_url is not None and HAS_POSTGRES
         self.placeholder = "%s" if self.is_postgres else "?"
+        self.bool_true = "TRUE" if self.is_postgres else "1"
+        self.bool_false = "FALSE" if self.is_postgres else "0"
         self.init_database()
     
     def get_connection(self):
@@ -57,8 +59,8 @@ class Database:
                 role TEXT DEFAULT 'user',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP,
-                is_active BOOLEAN DEFAULT 1,
-                is_verified BOOLEAN DEFAULT 0,
+                is_active BOOLEAN DEFAULT {self.bool_true},
+                is_verified BOOLEAN DEFAULT {self.bool_false},
                 last_logout TIMESTAMP,
                 last_active TIMESTAMP
             )
@@ -76,7 +78,7 @@ class Database:
         add_column("users", "role", "TEXT DEFAULT 'user'")
         add_column("users", "last_logout", "TIMESTAMP")
         add_column("users", "last_active", "TIMESTAMP")
-        add_column("users", "is_verified", "BOOLEAN DEFAULT '0'")
+        add_column("users", "is_verified", f"BOOLEAN DEFAULT {self.bool_false}")
 
         # Create or Update Default Admin User
         cursor.execute("SELECT * FROM users WHERE username = 'admin'")
@@ -89,7 +91,7 @@ class Database:
             cursor.execute(f"""
                 INSERT INTO users (username, email, password_hash, full_name, role, is_verified)
                 VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
-            """, ("admin", "admin@toonify.ai", password_hash, "System Admin", "admin", 1 if not self.is_postgres else True))
+            """, ("admin", "admin@toonify.ai", password_hash, "System Admin", "admin", self.bool_true if self.is_postgres else 1))
             conn.commit()
         
         # Other Tables
@@ -354,7 +356,7 @@ class Database:
         """Mark a user as verified"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute(f"UPDATE users SET is_verified = 1 WHERE email = {self.placeholder}", (email,))
+        cursor.execute(f"UPDATE users SET is_verified = {self.bool_true} WHERE email = {self.placeholder}", (email,))
         # Also delete the used code
         cursor.execute(f"DELETE FROM verification_codes WHERE email = {self.placeholder}", (email,))
         conn.commit()
