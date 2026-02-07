@@ -51,10 +51,14 @@ class Database:
         # FRESH START: Drop table if schema is broken (Only works if no critical data yet)
         if self.is_postgres:
             try:
+                print("♻️ ATTEMPTING TO DROP TABLE 'users'...")
                 # Check if we need to fix the boolean column issue by forcing a recreation
                 cursor.execute("DROP TABLE IF EXISTS users CASCADE")
-            except:
-                pass
+                conn.commit() # Commit DROP immediately!
+                print("✅ TABLE 'users' DROPPED.")
+            except Exception as e:
+                print(f"❌ DROP TABLE FAILED: {e}")
+                conn.rollback()
 
         # Users table
         cursor.execute(f"""
