@@ -74,6 +74,31 @@ def privacy_policy():
 def terms_of_service():
     return render_template('terms_of_service.html')
 
+@app.route('/dashboard')
+def dashboard():
+    if 'user' not in session:
+        return redirect('/')
+    return render_template('dashboard.html')
+
+@app.route('/gallery')
+def gallery():
+    return render_template('gallery.html')
+
+@app.route('/api/user/history')
+def get_user_performance():
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    user_id = session['user']['id']
+    history = db.get_user_history(user_id, limit=20)
+    stats = db.get_user_stats(user_id)
+    
+    return jsonify({
+        "success": True, 
+        "history": history,
+        "stats": stats
+    })
+
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.json
