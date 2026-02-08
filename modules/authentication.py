@@ -6,7 +6,6 @@ import re
 from typing import Optional, Tuple
 from datetime import datetime, timedelta
 import random
-import streamlit as st
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
