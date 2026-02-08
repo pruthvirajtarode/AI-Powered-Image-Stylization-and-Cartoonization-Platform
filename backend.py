@@ -84,6 +84,18 @@ def dashboard():
 def gallery():
     return render_template('gallery.html')
 
+@app.route('/instagram')
+def instagram():
+    return render_template('instagram.html')
+
+@app.route('/twitter')
+def twitter():
+    return render_template('twitter.html')
+
+@app.route('/discord')
+def discord():
+    return render_template('discord.html')
+
 @app.route('/api/user/history')
 def get_user_performance():
     if 'user' not in session:

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Community | Toonify AI</title>
+    <link rel="stylesheet" href="/static/css/styles.css?v=216">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .social-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)),
+                url('https://images.unsplash.com/photo-1614680376593-902f74cf0d41?auto=format&fit=crop&q=80&w=1920');
+            background-size: cover;
+            background-position: center;
+            filter: blur(10px);
+            transform: scale(1.1);
+        }
+
+        .content-card {
+            background: rgba(49, 51, 56, 0.4);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 60px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+            animation: emerge 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        @keyframes emerge {
+            from {
+                opacity: 0;
+                transform: translateY(60px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .icon-box {
+            width: 100px;
+            height: 100px;
+            background: #5865F2;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 40px rgba(88, 101, 242, 0.5);
+        }
+
+        h1 {
+            font-family: 'Baloo 2';
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #b5bac1;
+            margin-bottom: 40px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-social {
+            padding: 18px 35px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-primary-social {
+            background: #5865F2;
+            color: white;
+        }
+
+        .btn-primary-social:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(88, 101, 242, 0.4);
+            background: #4752c4;
+        }
+
+        .btn-outline-social {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-outline-social:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 30px;
+        }
+
+        .stat-item b {
+            display: block;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-item span {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .community-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        @media (max-width: 480px) {
+            .content-card {
+                padding: 40px 25px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+
+            .stats {
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+
+            .stat-item b {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="social-bg"></div>
+    <div class="content-card">
+        <div class="community-badge">Official Hub</div>
+        <div class="icon-box">
+            <i class="fab fa-discord"></i>
+        </div>
+        <h1>Artist Lounge</h1>
+        <p>Chat with fellow creators, share your neural masterpieces, and get direct help from our engineering team in
+            real-time.</p>
+
+        <div class="btn-group">
+            <a href="https://discord.com" target="_blank" class="btn-social btn-primary-social">
+                Join our Discord Server
+            </a>
+            <a href="/" class="btn-social btn-outline-social">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <b>12K+</b>
+                <span>Members</span>
+            </div>
+            <div class="stat-item">
+                <b>3.5K</b>
+                <span>Online</span>
+            </div>
+            <div class="stat-item">
+                <b>24/7</b>
+                <span>Hype</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
