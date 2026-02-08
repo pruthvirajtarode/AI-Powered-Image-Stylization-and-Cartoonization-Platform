@@ -113,13 +113,19 @@ class Authentication:
         
         # Hash password and create user
         password_hash = Authentication.hash_password(password)
-        user_id = db.create_user(username, email, password_hash, full_name)
+        try:
+            user_id = db.create_user(username, email, password_hash, full_name)
+        except Exception as e:
+            return False, f"Database creation failed: {str(e)}"
         
         if user_id:
             # Generate and store verification code
             code = str(random.randint(100000, 999999))
             expiry = datetime.now() + timedelta(minutes=10)
-            db.store_verification_code(email, code, expiry)
+            try:
+                db.store_verification_code(email, code, expiry)
+            except Exception as e:
+                return False, f"Verification storage failed: {str(e)}"
             
             # Attempt Real Email Delivery
             email_sent = Authentication.send_verification_email(email, code)
@@ -127,11 +133,9 @@ class Authentication:
             if email_sent:
                 return True, f"Security code sent! Please check your inbox (and spam folder) at {email}."
             else:
-                # If email fails, we don't leak the code in production.
-                # We notify the user that the mail server is currently being tuned.
                 return False, "Verification system is temporarily offline. Please try again in a few minutes or contact support."
         else:
-            return False, "Registration failed. Database error."
+            return False, "Registration failed: The database account could not be initialized. Please check Render logs."
 
     @staticmethod
     def send_verification_email(receiver_email: str, code: str) -> bool:

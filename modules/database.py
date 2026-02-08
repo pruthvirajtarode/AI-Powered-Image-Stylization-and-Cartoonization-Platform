@@ -31,13 +31,30 @@ class Database:
         self.init_database()
     
     def get_connection(self):
-        """Get database connection (PostgreSQL or SQLite)"""
+        """Get database connection (PostgreSQL or SQLite) with production safety"""
         if self.is_postgres:
-            conn = psycopg2.connect(self.db_url, cursor_factory=RealDictCursor)
-            return conn
+            # Render/Postgres URL fix: Ensure postgresql:// prefix
+            url = self.db_url
+            if url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql://", 1)
+            
+            try:
+                # Attempt standard connection with SSL for production
+                if "?" in url:
+                    ssl_url = f"{url}&sslmode=require" if "sslmode" not in url else url
+                else:
+                    ssl_url = f"{url}?sslmode=require"
+                
+                conn = psycopg2.connect(ssl_url, cursor_factory=RealDictCursor)
+                return conn
+            except Exception as e:
+                print(f"⚠️ Initial Postgres connection failed: {e}")
+                # Fallback to original URL if SSL tweak fails
+                conn = psycopg2.connect(url, cursor_factory=RealDictCursor)
+                return conn
         else:
             conn = sqlite3.connect(self.db_path)
-            conn.row_factory = sqlite3.Row  # Enable column access by name
+            conn.row_factory = sqlite3.Row
             return conn
     
     def init_database(self):
@@ -48,33 +65,24 @@ class Database:
         # Determine ID syntax
         id_serial = "SERIAL PRIMARY KEY" if self.is_postgres else "INTEGER PRIMARY KEY AUTOINCREMENT"
         
-        # FRESH START: Drop table if schema is broken (Only works if no critical data yet)
-        if self.is_postgres:
-            try:
-                print("♻️ ATTEMPTING TO DROP TABLE 'users'...")
-                # Check if we need to fix the boolean column issue by forcing a recreation
-                cursor.execute("DROP TABLE IF EXISTS users CASCADE")
-                conn.commit() # Commit DROP immediately!
-                print("✅ TABLE 'users' DROPPED.")
-            except Exception as e:
-                print(f"❌ DROP TABLE FAILED: {e}")
-                conn.rollback()
+        # Tables will be created if they don't exist below.
+        # Removed DROP TABLE logic to prevent production data loss.
 
         # Users table
         cursor.execute(f"""
             CREATE TABLE IF NOT EXISTS users (
                 id {id_serial},
-                username TEXT UNIQUE NOT NULL,
-                email TEXT UNIQUE NOT NULL,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                email VARCHAR(100) UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
-                full_name TEXT,
-                role TEXT DEFAULT 'user',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_login TIMESTAMP,
+                full_name VARCHAR(100),
+                role VARCHAR(20) DEFAULT 'user',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP WITH TIME ZONE,
                 is_active BOOLEAN DEFAULT {self.bool_true},
                 is_verified BOOLEAN DEFAULT {self.bool_false},
-                last_logout TIMESTAMP,
-                last_active TIMESTAMP
+                last_logout TIMESTAMP WITH TIME ZONE,
+                last_active TIMESTAMP WITH TIME ZONE
             )
         """)
 
@@ -82,35 +90,42 @@ class Database:
         def add_column(table, column, type_def):
             try:
                 cursor.execute(f"SELECT {column} FROM {table} LIMIT 1")
-            except:
+            except Exception:
+                # Need a rollback if the select failed in Postgres
+                if self.is_postgres:
+                    conn.rollback()
                 print(f"🚀 Migrating {table}: Adding '{column}'...")
                 cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {type_def}")
                 conn.commit()
 
-        add_column("users", "role", "TEXT DEFAULT 'user'")
-        add_column("users", "last_logout", "TIMESTAMP")
-        add_column("users", "last_active", "TIMESTAMP")
+        add_column("users", "role", "VARCHAR(20) DEFAULT 'user'")
+        add_column("users", "last_logout", "TIMESTAMP WITH TIME ZONE")
+        add_column("users", "last_active", "TIMESTAMP WITH TIME ZONE")
         add_column("users", "is_verified", f"BOOLEAN DEFAULT {self.bool_false}")
 
-        # Create or Update Default Admin User
-        cursor.execute("SELECT * FROM users WHERE username = 'admin'")
-        admin_user = cursor.fetchone()
+        # Create Default Admin User
+        try:
+            cursor.execute("SELECT id FROM users WHERE username = 'admin'")
+            admin_user = cursor.fetchone()
+            
+            if not admin_user:
+                import bcrypt
+                print("👤 Initializing System: Creating default administrator...")
+                pw = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                cursor.execute(f"""
+                    INSERT INTO users (username, email, password_hash, full_name, role, is_verified)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, ("admin", "admin@toonify.ai", pw, "System Admin", "admin", True if self.is_postgres else 1))
+                conn.commit()
+        except Exception as e:
+            print(f"⚠️ Admin creation skipped or failed: {e}")
+            if self.is_postgres: conn.rollback()
         
-        if not admin_user:
-            import bcrypt
-            print("👤 Initializing System: Creating default administrator...")
-            password_hash = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            cursor.execute(f"""
-                INSERT INTO users (username, email, password_hash, full_name, role, is_verified)
-                VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
-            """, ("admin", "admin@toonify.ai", password_hash, "System Admin", "admin", self.bool_true if self.is_postgres else 1))
-            conn.commit()
-        
-        # Other Tables
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS verification_codes (id {id_serial}, email TEXT NOT NULL, code TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, expires_at TIMESTAMP NOT NULL)")
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS transactions (id {id_serial}, user_id INTEGER NOT NULL, transaction_id TEXT UNIQUE NOT NULL, amount REAL NOT NULL, currency TEXT DEFAULT 'usd', status TEXT DEFAULT 'pending', payment_method TEXT, image_filename TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS processing_history (id {id_serial}, user_id INTEGER NOT NULL, original_filename TEXT NOT NULL, processed_filename TEXT NOT NULL, style TEXT NOT NULL, processing_time REAL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS user_logs (id {id_serial}, user_id INTEGER NOT NULL, action TEXT NOT NULL, details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+        # Other Tables with correct Postgres types
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS verification_codes (id {id_serial}, email VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, expires_at TIMESTAMP WITH TIME ZONE NOT NULL)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS transactions (id {id_serial}, user_id INTEGER NOT NULL, transaction_id VARCHAR(100) UNIQUE NOT NULL, amount DOUBLE PRECISION NOT NULL, currency VARCHAR(10) DEFAULT 'usd', status VARCHAR(30) DEFAULT 'pending', payment_method VARCHAR(50), image_filename TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS processing_history (id {id_serial}, user_id INTEGER NOT NULL, original_filename TEXT NOT NULL, processed_filename TEXT NOT NULL, style VARCHAR(50) NOT NULL, processing_time DOUBLE PRECISION, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS user_logs (id {id_serial}, user_id INTEGER NOT NULL, action VARCHAR(50) NOT NULL, details TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)")
 
         conn.commit()
         conn.close()
@@ -119,19 +134,37 @@ class Database:
     def create_user(self, username: str, email: str, password_hash: str, 
                    full_name: str = None) -> Optional[int]:
         """Create a new user"""
+        conn = None
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
-            cursor.execute(f"""
-                INSERT INTO users (username, email, password_hash, full_name)
-                VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
-            """, (username, email, password_hash, full_name))
+            
+            if self.is_postgres:
+                # PostgreSQL requires RETURNING id
+                cursor.execute(f"""
+                    INSERT INTO users (username, email, password_hash, full_name)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id
+                """, (username, email, password_hash, full_name))
+                user_id = cursor.fetchone()['id']
+            else:
+                # SQLite uses lastrowid
+                cursor.execute(f"""
+                    INSERT INTO users (username, email, password_hash, full_name)
+                    VALUES (?, ?, ?, ?)
+                """, (username, email, password_hash, full_name))
+                user_id = cursor.lastrowid
+                
             conn.commit()
-            user_id = cursor.lastrowid
-            conn.close()
             return user_id
-        except sqlite3.IntegrityError:
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            print(f"DATABASE ERROR during create_user: {str(e)}")
             return None
+        finally:
+            if conn:
+                conn.close()
     
     def get_user_by_username(self, username: str) -> Optional[Dict]:
         """Get user by username"""

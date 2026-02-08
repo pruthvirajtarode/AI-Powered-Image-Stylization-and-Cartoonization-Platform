@@ -141,10 +141,21 @@ def verify_google_token():
                 password_hash="GOOGLE_AUTH_EXTERNAL",
                 full_name=user_name
             )
+            
+            if not user_id:
+                return jsonify({"success": False, "message": "Failed to create your account in our database. Please contact support."})
+                
             db.verify_user_email(user_email) # Google users are pre-verified
             user = db.get_user_by_id(user_id)
+            
+            if not user:
+                return jsonify({"success": False, "message": "Account created but could not be retrieved. Handshake failed."})
+                
             # Send Welcome Email
-            auth.send_welcome_email(user_email, user_name)
+            try:
+                auth.send_welcome_email(user_email, user_name)
+            except:
+                pass # Don't block login if welcome email fails
         
         # Prepare official user session
         session_user = {
@@ -159,6 +170,9 @@ def verify_google_token():
         return jsonify({"success": True, "user": session_user, "message": "Production Google Login Successful!"})
         
     except Exception as e:
+        import traceback
+        print(f"ERROR: Google Auth Exception: {str(e)}")
+        print(traceback.format_exc())
         return jsonify({"success": False, "message": f"Security Handshake Failed: {str(e)}"})
 
 @app.route('/api/auth/google', methods=['POST'])
