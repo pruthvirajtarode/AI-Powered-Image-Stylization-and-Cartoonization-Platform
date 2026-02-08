@@ -2,7 +2,14 @@
 Payment integration module
 Supports Stripe payment gateway
 """
-import stripe
+# Make stripe optional since we use Razorpay as primary payment method
+try:
+    import stripe
+    STRIPE_AVAILABLE = True
+except ImportError:
+    STRIPE_AVAILABLE = False
+    stripe = None
+
 import uuid
 from typing import Tuple, Optional, Dict
 import config.settings as settings
@@ -19,8 +26,8 @@ class PaymentProcessor:
     
     def __init__(self):
         """Initialize payment processor"""
-        # Initialize Stripe with API key
-        if settings.STRIPE_SECRET_KEY:
+        # Initialize Stripe with API key if available
+        if STRIPE_AVAILABLE and settings.STRIPE_SECRET_KEY:
             stripe.api_key = settings.STRIPE_SECRET_KEY
         self.currency = settings.PAYMENT_CURRENCY
         self.amount = settings.PAYMENT_AMOUNT
@@ -50,6 +57,9 @@ class PaymentProcessor:
                 return True, transaction_id, "Payment successful (Demo Mode)"
             
             # Real Stripe integration
+            if not STRIPE_AVAILABLE:
+                return False, None, "Stripe is not available. Using Razorpay instead."
+            
             intent = stripe.PaymentIntent.create(
                 amount=self.amount,
                 currency=self.currency,
@@ -71,8 +81,9 @@ class PaymentProcessor:
             
             return True, intent.id, "Payment intent created"
             
-        except stripe.error.StripeError as e:
-            return False, None, f"Payment error: {str(e)}"
+        except Exception as e:
+            if STRIPE_AVAILABLE and hasattr(stripe, 'error') and isinstance(e, stripe.error.StripeError):
+                return False, None, f"Payment error: {str(e)}"
         except Exception as e:
             return False, None, f"Unexpected error: {str(e)}"
     
@@ -89,6 +100,9 @@ class PaymentProcessor:
                 return True, "Payment confirmed"
             
             # Real Stripe confirmation
+            if not STRIPE_AVAILABLE:
+                return False, "Stripe is not available"
+            
             intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             
             if intent.status == 'succeeded':
@@ -100,8 +114,9 @@ class PaymentProcessor:
             else:
                 return False, f"Payment status: {intent.status}"
                 
-        except stripe.error.StripeError as e:
-            return False, f"Payment confirmation error: {str(e)}"
+        except Exception as e:
+            if STRIPE_AVAILABLE and hasattr(stripe, 'error') and isinstance(e, stripe.error.StripeError):
+                return False, f"Payment confirmation error: {str(e)}"
         except Exception as e:
             return False, f"Unexpected error: {str(e)}"
     
