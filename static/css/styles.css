@@ -1126,6 +1126,58 @@ h3,
     .style-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
+
+    /* Mobile Auth Modal Fixes */
+    .auth-card {
+        flex-direction: column !important;
+        max-width: 100% !important;
+        width: 95% !important;
+        min-height: auto !important;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .auth-left {
+        display: none !important;
+    }
+
+    .auth-right {
+        padding: 30px 25px !important;
+    }
+
+    .auth-right h1 {
+        font-size: 2rem !important;
+    }
+
+    .auth-right h2 {
+        font-size: 1.8rem !important;
+    }
+
+    .auth-right p {
+        font-size: 0.95rem !important;
+    }
+
+    .auth-right input {
+        padding: 14px !important;
+        font-size: 0.95rem !important;
+    }
+
+    .auth-right button {
+        padding: 14px !important;
+        font-size: 1rem !important;
+    }
+
+    .close-modal {
+        top: 15px !important;
+        right: 15px !important;
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 1.1rem !important;
+    }
+
+    #googleBtnContainer {
+        transform: scale(0.95);
+    }
 }
 
 @media (max-width: 480px) {
@@ -1144,5 +1196,46 @@ h3,
     .btn-auth {
         width: 100%;
         text-align: center;
+    }
+
+    /* Extra small screen auth adjustments */
+    .auth-card {
+        width: 100% !important;
+        border-radius: 16px !important;
+    }
+
+    .auth-right {
+        padding: 25px 20px !important;
+    }
+
+    .auth-right h1 {
+        font-size: 1.8rem !important;
+    }
+
+    .auth-right h2 {
+        font-size: 1.6rem !important;
+    }
+
+    .auth-right input {
+        padding: 12px !important;
+        font-size: 0.9rem !important;
+    }
+
+    .app-container {
+        border-radius: 20px !important;
+    }
+
+    .main-stage {
+        border-radius: 15px !important;
+    }
+
+    .style-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px;
+    }
+
+    .gallery-card {
+        height: 300px;
+        width: 250px;
     }
 }
