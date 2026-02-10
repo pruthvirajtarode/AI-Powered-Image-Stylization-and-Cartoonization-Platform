@@ -16,7 +16,9 @@ import config.settings as settings
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-app = Flask(__name__)
+app = Flask(__name__, 
+            template_folder='../frontend/templates',
+            static_folder='../frontend/static')
 app.secret_key = os.urandom(24)
 CORS(app)
 

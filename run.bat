@@ -8,10 +8,10 @@ REM Activate virtual environment
 call venv\Scripts\activate.bat
 
 REM Update dependencies if needed
-pip install -r requirements.txt
+pip install -r backend\requirements.txt
 
 REM Run Flask app
 echo Launching server at http://localhost:5000
-python backend.py
+python backend\backend.py
 
 pause

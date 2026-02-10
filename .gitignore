@@ -32,8 +32,8 @@ wheels/
 *.sqlite3
 
 # Processed images
-data/processed_images/**
-!data/processed_images/.gitkeep
+backend/data/processed_images/**
+!backend/data/processed_images/.gitkeep
 
 # IDE
 .vscode/

@@ -50,7 +50,8 @@ REM Install dependencies
 echo [4/6] Installing dependencies...
 echo This may take 2-5 minutes...
 pip install --upgrade pip
-pip install -r requirements.txt
+REM Update dependencies if needed
+pip install -r backend\requirements.txt
 if errorlevel 1 (
     echo ERROR: Failed to install dependencies
     pause
@@ -61,7 +62,7 @@ echo.
 
 REM Initialize database
 echo [5/6] Initializing database...
-python scripts\init_db.py
+python backend\scripts\init_db.py
 if errorlevel 1 (
     echo ERROR: Failed to initialize database
     pause
@@ -72,13 +73,13 @@ echo.
 REM Run tests
 echo [6/6] Running tests...
 echo Testing authentication module...
-python tests\test_auth.py
+python backend\tests\test_auth.py
 echo.
 echo Testing image processing module...
-python tests\test_processing.py
+python backend\tests\test_processing.py
 echo.
 echo Testing payment module...
-python tests\test_payment.py
+python backend\tests\test_payment.py
 echo.
 
 echo ========================================
@@ -86,8 +87,8 @@ echo    Setup Complete!
 echo ========================================
 echo.
 echo To start the application:
-echo   1. Activate virtual environment: venv\Scripts\activate
-2. Run the app: python backend.py
+  echo   1. Activate virtual environment: venv\Scripts\activate
+  echo   2. Run the app: python backend\backend.py
 echo.
 echo The application will be available at: http://localhost:5000
 echo.
