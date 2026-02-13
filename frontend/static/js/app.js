@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Set WhatsApp Business API link (replace with your actual WhatsApp number)
-        const phoneNumber = '919876543210'; // Replace with your WhatsApp Business number
+        const phoneNumber = '919356992440'; // Your WhatsApp Business number
         const message = encodeURIComponent('Hi! I want to send a photo to Toonify AI for stylization.');
         if (whatsappLink) {
             whatsappLink.href = `https://wa.me/${phoneNumber}?text=${message}`;
