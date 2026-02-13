@@ -654,20 +654,26 @@
                 <i class="fab fa-whatsapp"></i>
             </div>
             
-            <h2 style="margin: 20px 0 10px; color: #1e293b;">Share via WhatsApp</h2>
-            <p style="color: #64748b; margin-bottom: 30px;">Send a photo from WhatsApp to import it to Toonify AI</p>
+            <h2 style="margin: 20px 0 10px; color: #1e293b;">Import from WhatsApp</h2>
+            <p style="color: #64748b; margin-bottom: 30px;">Send or upload a photo from WhatsApp to Toonify AI</p>
 
-            <div style="background: #f8fafc; padding: 25px; border-radius: 16px; border: 2px solid #25d366; margin-bottom: 25px; text-align: left;">
-                <p style="font-size: 0.9rem; color: #475569; margin-bottom: 15px;"><strong>📱 How it works:</strong></p>
-                <ol style="color: #64748b; font-size: 0.95rem; line-height: 1.8; padding-left: 20px;">
-                    <li>Open WhatsApp on your phone</li>
-                    <li>Take or select a photo</li>
-                    <li>Send it to our official Toonify AI account</li>
-                    <li>The image will appear in your dashboard</li>
-                </ol>
+            <!-- WhatsApp File Upload Section -->
+            <div style="background: #f8fafc; padding: 25px; border-radius: 16px; border: 2px dashed #25d366; margin-bottom: 20px; text-align: center; cursor: pointer;" onclick="document.getElementById('whatsappFileInput').click();">
+                <input type="file" id="whatsappFileInput" accept="image/*" style="display: none;">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #25d366; margin-bottom: 10px; display: block;"></i>
+                <p style="color: #475569; font-weight: 600; margin-bottom: 5px;">Click here to upload image</p>
+                <p style="color: #94a3b8; font-size: 0.85rem;">or drag and drop from WhatsApp</p>
             </div>
 
-            <a id="whatsappLink" href="#" target="_blank" class="btn-convert" style="display: block; width: 100%; padding: 16px; border-radius: 12px; text-decoration: none; margin-bottom: 12px;">
+            <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; text-align: left;">
+                <p style="font-size: 0.9rem; color: #475569; margin-bottom: 12px;"><strong>📱 Two ways to use:</strong></p>
+                <div style="color: #64748b; font-size: 0.9rem; line-height: 1.6;">
+                    <p style="margin-bottom: 10px;"><strong>Option 1:</strong> Click above to select photo files from your device</p>
+                    <p><strong>Option 2:</strong> Or send photo via WhatsApp</p>
+                </div>
+            </div>
+
+            <a id="whatsappLink" href="#" target="_blank" class="btn-convert" style="display: block; width: 100%; padding: 16px; border-radius: 12px; text-decoration: none; margin-bottom: 12px; background: #25d366;">
                 <i class="fab fa-whatsapp"></i> Open WhatsApp
             </a>
 

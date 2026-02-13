@@ -119,28 +119,54 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        cameraModal.style.display = 'flex';
-        startCamera();
+        if (cameraModal) {
+            cameraModal.style.display = 'flex';
+            setTimeout(startCamera, 300); // Give modal time to render
+        }
     };
 
     window.closeCameraModal = () => {
-        cameraModal.style.display = 'none';
+        if (cameraModal) {
+            cameraModal.style.display = 'none';
+        }
         stopCamera();
     };
 
     async function startCamera() {
         try {
-            cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: facingMode },
+            // Stop any existing stream first
+            stopCamera();
+            
+            const constraints = {
+                video: { 
+                    facingMode: facingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
                 audio: false
-            });
-            cameraVideo.srcObject = cameraStream;
-            cameraVideo.style.display = 'block';
-            document.getElementById('cameraPermissionDenied').style.display = 'none';
+            };
+            
+            cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+            if (cameraVideo) {
+                cameraVideo.srcObject = cameraStream;
+                cameraVideo.style.display = 'block';
+                cameraVideo.play(); // Ensure video plays
+            }
+            const permissionDenied = document.getElementById('cameraPermissionDenied');
+            if (permissionDenied) {
+                permissionDenied.style.display = 'none';
+            }
+            console.log('✅ Camera started successfully');
         } catch (error) {
-            console.error('Camera access denied:', error);
-            document.getElementById('cameraPermissionDenied').style.display = 'flex';
-            cameraVideo.style.display = 'none';
+            console.error('❌ Camera access denied:', error);
+            const permissionDenied = document.getElementById('cameraPermissionDenied');
+            if (permissionDenied) {
+                permissionDenied.style.display = 'flex';
+            }
+            if (cameraVideo) {
+                cameraVideo.style.display = 'none';
+            }
+            alert('Camera access denied. Please enable camera permissions in your browser settings.');
         }
     }
 
@@ -157,33 +183,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (captureCameraBtn) {
         captureCameraBtn.onclick = () => {
-            const context = cameraCanvas.getContext('2d');
-            cameraCanvas.width = cameraVideo.videoWidth;
-            cameraCanvas.height = cameraVideo.videoHeight;
-            
-            // Flip the canvas if using front camera for more natural appearance
-            if (facingMode === 'user') {
-                context.scale(-1, 1);
-                context.drawImage(cameraVideo, -cameraCanvas.width, 0);
-            } else {
-                context.drawImage(cameraVideo, 0, 0);
+            if (!cameraVideo || !cameraCanvas) {
+                alert('Camera not initialized');
+                return;
             }
             
-            cameraCanvas.toBlob((blob) => {
-                selectedFile = blob;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    uploadPreview.src = e.target.result;
-                    uploadPreview.style.display = 'block';
-                    uploadText.style.display = 'none';
-                    processBtn.disabled = false;
-                };
-                reader.readAsDataURL(blob);
+            try {
+                const context = cameraCanvas.getContext('2d');
+                cameraCanvas.width = cameraVideo.videoWidth;
+                cameraCanvas.height = cameraVideo.videoHeight;
                 
-                // Close modal after capture
-                closeCameraModal();
-                alert('📸 Photo captured! Ready to transform.');
-            }, 'image/jpeg', 0.95);
+                if (cameraCanvas.width === 0 || cameraCanvas.height === 0) {
+                    alert('Camera stream not ready. Please try again.');
+                    return;
+                }
+                
+                // Flip the canvas if using front camera for more natural appearance
+                if (facingMode === 'user') {
+                    context.scale(-1, 1);
+                    context.drawImage(cameraVideo, -cameraCanvas.width, 0);
+                } else {
+                    context.drawImage(cameraVideo, 0, 0);
+                }
+                
+                cameraCanvas.toBlob((blob) => {
+                    if (!blob) {
+                        alert('Failed to capture image');
+                        return;
+                    }
+                    selectedFile = blob;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        uploadPreview.src = e.target.result;
+                        uploadPreview.style.display = 'block';
+                        uploadText.style.display = 'none';
+                        processBtn.disabled = false;
+                    };
+                    reader.readAsDataURL(blob);
+                    
+                    // Close modal after capture
+                    closeCameraModal();
+                    alert('📸 Photo captured! Ready to transform.');
+                }, 'image/jpeg', 0.95);
+            } catch (error) {
+                console.error('Error capturing image:', error);
+                alert('Failed to capture image. Please try again.');
+            }
         };
     }
 
@@ -191,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         switchCameraBtn.onclick = () => {
             facingMode = facingMode === 'user' ? 'environment' : 'user';
             stopCamera();
-            startCamera();
+            setTimeout(startCamera, 200);
         };
     }
 
@@ -199,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const whatsappBtn = document.getElementById('whatsappBtn');
     const whatsappModal = document.getElementById('whatsappModal');
     const whatsappLink = document.getElementById('whatsappLink');
+    const whatsappFileInput = document.getElementById('whatsappFileInput');
 
     window.openWhatsappModal = () => {
         const user = JSON.parse(localStorage.getItem('toonify_user'));
@@ -207,20 +253,90 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        whatsappModal.style.display = 'flex';
+        if (whatsappModal) {
+            whatsappModal.style.display = 'flex';
+        }
         
         // Set WhatsApp Business API link (replace with your actual WhatsApp number)
         const phoneNumber = '919876543210'; // Replace with your WhatsApp Business number
         const message = encodeURIComponent('Hi! I want to send a photo to Toonify AI for stylization.');
-        whatsappLink.href = `https://wa.me/${phoneNumber}?text=${message}`;
+        if (whatsappLink) {
+            whatsappLink.href = `https://wa.me/${phoneNumber}?text=${message}`;
+        }
     };
 
     window.closeWhatsappModal = () => {
-        whatsappModal.style.display = 'none';
+        if (whatsappModal) {
+            whatsappModal.style.display = 'none';
+        }
     };
+
+    // Handle WhatsApp file upload
+    if (whatsappFileInput) {
+        whatsappFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    alert('❌ Please select a valid image file');
+                    return;
+                }
+                
+                // Validate file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('❌ File size exceeds 10MB limit');
+                    return;
+                }
+                
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    uploadPreview.src = event.target.result;
+                    uploadPreview.style.display = 'block';
+                    uploadText.style.display = 'none';
+                    processBtn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+                
+                closeWhatsappModal();
+                alert('✅ Image imported from WhatsApp! Ready to transform.');
+            }
+        });
+    }
 
     if (whatsappBtn) {
         whatsappBtn.onclick = openWhatsappModal;
+    }
+
+    // WhatsApp drag-and-drop functionality
+    const whatsappUploadArea = document.querySelector('[onclick*="whatsappFileInput"]');
+    if (whatsappUploadArea) {
+        whatsappUploadArea.ondragover = (e) => {
+            e.preventDefault();
+            whatsappUploadArea.style.borderColor = '#25d366';
+            whatsappUploadArea.style.background = 'rgba(37, 211, 102, 0.05)';
+        };
+        whatsappUploadArea.ondragleave = () => {
+            whatsappUploadArea.style.borderColor = '#25d366';
+            whatsappUploadArea.style.background = '#f8fafc';
+        };
+        whatsappUploadArea.ondrop = (e) => {
+            e.preventDefault();
+            whatsappUploadArea.style.borderColor = '#25d366';
+            whatsappUploadArea.style.background = '#f8fafc';
+            
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (file.type.startsWith('image/')) {
+                    whatsappFileInput.files = e.dataTransfer.files;
+                    const event = new Event('change', { bubbles: true });
+                    whatsappFileInput.dispatchEvent(event);
+                } else {
+                    alert('❌ Please drop a valid image file');
+                }
+            }
+        };
     }
 
     // AI SaaS Processing Logic
