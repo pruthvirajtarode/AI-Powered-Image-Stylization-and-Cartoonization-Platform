@@ -730,10 +730,58 @@
     </div>
     </div>
 
+    <!-- Floating Go to Top Button -->
+    <button id="goToTopBtn" onclick="scrollToTop()" 
+        style="position: fixed; bottom: 30px; right: 30px; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 1.3rem; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(255, 100, 60, 0.3); transition: 0.3s; z-index: 999;"
+        title="Go to Top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="/static/js/app.js"></script>
-</body>
 
-</html>
+    <script>
+        // Go to Top Button Functionality
+        const goToTopBtn = document.getElementById('goToTopBtn');
+
+        // Show/Hide button based on scroll position
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                // Show button when scrolled down more than 300px
+                goToTopBtn.style.display = 'flex';
+            } else {
+                // Hide button when near top
+                goToTopBtn.style.display = 'none';
+            }
+        });
+
+        // Smooth scroll to top
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Add hover effects
+        goToTopBtn.addEventListener('mouseover', function() {
+            this.style.transform = 'scale(1.15)';
+            this.style.boxShadow = '0 8px 30px rgba(255, 100, 60, 0.4)';
+        });
+
+        goToTopBtn.addEventListener('mouseout', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = '0 5px 20px rgba(255, 100, 60, 0.3)';
+        });
+
+        // Click animation
+        goToTopBtn.addEventListener('click', function() {
+            this.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 100);
+        });
+    </script>
+</body>
 
 </html>
