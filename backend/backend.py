@@ -10,6 +10,7 @@ from modules.image_processing import image_processor
 from modules.authentication import auth
 from modules.payment import payment_processor
 from modules.database import db
+from modules.whatsapp import whatsapp_processor
 from utils.helpers import create_directories, get_temp_filepath
 from utils.validators import sanitize_filename
 import config.settings as settings
@@ -351,6 +352,136 @@ def admin_transactions():
 def get_processed_image(filename):
     return send_from_directory('data/processed_images', filename)
 
-if __name__ == '__main__':
+# --- WHATSAPP WEBHOOK ROUTES ---
+@app.route('/api/whatsapp/webhook', methods=['GET'])
+def whatsapp_verify_webhook():
+    """
+    Webhook verification endpoint for WhatsApp Business API
+    Called by WhatsApp to verify webhook authenticity
+    """
+    verify_token = request.args.get('hub.verify_token')
+    challenge = request.args.get('hub.challenge')
+    
+    result = whatsapp_processor.verify_webhook(verify_token, challenge)
+    if result:
+        return result
+    
+    return jsonify({"error": "Webhook verification failed"}), 403
+
+
+@app.route('/api/whatsapp/webhook', methods=['POST'])
+def whatsapp_handle_webhook():
+    """
+    Webhook endpoint for receiving WhatsApp messages
+    Processes incoming media (images) for stylization
+    """
+    try:
+        body = request.get_json()
+        
+        # Check if this is a message event
+        if body.get('object') == 'whatsapp_business_account':
+            changes = body.get('entry', [{}])[0].get('changes', [{}])[0]
+            
+            # Check for message changes
+            if changes.get('field') == 'messages':
+                messages = changes.get('value', {}).get('messages', [])
+                
+                for message in messages:
+                    # Only process image messages for now
+                    if message.get('type') == 'image':
+                        # Handle the message asynchronously
+                        process_whatsapp_image(message)
+                    
+                    elif message.get('type') == 'text':
+                        # Handle text message
+                        process_whatsapp_text(message)
+        
+        # Always return 200 OK to WhatsApp
+        return jsonify({"success": True}), 200
+    
+    except Exception as e:
+        import traceback
+        print(f"ERROR: WhatsApp webhook error: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+def process_whatsapp_image(message_data):
+    """
+    Process incoming WhatsApp image for stylization
+    
+    Args:
+        message_data: Message data from WhatsApp webhook
+    """
+    try:
+        # Parse incoming message
+        result = whatsapp_processor.handle_incoming_message(message_data)
+        
+        if not result.get('success'):
+            print(f"Failed to handle WhatsApp message: {result.get('error')}")
+            return
+        
+        if result.get('type') != 'image':
+            return
+        
+        # Get image path
+        local_path = result.get('local_path')
+        sender_phone = result.get('sender_phone')
+        message_id = result.get('message_id')
+        
+        # Read and process image
+        try:
+            img = cv2.imread(local_path)
+            if img is None:
+                whatsapp_processor.send_message(sender_phone, 
+                    "❌ Invalid image format. Please try again.")
+                return
+            
+            # Default style is cartoon
+            style = 'cartoon'
+            
+            # Process image
+            processed_img, proc_time = image_processor.process_image(img, style)
+            
+            # Save processed image
+            filename = f"whatsapp_processed_{uuid.uuid4().hex}.jpg"
+            temp_path = Path("data/processed_images") / filename
+            cv2.imwrite(str(temp_path), processed_img)
+            
+            # Send status update
+            whatsapp_processor.send_message(sender_phone, 
+                f"✨ Processing complete in {proc_time:.2f}s!\n\nSending your stylized image...")
+            
+            # Send stylized image back
+            whatsapp_processor.send_stylized_image(sender_phone, str(temp_path), "Cartoon")
+            
+            # Log activity if user is authenticated
+            print(f"✅ WhatsApp image processed successfully from {sender_phone}")
+        
+        except Exception as e:
+            print(f"Error processing WhatsApp image: {str(e)}")
+            whatsapp_processor.send_message(sender_phone, 
+                "❌ Sorry! Error processing your image. Please try again.")
+    
+    except Exception as e:
+        print(f"Error in process_whatsapp_image: {str(e)}")
+
+
+def process_whatsapp_text(message_data):
+    """
+    Process incoming WhatsApp text message
+    
+    Args:
+        message_data: Message data from WhatsApp webhook
+    """
+    try:
+        result = whatsapp_processor.handle_incoming_message(message_data)
+        if not result.get('success'):
+            print(f"Failed to handle text message: {result.get('error')}")
+    
+    except Exception as e:
+        print(f"Error in process_whatsapp_text: {str(e)}")
+
+
     # Flask in Debug mode with watchdog optimization
     app.run(debug=True, host='0.0.0.0', port=5000)
