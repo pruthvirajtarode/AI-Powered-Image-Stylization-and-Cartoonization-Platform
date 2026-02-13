@@ -224,6 +224,16 @@
                         </div>
                         <img id="uploadPreview" class="upload-preview-small" src="" alt="">
                     </div>
+                    
+                    <!-- Camera & WhatsApp Options -->
+                    <div style="display: flex; gap: 10px; margin-top: 12px;">
+                        <button id="cameraBtn" class="btn-icon-media" title="Live Camera Capture" onclick="openCameraModal()">
+                            <i class="fas fa-camera"></i> Camera
+                        </button>
+                        <button id="whatsappBtn" class="btn-icon-media" title="Import from WhatsApp" onclick="openWhatsappModal()">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                    </div>
                 </div>
 
                 <button id="processBtn" class="btn-convert" disabled>
@@ -598,6 +608,74 @@
         </div>
     </div>
 
+    <!-- Camera Capture Modal -->
+    <div id="cameraModal" class="loader-overlay" style="display: none; z-index: 9999;">
+        <div class="app-container" style="max-width: 600px; min-height: auto; grid-template-columns: 1fr; padding: 20px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 1.8rem; color: #1e293b;"><i class="fas fa-camera"></i> Live Camera Capture</h2>
+                <button onclick="closeCameraModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div style="position: relative; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 20px;">
+                <video id="cameraStream" style="width: 100%; display: block; background: #000;"></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+                <div id="cameraPermissionDenied" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-size: 1.1rem;">
+                    <i class="fas fa-video-slash" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <p>Camera permission denied or not available</p>
+                    <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 10px;">Please enable camera access and try again</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <button id="captureCameraBtn" class="btn-convert" style="border-radius: 12px; padding: 16px;">
+                    <i class="fas fa-camera"></i> Capture Photo
+                </button>
+                <button id="switchCameraBtn" class="btn-auth" style="border-radius: 12px; padding: 16px; background: var(--slate); color: white;">
+                    <i class="fas fa-repeat"></i> Switch Camera
+                </button>
+            </div>
+
+            <button onclick="closeCameraModal()" class="btn-auth" style="width: 100%; border-radius: 12px; padding: 14px; background: transparent; color: var(--slate); border: 1px solid #e2e8f0;">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- WhatsApp Share Modal -->
+    <div id="whatsappModal" class="loader-overlay" style="display: none; z-index: 9999;">
+        <div class="app-container" style="max-width: 500px; min-height: auto; grid-template-columns: 1fr; padding: 40px; text-align: center; position: relative;">
+            <button onclick="closeWhatsappModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div style="font-size: 4rem; color: #25d366; margin-bottom: 20px;">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            
+            <h2 style="margin: 20px 0 10px; color: #1e293b;">Share via WhatsApp</h2>
+            <p style="color: #64748b; margin-bottom: 30px;">Send a photo from WhatsApp to import it to Toonify AI</p>
+
+            <div style="background: #f8fafc; padding: 25px; border-radius: 16px; border: 2px solid #25d366; margin-bottom: 25px; text-align: left;">
+                <p style="font-size: 0.9rem; color: #475569; margin-bottom: 15px;"><strong>📱 How it works:</strong></p>
+                <ol style="color: #64748b; font-size: 0.95rem; line-height: 1.8; padding-left: 20px;">
+                    <li>Open WhatsApp on your phone</li>
+                    <li>Take or select a photo</li>
+                    <li>Send it to our official Toonify AI account</li>
+                    <li>The image will appear in your dashboard</li>
+                </ol>
+            </div>
+
+            <a id="whatsappLink" href="#" target="_blank" class="btn-convert" style="display: block; width: 100%; padding: 16px; border-radius: 12px; text-decoration: none; margin-bottom: 12px;">
+                <i class="fab fa-whatsapp"></i> Open WhatsApp
+            </a>
+
+            <button onclick="closeWhatsappModal()" class="btn-auth" style="width: 100%; border-radius: 12px; padding: 14px; background: transparent; color: var(--slate); border: 1px solid #e2e8f0;">
+                Close
+            </button>
+        </div>
+    </div>
 
     <!-- Home Bar -->
     <div

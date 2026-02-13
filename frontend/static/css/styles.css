@@ -568,6 +568,36 @@ h3,
     cursor: not-allowed;
 }
 
+/* Camera & WhatsApp Icon Buttons */
+.btn-icon-media {
+    flex: 1;
+    background: var(--light);
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Inter';
+}
+
+.btn-icon-media:hover {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 126, 95, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-icon-media:active {
+    transform: translateY(0);
+}
+
 .app-canvas {
     padding: 3rem;
     display: flex;

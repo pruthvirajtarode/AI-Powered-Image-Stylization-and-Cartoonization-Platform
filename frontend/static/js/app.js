@@ -101,6 +101,128 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     }
 
+    // --- CAMERA CAPTURE FUNCTIONALITY ---
+    let cameraStream = null;
+    let facingMode = 'user'; // 'user' for front camera, 'environment' for back camera
+    
+    const cameraBtn = document.getElementById('cameraBtn');
+    const cameraModal = document.getElementById('cameraModal');
+    const cameraVideo = document.getElementById('cameraStream');
+    const cameraCanvas = document.getElementById('cameraCanvas');
+    const captureCameraBtn = document.getElementById('captureCameraBtn');
+    const switchCameraBtn = document.getElementById('switchCameraBtn');
+
+    window.openCameraModal = () => {
+        const user = JSON.parse(localStorage.getItem('toonify_user'));
+        if (!user) {
+            openAuth();
+            return;
+        }
+        
+        cameraModal.style.display = 'flex';
+        startCamera();
+    };
+
+    window.closeCameraModal = () => {
+        cameraModal.style.display = 'none';
+        stopCamera();
+    };
+
+    async function startCamera() {
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: facingMode },
+                audio: false
+            });
+            cameraVideo.srcObject = cameraStream;
+            cameraVideo.style.display = 'block';
+            document.getElementById('cameraPermissionDenied').style.display = 'none';
+        } catch (error) {
+            console.error('Camera access denied:', error);
+            document.getElementById('cameraPermissionDenied').style.display = 'flex';
+            cameraVideo.style.display = 'none';
+        }
+    }
+
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+    }
+
+    if (cameraBtn) {
+        cameraBtn.onclick = openCameraModal;
+    }
+
+    if (captureCameraBtn) {
+        captureCameraBtn.onclick = () => {
+            const context = cameraCanvas.getContext('2d');
+            cameraCanvas.width = cameraVideo.videoWidth;
+            cameraCanvas.height = cameraVideo.videoHeight;
+            
+            // Flip the canvas if using front camera for more natural appearance
+            if (facingMode === 'user') {
+                context.scale(-1, 1);
+                context.drawImage(cameraVideo, -cameraCanvas.width, 0);
+            } else {
+                context.drawImage(cameraVideo, 0, 0);
+            }
+            
+            cameraCanvas.toBlob((blob) => {
+                selectedFile = blob;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadPreview.src = e.target.result;
+                    uploadPreview.style.display = 'block';
+                    uploadText.style.display = 'none';
+                    processBtn.disabled = false;
+                };
+                reader.readAsDataURL(blob);
+                
+                // Close modal after capture
+                closeCameraModal();
+                alert('📸 Photo captured! Ready to transform.');
+            }, 'image/jpeg', 0.95);
+        };
+    }
+
+    if (switchCameraBtn) {
+        switchCameraBtn.onclick = () => {
+            facingMode = facingMode === 'user' ? 'environment' : 'user';
+            stopCamera();
+            startCamera();
+        };
+    }
+
+    // --- WHATSAPP INTEGRATION ---
+    const whatsappBtn = document.getElementById('whatsappBtn');
+    const whatsappModal = document.getElementById('whatsappModal');
+    const whatsappLink = document.getElementById('whatsappLink');
+
+    window.openWhatsappModal = () => {
+        const user = JSON.parse(localStorage.getItem('toonify_user'));
+        if (!user) {
+            openAuth();
+            return;
+        }
+        
+        whatsappModal.style.display = 'flex';
+        
+        // Set WhatsApp Business API link (replace with your actual WhatsApp number)
+        const phoneNumber = '919876543210'; // Replace with your WhatsApp Business number
+        const message = encodeURIComponent('Hi! I want to send a photo to Toonify AI for stylization.');
+        whatsappLink.href = `https://wa.me/${phoneNumber}?text=${message}`;
+    };
+
+    window.closeWhatsappModal = () => {
+        whatsappModal.style.display = 'none';
+    };
+
+    if (whatsappBtn) {
+        whatsappBtn.onclick = openWhatsappModal;
+    }
+
     // AI SaaS Processing Logic
     processBtn.onclick = async () => {
         if (!selectedFile) return;
