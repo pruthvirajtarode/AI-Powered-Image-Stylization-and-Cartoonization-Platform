@@ -234,6 +234,71 @@
     <footer class="footer">
         <p style="text-align: center; width: 100%;">© 2026 Toonify Creative Inc. | Professional Neural Stylization</p>
     </footer>
+
+    <script>
+        // Gallery Filter Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterChips = document.querySelectorAll('.filter-chip');
+            const artCards = document.querySelectorAll('.art-card');
+
+            // Map filter names to style tags
+            const filterMap = {
+                'All Styles': null, // show all
+                '3D Pixar': '3D Pixar',
+                'Sketch Art': 'Lead Sketch',
+                'Oil Master': 'Digital Oil',
+                'Anime': 'Anime',
+                'Ghibli': 'Ghibli'
+            };
+
+            // Add click listeners to filter chips
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    // Update active state
+                    filterChips.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Get filter value
+                    const filterText = this.textContent.trim();
+                    const filterStyle = filterMap[filterText];
+
+                    // Filter cards
+                    artCards.forEach(card => {
+                        const styleTag = card.querySelector('.style-tag');
+                        
+                        if (filterStyle === null) {
+                            // Show all
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeIn 0.3s ease-in';
+                        } else if (styleTag && styleTag.textContent.includes(filterStyle)) {
+                            // Show matching cards
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeIn 0.3s ease-in';
+                        } else {
+                            // Hide non-matching cards
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+
+        // Add fade animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 
 </html>
