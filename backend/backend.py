@@ -256,15 +256,6 @@ def download_all_history():
         download_name=f"toonify_gallery_{user_id}.zip"
     )
 
-@app.route('/api/user/transactions')
-def get_user_transactions():
-    if 'user' not in session:
-        return jsonify({"success": False, "message": "Unauthorized"}), 401
-    
-    user_id = session['user']['id']
-    transactions = db.get_user_transactions(user_id)
-    return jsonify({"success": True, "transactions": transactions})
-
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.json
