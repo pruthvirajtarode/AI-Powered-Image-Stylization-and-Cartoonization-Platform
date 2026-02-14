@@ -1314,6 +1314,7 @@ h6 {
         border-bottom: 1px solid var(--border);
     }
 
+    .features-grid,
     .price-grid {
         grid-template-columns: 1fr 1fr;
     }
@@ -1366,10 +1367,11 @@ h6 {
         font-size: 2.8rem;
     }
 
+    .features-grid,
     .price-grid,
     .footer {
         grid-template-columns: 1fr;
-        gap: 3rem;
+        gap: 2.5rem;
     }
 
     .app-sidebar {
@@ -1444,6 +1446,14 @@ h6 {
 
     .hero p {
         font-size: 1.1rem;
+    }
+
+    .hero-stats {
+        display: none;
+    }
+
+    .hero {
+        padding: 3rem 5% 4rem;
     }
 
     .section-title h2 {
