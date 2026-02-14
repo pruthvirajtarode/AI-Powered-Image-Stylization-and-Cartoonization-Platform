@@ -840,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
-            if (!profileBtn.contains(e.target)) {
+            if (profileContainer && !profileContainer.contains(e.target)) {
                 profileDropdown.style.display = 'none';
             }
         });
