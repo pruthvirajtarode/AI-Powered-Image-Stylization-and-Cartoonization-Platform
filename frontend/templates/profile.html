@@ -202,10 +202,45 @@
                     <input type="email" id="email" placeholder="Enter your email" required>
                 </div>
 
+                <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #f1f5f9;">
+                    <h3 style="font-family: 'Baloo 2'; margin-bottom: 20px;"><i class="fas fa-key"></i> Security &
+                        Privacy</h3>
+
+                    <div class="form-group">
+                        <label>Change Password (Leave blank to keep current)</label>
+                        <input type="password" id="newPassword" placeholder="New secure password">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Auto-delete History (Privacy)</label>
+                        <select id="autoDeleteDays"
+                            style="width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; font-family: 'Inter';">
+                            <option value="0">Never (Keep my art forever)</option>
+                            <option value="7">After 7 days</option>
+                            <option value="30">After 30 days</option>
+                            <option value="90">After 90 days</option>
+                        </select>
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 8px;">Images will be permanently
+                            removed from our neural cloud after this period.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #f1f5f9;">
+                    <h3 style="font-family: 'Baloo 2'; color: #ef4444; margin-bottom: 20px;"><i
+                            class="fas fa-triangle-exclamation"></i> Danger Zone</h3>
+                    <button type="button" class="btn-auth"
+                        style="background: transparent; color: #ef4444; border: 1px solid #ef4444; width: 100%;"
+                        onclick="handleClearHistory()">
+                        <i class="fas fa-trash-can"></i> Permanently Delete My Processing History
+                    </button>
+                    <p style="font-size: 0.8rem; color: #64748b; margin-top: 8px;">This will immediately wipe all your
+                        processed images and records. This action is irreversible.</p>
+                </div>
+
                 <div
                     style="border-top: 1px solid #f1f5f9; padding-top: 30px; margin-top: 30px; display: flex; justify-content: flex-end;">
                     <button type="submit" class="btn-auth" style="padding: 15px 35px; border-radius: 14px;">
-                        <i class="fas fa-save" style="margin-right: 8px;"></i> Save Changes
+                        <i class="fas fa-save" style="margin-right: 8px;"></i> Save All Settings
                     </button>
                 </div>
             </form>
@@ -226,6 +261,10 @@
                     document.getElementById('email').value = user.email;
                     document.getElementById('largeAvatar').innerText = (user.full_name || user.username)[0].toUpperCase();
 
+                    if (document.getElementById('autoDeleteDays')) {
+                        document.getElementById('autoDeleteDays').value = user.auto_delete_days || 0;
+                    }
+
                     const roleBadge = document.getElementById('roleBadge');
                     roleBadge.innerText = user.role === 'admin' ? 'Administrator' :
                         user.role === 'pro_member' ? 'Creator Pro' : 'Starter';
@@ -241,17 +280,21 @@
             e.preventDefault();
             const fullname = document.getElementById('fullname').value;
             const email = document.getElementById('email').value;
+            const new_password = document.getElementById('newPassword').value;
+            const auto_delete_days = document.getElementById('autoDeleteDays').value;
 
             try {
                 const response = await fetch('/api/user/profile/update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fullname, email })
+                    body: JSON.stringify({ fullname, email, new_password, auto_delete_days })
                 });
 
                 const data = await response.json();
                 if (data.success) {
-                    alert("✅ Profile updated successfully!");
+                    alert("✅ Profile and settings updated successfully!");
+                    if (new_password) document.getElementById('newPassword').value = '';
+
                     // Update local storage too
                     const localUser = JSON.parse(localStorage.getItem('toonify_user') || '{}');
                     localUser.fullname = fullname;
@@ -263,6 +306,24 @@
                 }
             } catch (err) {
                 alert("❌ Failed to update profile");
+            }
+        }
+
+        async function handleClearHistory() {
+            if (confirm("⚠️ Are you absolutely sure? This will delete ALL your processed images and history records permanently.")) {
+                try {
+                    const response = await fetch('/api/user/history/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({}) // No history_id means delete all
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert("🧹 History cleared successfully!");
+                    }
+                } catch (err) {
+                    alert("❌ Failed to clear history");
+                }
             }
         }
 

@@ -400,6 +400,35 @@ class ImageProcessor:
         processing_time = time.time() - start_time
         
         return processed, processing_time
+
+    def get_image_statistics(self, image: np.ndarray) -> dict:
+        """
+        Calculate image statistics: brightness, contrast, and color distribution.
+        Part of Task 13 requirements.
+        """
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+        # 1. Brightness (Mean)
+        brightness = np.mean(gray)
+        
+        # 2. Contrast (Standard Deviation)
+        contrast = np.std(gray)
+        
+        # 3. Color distribution (Mean of each channel)
+        # BGR channels
+        blue_avg = np.mean(image[:, :, 0])
+        green_avg = np.mean(image[:, :, 1])
+        red_avg = np.mean(image[:, :, 2])
+        
+        return {
+            "brightness": round(float(brightness), 2),
+            "contrast": round(float(contrast), 2),
+            "colors": {
+                "red": round(float(red_avg), 2),
+                "green": round(float(green_avg), 2),
+                "blue": round(float(blue_avg), 2)
+            }
+        }
     
     @staticmethod
     def create_comparison(original: np.ndarray, processed: np.ndarray) -> np.ndarray:

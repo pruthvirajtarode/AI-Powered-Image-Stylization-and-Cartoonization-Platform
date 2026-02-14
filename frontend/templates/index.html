@@ -224,13 +224,15 @@
                         </div>
                         <img id="uploadPreview" class="upload-preview-small" src="" alt="">
                     </div>
-                    
+
                     <!-- Camera & WhatsApp Options -->
                     <div style="display: flex; gap: 10px; margin-top: 12px;">
-                        <button id="cameraBtn" class="btn-icon-media" title="Live Camera Capture" onclick="openCameraModal()">
+                        <button id="cameraBtn" class="btn-icon-media" title="Live Camera Capture"
+                            onclick="openCameraModal()">
                             <i class="fas fa-camera"></i> Camera
                         </button>
-                        <button id="whatsappBtn" class="btn-icon-media" title="Import from WhatsApp" onclick="openWhatsappModal()">
+                        <button id="whatsappBtn" class="btn-icon-media" title="Import from WhatsApp"
+                            onclick="openWhatsappModal()">
                             <i class="fab fa-whatsapp"></i> WhatsApp
                         </button>
                     </div>
@@ -286,13 +288,91 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Task 13: Image Statistics Panel -->
+                    <div id="statsPanel"
+                        style="display:none; margin-top: 2rem; background: #f8fafc; border-radius: 16px; padding: 25px; border: 1px solid #e2e8f0;">
+                        <h4 style="margin-bottom: 20px; font-family: 'Baloo 2'; color: #475569;"><i
+                                class="fas fa-chart-simple"></i> Neural Analysis Statistics</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                            <div id="originalStats">
+                                <h5
+                                    style="color: #64748b; margin-bottom: 12px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                    Source Analysis</h5>
+                                <div class="stat-row"
+                                    style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                                    <span>Brightness:</span> <strong id="origBright">-</strong>
+                                </div>
+                                <div class="stat-row"
+                                    style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                                    <span>Contrast:</span> <strong id="origContrast">-</strong>
+                                </div>
+                                <div style="margin-top: 15px;">
+                                    <div
+                                        style="height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; display: flex;">
+                                        <div id="origR" style="width: 33%; background: #ef4444;"></div>
+                                        <div id="origG" style="width: 33%; background: #22c55e;"></div>
+                                        <div id="origB" style="width: 34%; background: #3b82f6;"></div>
+                                    </div>
+                                    <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 5px; text-align: center;">
+                                        Vibrant Color Distribution</p>
+                                </div>
+                            </div>
+                            <div id="processedStats">
+                                <h5
+                                    style="color: #64748b; margin-bottom: 12px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                    Neural Output</h5>
+                                <div class="stat-row"
+                                    style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                                    <span>Brightness:</span> <strong id="procBright">-</strong>
+                                </div>
+                                <div class="stat-row"
+                                    style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                                    <span>Contrast:</span> <strong id="procContrast">-</strong>
+                                </div>
+                                <div style="margin-top: 15px;">
+                                    <div
+                                        style="height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; display: flex;">
+                                        <div id="procR" style="width: 33%; background: #ef4444;"></div>
+                                        <div id="procG" style="width: 33%; background: #22c55e;"></div>
+                                        <div id="procB" style="width: 34%; background: #3b82f6;"></div>
+                                    </div>
+                                    <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 5px; text-align: center;">
+                                        Neural Color Calibration</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8;">
+                            <span>Processing Time: <strong id="procTimeLabel"
+                                    style="color: var(--primary);">0.00s</strong></span>
+                            <span>Engine: <strong style="color: #64748b;">OpenCV v4.x</strong></span>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="downloadArea" style="display:none; margin-top:2rem;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <select id="downloadFormat"
+                            style="flex: 1; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600; color: #475569;">
+                            <option value="jpg">Standard JPEG (.jpg)</option>
+                            <option value="png">Lossless PNG (.png)</option>
+                            <option value="pdf">Document PDF (.pdf)</option>
+                        </select>
+                        <select id="downloadQuality"
+                            style="flex: 1; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600; color: #475569;">
+                            <option value="95">High Quality (95%)</option>
+                            <option value="100">Pro Master (100%)</option>
+                            <option value="80">Optimized (80%)</option>
+                        </select>
+                    </div>
                     <button class="btn-auth" id="downloadBtn"
                         style="width:100%; border-radius:12px; height:64px; font-size:1.1rem;">
                         <i class="fas fa-download"></i> Save Ultra-HD Export
                     </button>
+                    <p style="font-size: 0.75rem; text-align: center; color: #94a3b8; margin-top: 10px;">
+                        <i class="fas fa-shield-halved"></i> Secure end-to-end encrypted neural export
+                    </p>
                 </div>
             </main>
         </div>
@@ -364,13 +444,16 @@
     </section>
 
     <!-- Quick Navigation Section -->
-    <section style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 80px 5%; text-align: center;">
-        <h2 style="font-family: 'Baloo 2'; font-size: 2.5rem; margin-bottom: 15px; color: #1e293b;">Ready to Transform Your Photos?</h2>
+    <section
+        style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 80px 5%; text-align: center;">
+        <h2 style="font-family: 'Baloo 2'; font-size: 2.5rem; margin-bottom: 15px; color: #1e293b;">Ready to Transform
+            Your Photos?</h2>
         <p style="font-size: 1.1rem; color: #64748b; margin-bottom: 50px;">Choose your next step below</p>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto;">
+
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto;">
             <!-- Get Started Button -->
-            <button onclick="window.location.href='#app'" 
+            <button onclick="window.location.href='#app'"
                 style="padding: 20px 30px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(255, 100, 60, 0.2);"
                 onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 25px rgba(255, 100, 60, 0.3)';"
                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(255, 100, 60, 0.2)';">
@@ -378,7 +461,7 @@
             </button>
 
             <!-- View Gallery Button -->
-            <button onclick="window.location.href='/gallery'" 
+            <button onclick="window.location.href='/gallery'"
                 style="padding: 20px 30px; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);"
                 onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.boxShadow='0 10px 25px rgba(255, 100, 60, 0.15)';"
                 onmouseout="this.style.background='white'; this.style.color='var(--primary)'; this.style.boxShadow='0 5px 15px rgba(0, 0, 0, 0.05)';">
@@ -386,7 +469,7 @@
             </button>
 
             <!-- Explore Styles Button -->
-            <button onclick="window.location.href='/#features'" 
+            <button onclick="window.location.href='/#features'"
                 style="padding: 20px 30px; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);"
                 onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.boxShadow='0 10px 25px rgba(255, 100, 60, 0.15)';"
                 onmouseout="this.style.background='white'; this.style.color='var(--primary)'; this.style.boxShadow='0 5px 15px rgba(0, 0, 0, 0.05)';">
@@ -394,7 +477,7 @@
             </button>
 
             <!-- View Docs Button -->
-            <button onclick="window.location.href='/docs'" 
+            <button onclick="window.location.href='/docs'"
                 style="padding: 20px 30px; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);"
                 onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.boxShadow='0 10px 25px rgba(255, 100, 60, 0.15)';"
                 onmouseout="this.style.background='white'; this.style.color='var(--primary)'; this.style.boxShadow='0 5px 15px rgba(0, 0, 0, 0.05)';">
@@ -650,21 +733,27 @@
 
     <!-- Camera Capture Modal -->
     <div id="cameraModal" class="loader-overlay" style="display: none; z-index: 9999;">
-        <div class="app-container" style="max-width: 600px; min-height: auto; grid-template-columns: 1fr; padding: 20px; position: relative;">
+        <div class="app-container"
+            style="max-width: 600px; min-height: auto; grid-template-columns: 1fr; padding: 20px; position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; font-size: 1.8rem; color: #1e293b;"><i class="fas fa-camera"></i> Live Camera Capture</h2>
-                <button onclick="closeCameraModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">
+                <h2 style="margin: 0; font-size: 1.8rem; color: #1e293b;"><i class="fas fa-camera"></i> Live Camera
+                    Capture</h2>
+                <button onclick="closeCameraModal()"
+                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
-            <div style="position: relative; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 20px;">
+
+            <div
+                style="position: relative; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 20px;">
                 <video id="cameraStream" style="width: 100%; display: block; background: #000;"></video>
                 <canvas id="cameraCanvas" style="display: none;"></canvas>
-                <div id="cameraPermissionDenied" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-size: 1.1rem;">
+                <div id="cameraPermissionDenied"
+                    style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-size: 1.1rem;">
                     <i class="fas fa-video-slash" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;"></i>
                     <p>Camera permission denied or not available</p>
-                    <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 10px;">Please enable camera access and try again</p>
+                    <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 10px;">Please enable camera access and try
+                        again</p>
                 </div>
             </div>
 
@@ -672,12 +761,14 @@
                 <button id="captureCameraBtn" class="btn-convert" style="border-radius: 12px; padding: 16px;">
                     <i class="fas fa-camera"></i> Capture Photo
                 </button>
-                <button id="switchCameraBtn" class="btn-auth" style="border-radius: 12px; padding: 16px; background: var(--slate); color: white;">
+                <button id="switchCameraBtn" class="btn-auth"
+                    style="border-radius: 12px; padding: 16px; background: var(--slate); color: white;">
                     <i class="fas fa-repeat"></i> Switch Camera
                 </button>
             </div>
 
-            <button onclick="closeCameraModal()" class="btn-auth" style="width: 100%; border-radius: 12px; padding: 14px; background: transparent; color: var(--slate); border: 1px solid #e2e8f0;">
+            <button onclick="closeCameraModal()" class="btn-auth"
+                style="width: 100%; border-radius: 12px; padding: 14px; background: transparent; color: var(--slate); border: 1px solid #e2e8f0;">
                 Cancel
             </button>
         </div>
@@ -685,39 +776,48 @@
 
     <!-- WhatsApp Share Modal -->
     <div id="whatsappModal" class="loader-overlay" style="display: none; z-index: 9999;">
-        <div class="app-container" style="max-width: 500px; min-height: auto; grid-template-columns: 1fr; padding: 40px; text-align: center; position: relative;">
-            <button onclick="closeWhatsappModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">
+        <div class="app-container"
+            style="max-width: 500px; min-height: auto; grid-template-columns: 1fr; padding: 40px; text-align: center; position: relative;">
+            <button onclick="closeWhatsappModal()"
+                style="position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">
                 <i class="fas fa-times"></i>
             </button>
-            
+
             <div style="font-size: 4rem; color: #25d366; margin-bottom: 20px;">
                 <i class="fab fa-whatsapp"></i>
             </div>
-            
+
             <h2 style="margin: 20px 0 10px; color: #1e293b;">Import from WhatsApp</h2>
             <p style="color: #64748b; margin-bottom: 30px;">Send or upload a photo from WhatsApp to Toonify AI</p>
 
             <!-- WhatsApp File Upload Section -->
-            <div style="background: #f8fafc; padding: 25px; border-radius: 16px; border: 2px dashed #25d366; margin-bottom: 20px; text-align: center; cursor: pointer;" onclick="document.getElementById('whatsappFileInput').click();">
+            <div style="background: #f8fafc; padding: 25px; border-radius: 16px; border: 2px dashed #25d366; margin-bottom: 20px; text-align: center; cursor: pointer;"
+                onclick="document.getElementById('whatsappFileInput').click();">
                 <input type="file" id="whatsappFileInput" accept="image/*" style="display: none;">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #25d366; margin-bottom: 10px; display: block;"></i>
+                <i class="fas fa-cloud-upload-alt"
+                    style="font-size: 2.5rem; color: #25d366; margin-bottom: 10px; display: block;"></i>
                 <p style="color: #475569; font-weight: 600; margin-bottom: 5px;">Click here to upload image</p>
                 <p style="color: #94a3b8; font-size: 0.85rem;">or drag and drop from WhatsApp</p>
             </div>
 
-            <div style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; text-align: left;">
-                <p style="font-size: 0.9rem; color: #475569; margin-bottom: 12px;"><strong>📱 Two ways to use:</strong></p>
+            <div
+                style="background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 20px; text-align: left;">
+                <p style="font-size: 0.9rem; color: #475569; margin-bottom: 12px;"><strong>📱 Two ways to use:</strong>
+                </p>
                 <div style="color: #64748b; font-size: 0.9rem; line-height: 1.6;">
-                    <p style="margin-bottom: 10px;"><strong>Option 1:</strong> Click above to select photo files from your device</p>
+                    <p style="margin-bottom: 10px;"><strong>Option 1:</strong> Click above to select photo files from
+                        your device</p>
                     <p><strong>Option 2:</strong> Or send photo via WhatsApp</p>
                 </div>
             </div>
 
-            <a id="whatsappLink" href="#" target="_blank" class="btn-convert" style="display: block; width: 100%; padding: 16px; border-radius: 12px; text-decoration: none; margin-bottom: 12px; background: #25d366;">
+            <a id="whatsappLink" href="#" target="_blank" class="btn-convert"
+                style="display: block; width: 100%; padding: 16px; border-radius: 12px; text-decoration: none; margin-bottom: 12px; background: #25d366;">
                 <i class="fab fa-whatsapp"></i> Open WhatsApp
             </a>
 
-            <button onclick="closeWhatsappModal()" class="btn-auth" style="width: 100%; border-radius: 12px; padding: 14px; background: transparent; color: var(--slate); border: 1px solid #e2e8f0;">
+            <button onclick="closeWhatsappModal()" class="btn-auth"
+                style="width: 100%; border-radius: 12px; padding: 14px; background: transparent; color: var(--slate); border: 1px solid #e2e8f0;">
                 Close
             </button>
         </div>
@@ -731,7 +831,7 @@
     </div>
 
     <!-- Floating Go to Top Button -->
-    <button id="goToTopBtn" onclick="scrollToTop()" 
+    <button id="goToTopBtn" onclick="scrollToTop()"
         style="position: fixed; bottom: 30px; right: 30px; width: 55px; height: 55px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 1.3rem; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(255, 100, 60, 0.3); transition: 0.3s; z-index: 999;"
         title="Go to Top">
         <i class="fas fa-arrow-up"></i>
@@ -745,7 +845,7 @@
         const goToTopBtn = document.getElementById('goToTopBtn');
 
         // Show/Hide button based on scroll position
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             if (window.scrollY > 300) {
                 // Show button when scrolled down more than 300px
                 goToTopBtn.style.display = 'flex';
@@ -764,18 +864,18 @@
         }
 
         // Add hover effects
-        goToTopBtn.addEventListener('mouseover', function() {
+        goToTopBtn.addEventListener('mouseover', function () {
             this.style.transform = 'scale(1.15)';
             this.style.boxShadow = '0 8px 30px rgba(255, 100, 60, 0.4)';
         });
 
-        goToTopBtn.addEventListener('mouseout', function() {
+        goToTopBtn.addEventListener('mouseout', function () {
             this.style.transform = 'scale(1)';
             this.style.boxShadow = '0 5px 20px rgba(255, 100, 60, 0.3)';
         });
 
         // Click animation
-        goToTopBtn.addEventListener('click', function() {
+        goToTopBtn.addEventListener('click', function () {
             this.style.transform = 'scale(0.9)';
             setTimeout(() => {
                 this.style.transform = 'scale(1)';

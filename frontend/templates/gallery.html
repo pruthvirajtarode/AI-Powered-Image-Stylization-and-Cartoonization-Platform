@@ -135,169 +135,148 @@
     </nav>
 
     <div class="gallery-hero">
-        <h1>Artistic <span>Showcase</span></h1>
-        <p>A collection of the finest neural masterpieces created by our global community.</p>
+        <h1>Your Neural <span>Vault</span></h1>
+        <p>Manage, filter, and re-download all your personal neural masterpieces.</p>
 
-        <div class="gallery-filter">
-            <div class="filter-chip active">All Styles</div>
-            <div class="filter-chip">3D Pixar</div>
-            <div class="filter-chip">Sketch Art</div>
-            <div class="filter-chip">Oil Master</div>
-            <div class="filter-chip">Anime</div>
-            <div class="filter-chip">Ghibli</div>
+        <div style="display: flex; justify-content: center; gap: 20px; align-items: center; margin-top: 30px;">
+            <div
+                style="background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 14px; display: flex; gap: 10px; align-items: center;">
+                <label style="font-size: 0.8rem; color: #94a3b8;">Style:</label>
+                <select id="filterStyle" onchange="loadGallery(0)"
+                    style="background: transparent; border: none; color: white; outline: none; font-weight: 600;">
+                    <option value="all" style="color: black;">All Styles</option>
+                    <option value="cartoon" style="color: black;">Cartoon</option>
+                    <option value="pencil" style="color: black;">Pencil Sketch</option>
+                    <option value="anime" style="color: black;">Anime</option>
+                    <option value="pixar" style="color: black;">3D Pixar</option>
+                </select>
+            </div>
+
+            <div
+                style="background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 14px; display: flex; gap: 10px; align-items: center;">
+                <label style="font-size: 0.8rem; color: #94a3b8;">Sort By:</label>
+                <select id="sortBy" onchange="loadGallery(0)"
+                    style="background: transparent; border: none; color: white; outline: none; font-weight: 600;">
+                    <option value="created_at" style="color: black;">Date Created</option>
+                    <option value="style" style="color: black;">Alpha Style</option>
+                    <option value="processing_time" style="color: black;">Neural Speed</option>
+                </select>
+            </div>
+
+            <button onclick="downloadAllHistory()" class="btn-auth" style="background: white; color: var(--primary);"><i
+                    class="fas fa-file-zipper"></i> Download All (ZIP)</button>
         </div>
     </div>
 
-    <main class="gallery-grid">
-        <!-- Mock Data for Gallery -->
-        <div class="art-card">
-            <div class="art-img-container">
-                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600" class="art-img"
-                    alt="Digital Oil">
-                <div class="art-overlay">
-                    <span class="style-tag">Digital Oil</span>
-                    <h3>The Golden Portrait</h3>
-                    <p>Created by @artmaster</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="art-card">
-            <div class="art-img-container">
-                <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600" class="art-img"
-                    alt="Lead Sketch">
-                <div class="art-overlay">
-                    <span class="style-tag">Lead Sketch</span>
-                    <h3>Pencil Soul</h3>
-                    <p>Created by @sketchy_joe</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="art-card">
-            <div class="art-img-container">
-                <img src="https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=600" class="art-img"
-                    alt="3D Cartoon">
-                <div class="art-overlay">
-                    <span class="style-tag">3D Pixar</span>
-                    <h3>Cyber Toon</h3>
-                    <p>Created by @pixar_fan</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="art-card">
-            <div class="art-img-container">
-                <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600" class="art-img"
-                    alt="Anime">
-                <div class="art-overlay">
-                    <span class="style-tag">Anime</span>
-                    <h3>Tokyo Dreams</h3>
-                    <p>Created by @otaku_creator</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="art-card">
-            <div class="art-img-container">
-                <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600" class="art-img"
-                    alt="Watercolor">
-                <div class="art-overlay">
-                    <span class="style-tag">Watercolor</span>
-                    <h3>Floral Essence</h3>
-                    <p>Created by @nature_vibes</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="art-card">
-            <div class="art-img-container">
-                <img src="https://images.unsplash.com/photo-1549490349-8643362247b5?w=600" class="art-img"
-                    alt="Pop Art">
-                <div class="art-overlay">
-                    <span class="style-tag">Pop Art</span>
-                    <h3>Vibrant Life</h3>
-                    <p>Created by @andy_inspired</p>
-                </div>
-            </div>
-        </div>
+    <main class="gallery-grid" id="galleryGrid">
+        <!-- Dynamic History Items -->
     </main>
 
-    <section class="footer-cta">
-        <h2 style="font-family: 'Baloo 2'; font-size: 2.5rem; margin-bottom: 20px;">Ready to see your photo here?</h2>
-        <p style="margin-bottom: 30px; color: #64748b;">Join millions of creators and start your neural journey today.
-        </p>
-        <button class="btn-auth" onclick="window.location.href='/#app'"
-            style="padding: 15px 40px; font-size: 1.2rem;">Start Creating Now</button>
-    </section>
+    <div id="pagination" style="display: flex; justify-content: center; gap: 10px; padding: 40px 5%;">
+        <!-- Pagination Buttons -->
+    </div>
 
     <footer class="footer">
-        <p style="text-align: center; width: 100%;">© 2026 Toonify Creative Inc. | Professional Neural Stylization</p>
+        <p style="text-align: center; width: 100%;">© 2026 Toonify Creative Inc. | Managed History Vault</p>
     </footer>
 
     <script>
-        // Gallery Filter Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterChips = document.querySelectorAll('.filter-chip');
-            const artCards = document.querySelectorAll('.art-card');
+        let currentOffset = 0;
+        const limit = 12;
 
-            // Map filter names to style tags
-            const filterMap = {
-                'All Styles': null, // show all
-                '3D Pixar': '3D Pixar',
-                'Sketch Art': 'Lead Sketch',
-                'Oil Master': 'Digital Oil',
-                'Anime': 'Anime',
-                'Ghibli': 'Ghibli'
-            };
+        async function loadGallery(offset = 0) {
+            currentOffset = offset;
+            const style = document.getElementById('filterStyle').value;
+            const sortBy = document.getElementById('sortBy').value;
+            const grid = document.getElementById('galleryGrid');
+            const pagin = document.getElementById('pagination');
 
-            // Add click listeners to filter chips
-            filterChips.forEach(chip => {
-                chip.addEventListener('click', function() {
-                    // Update active state
-                    filterChips.forEach(c => c.classList.remove('active'));
-                    this.classList.add('active');
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 100px;"><i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i><p style="margin-top: 20px; color: #64748b;">Consulting our neural archives...</p></div>';
 
-                    // Get filter value
-                    const filterText = this.textContent.trim();
-                    const filterStyle = filterMap[filterText];
+            try {
+                const response = await fetch(`/api/user/history/advanced?style=${style}&sort_by=${sortBy}&limit=${limit}&offset=${offset}`);
+                const data = await response.json();
 
-                    // Filter cards
-                    artCards.forEach(card => {
-                        const styleTag = card.querySelector('.style-tag');
-                        
-                        if (filterStyle === null) {
-                            // Show all
-                            card.style.display = 'block';
-                            card.style.animation = 'fadeIn 0.3s ease-in';
-                        } else if (styleTag && styleTag.textContent.includes(filterStyle)) {
-                            // Show matching cards
-                            card.style.display = 'block';
-                            card.style.animation = 'fadeIn 0.3s ease-in';
-                        } else {
-                            // Hide non-matching cards
-                            card.style.display = 'none';
-                        }
-                    });
-                });
-            });
-        });
+                if (data.success) {
+                    const items = data.data.items;
+                    const total = data.data.total;
 
-        // Add fade animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: scale(0.95);
+                    if (items.length === 0) {
+                        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 100px;"><i class="fas fa-ghost fa-3x" style="color: #cbd5e1;"></i><p style="margin-top: 20px; color: #64748b;">No masterpieces found in this category.</p></div>';
+                        pagin.innerHTML = '';
+                        return;
+                    }
+
+                    grid.innerHTML = items.map(item => {
+                        const isPaid = item.is_paid || false;
+                        const badgeColor = isPaid ? '#22c55e' : '#f59e0b';
+                        const badgeText = isPaid ? 'PAID' : 'PREVIEW';
+
+                        return `
+                        <div class="art-card">
+                            <div class="art-img-container">
+                                <img src="/data/processed/${item.processed_filename}" class="art-img" alt="${item.style}">
+                                <div style="position: absolute; top: 15px; right: 15px; background: ${badgeColor}; color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; font-weight: 800;">
+                                    ${badgeText}
+                                </div>
+                                <div class="art-overlay" style="opacity: 1; background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                                    <span class="style-tag">${item.style}</span>
+                                    <h3 style="font-size: 0.9rem; font-weight: 500;">${new Date(item.created_at).toLocaleDateString()}</h3>
+                                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                        <a href="/api/user/download?filename=${item.processed_filename}" class="btn-auth" style="padding: 8px 15px; font-size: 0.7rem; flex: 1;">
+                                            <i class="fas fa-download"></i> ${isPaid ? 'Recover' : 'Export'}
+                                        </a>
+                                        <button onclick="deleteHistoryItem(${item.id})" class="btn-auth" style="padding: 8px 15px; font-size: 0.7rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('');
+
+                    // Pagination Logic
+                    const totalPages = Math.ceil(total / limit);
+                    const currentPage = Math.floor(offset / limit) + 1;
+
+                    let pagHtml = '';
+                    for (let i = 1; i <= totalPages; i++) {
+                        const activeCls = i === currentPage ? 'style="background: var(--primary); color: white;"' : 'style="background: white; border: 1px solid #e2e8f0; color: #64748b;"';
+                        pagHtml += `<button onclick="loadGallery(${(i - 1) * limit})" class="btn-auth" ${activeCls}>${i}</button>`;
+                    }
+                    pagin.innerHTML = pagHtml;
+
+                } else {
+                    window.location.href = '/?auth=login';
                 }
-                to {
-                    opacity: 1;
-                    transform: scale(1);
+            } catch (err) {
+                console.error("Gallery check error:", err);
+            }
+        }
+
+        async function deleteHistoryItem(id) {
+            if (confirm("Permanently wipe this creation from your vault?")) {
+                try {
+                    const response = await fetch('/api/user/history/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ history_id: id })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        loadGallery(currentOffset);
+                    }
+                } catch (err) {
+                    alert("Wipe failed.");
                 }
             }
-        `;
-        document.head.appendChild(style);
+        }
+
+        function downloadAllHistory() {
+            window.location.href = '/api/user/history/download-all';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => loadGallery(0));
     </script>
 </body>
 

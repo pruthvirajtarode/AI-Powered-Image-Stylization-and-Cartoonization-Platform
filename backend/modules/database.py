@@ -102,6 +102,7 @@ class Database:
         add_column("users", "last_logout", "TIMESTAMP WITH TIME ZONE")
         add_column("users", "last_active", "TIMESTAMP WITH TIME ZONE")
         add_column("users", "is_verified", f"BOOLEAN DEFAULT {self.bool_false}")
+        add_column("users", "auto_delete_days", "INTEGER DEFAULT 0") # 0 = Never
 
         # Create Default Admin User
         try:
@@ -257,6 +258,26 @@ class Database:
         conn.close()
         return True
     
+    def update_user_settings(self, user_id: int, auto_delete_days: int):
+        """Update user privacy settings"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE users SET auto_delete_days = {self.placeholder} WHERE id = {self.placeholder}", 
+                      (auto_delete_days, user_id))
+        conn.commit()
+        conn.close()
+        return True
+
+    def change_password(self, user_id: int, new_password_hash: str):
+        """Update user password"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE users SET password_hash = {self.placeholder} WHERE id = {self.placeholder}", 
+                      (new_password_hash, user_id))
+        conn.commit()
+        conn.close()
+        return True
+    
     # Transaction Operations
     def create_transaction(self, user_id: int, transaction_id: str, 
                           amount: float, image_filename: str = None, 
@@ -297,6 +318,15 @@ class Database:
         transactions = [dict(row) for row in cursor.fetchall()]
         conn.close()
         return transactions
+
+    def get_transaction_by_filename(self, user_id: int, filename: str) -> Optional[Dict]:
+        """Verify if a user has paid for a specific image"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.placeholder} AND image_filename = {self.placeholder}", (user_id, filename))
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
     
     def get_transaction_by_id(self, transaction_id: str) -> Optional[Dict]:
         """Get transaction by transaction ID"""
@@ -340,6 +370,78 @@ class Database:
         conn.close()
         return history
     
+    def get_advanced_history(self, user_id: int, style: str = None, sort_by: str = 'created_at', 
+                             order: str = 'DESC', limit: int = 20, offset: int = 0) -> Dict:
+        """Get paginated and filtered history"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Base query with JOIN to check payment status
+        query = f"""
+            SELECT ph.*, 
+                   CASE WHEN t.status = 'completed' THEN 1 ELSE 0 END as is_paid
+            FROM processing_history ph
+            LEFT JOIN transactions t ON ph.processed_filename = t.image_filename
+            WHERE ph.user_id = {self.placeholder}
+        """
+        params = [user_id]
+        
+        if style and style != 'all':
+            query += f" AND ph.style = {self.placeholder}"
+            params.append(style)
+            
+        # Count total for pagination (Simplified count)
+        count_query = f"SELECT COUNT(*) FROM processing_history WHERE user_id = {self.placeholder}"
+        count_params = [user_id]
+        if style and style != 'all':
+            count_query += f" AND style = {self.placeholder}"
+            count_params.append(style)
+            
+        cursor.execute(count_query, tuple(count_params))
+        total_count = cursor.fetchone()[0]
+        
+        # Sort and Page
+        valid_sorts = ['created_at', 'style', 'processing_time']
+        if sort_by not in valid_sorts: sort_by = 'created_at'
+        if order not in ['ASC', 'DESC']: order = 'DESC'
+        
+        query += f" ORDER BY ph.{sort_by} {order} LIMIT {self.placeholder} OFFSET {self.placeholder}"
+        params.extend([limit, offset])
+        
+        cursor.execute(query, tuple(params))
+        history = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        
+        return {
+            "items": history,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+
+    def delete_user_history(self, user_id: int, history_id: int = None):
+        """Delete specific image or all history for a user. Returns list of filenames to delete physically."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Get filenames first
+        if history_id:
+            cursor.execute(f"SELECT processed_filename FROM processing_history WHERE id = {self.placeholder} AND user_id = {self.placeholder}", (history_id, user_id))
+        else:
+            cursor.execute(f"SELECT processed_filename FROM processing_history WHERE user_id = {self.placeholder}", (user_id,))
+            
+        files = [row['processed_filename'] for row in cursor.fetchall()]
+        
+        # Delete from DB
+        if history_id:
+            cursor.execute(f"DELETE FROM processing_history WHERE id = {self.placeholder} AND user_id = {self.placeholder}", (history_id, user_id))
+        else:
+            cursor.execute(f"DELETE FROM processing_history WHERE user_id = {self.placeholder}", (user_id,))
+            
+        conn.commit()
+        conn.close()
+        return files
+    
     # Statistics
     def get_user_stats(self, user_id: int) -> Dict:
         """Get user statistics"""
@@ -347,11 +449,8 @@ class Database:
         cursor = conn.cursor()
         
         # Total images processed
-        cursor.execute(f"""
-            SELECT COUNT(*) as total_processed FROM processing_history
-            WHERE user_id = {self.placeholder}
-        """, (user_id,))
-        total_processed = cursor.fetchone()['total_processed']
+        cursor.execute(f"SELECT COUNT(*) as total FROM processing_history WHERE user_id = {self.placeholder}", (user_id,))
+        total_processed = cursor.fetchone()['total']
         
         # Total transactions
         cursor.execute(f"""
@@ -362,12 +461,22 @@ class Database:
         """, (user_id,))
         trans_data = cursor.fetchone()
         
+        # Favorite style
+        cursor.execute(f"""
+            SELECT style, COUNT(*) as count FROM processing_history
+            WHERE user_id = {self.placeholder}
+            GROUP BY style ORDER BY count DESC LIMIT 1
+        """, (user_id,))
+        fav_row = cursor.fetchone()
+        fav_style = fav_row['style'] if fav_row else "None"
+        
         conn.close()
         
         return {
             'total_processed': total_processed,
             'total_transactions': trans_data['total_transactions'],
-            'total_spent': trans_data['total_spent']
+            'total_spent': trans_data['total_spent'],
+            'favorite_style': fav_style
         }
 
     # Verification Operations
@@ -406,6 +515,32 @@ class Database:
         cursor.execute(f"DELETE FROM verification_codes WHERE email = {self.placeholder}", (email,))
         conn.commit()
         conn.close()
+
+    def cleanup_old_history(self, user_id: int):
+        """Delete history older than the user's auto_delete_days setting"""
+        user = self.get_user_by_id(user_id)
+        if not user or not user.get('auto_delete_days'):
+            return []
+            
+        days = user['auto_delete_days']
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        interval_sql = f"CURRENT_TIMESTAMP - INTERVAL '{days} days'" if self.is_postgres else f"datetime('now', '-{days} days')"
+        
+        # Get filenames
+        cursor.execute(f"""
+            SELECT processed_filename FROM processing_history 
+            WHERE user_id = {self.placeholder} AND created_at < {interval_sql}
+        """, (user_id,))
+        files = [row['processed_filename'] for row in cursor.fetchall()]
+        
+        if files:
+            cursor.execute(f"DELETE FROM processing_history WHERE user_id = {self.placeholder} AND created_at < {interval_sql}", (user_id,))
+            conn.commit()
+            
+        conn.close()
+        return files
 
     # --- ADMIN DASHBOARD OPERATIONS ---
     def get_admin_dashboard_stats(self) -> Dict:

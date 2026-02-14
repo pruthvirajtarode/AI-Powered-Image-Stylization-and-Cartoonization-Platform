@@ -8,6 +8,7 @@ import numpy as np
 from pathlib import Path
 from modules.image_processing import image_processor
 from modules.authentication import auth
+from PIL import Image
 from modules.payment import payment_processor
 from modules.database import db
 from modules.whatsapp import whatsapp_processor
@@ -89,6 +90,15 @@ def terms_of_service():
 def dashboard():
     if 'user' not in session:
         return redirect('/')
+    
+    # Background Cleanup (Simple trigger)
+    try:
+        filenames = db.cleanup_old_history(session['user']['id'])
+        for f in filenames:
+            path = Path("data/processed_images") / f
+            if path.exists(): path.unlink()
+    except: pass
+    
     return render_template('dashboard.html')
 
 @app.route('/gallery')
@@ -143,6 +153,16 @@ def update_profile():
     data = request.json
     user_id = session['user']['id']
     
+    # Check for password change
+    if 'new_password' in data and data['new_password']:
+        import bcrypt
+        pw = bcrypt.hashpw(data['new_password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        db.change_password(user_id, pw)
+        
+    # Check for settings update
+    if 'auto_delete_days' in data:
+        db.update_user_settings(user_id, int(data['auto_delete_days']))
+
     success = db.update_user_profile(
         user_id, 
         full_name=data.get('fullname'),
@@ -154,9 +174,75 @@ def update_profile():
         updated_user = db.get_user_by_id(user_id)
         session['user']['fullname'] = updated_user['full_name']
         session['user']['email'] = updated_user['email']
-        return jsonify({"success": True, "message": "Profile updated successfully"})
+        return jsonify({"success": True, "message": "Profile and settings updated successfully"})
     
     return jsonify({"success": False, "message": "Failed to update profile"})
+
+@app.route('/api/user/history/advanced')
+def get_advanced_history():
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    user_id = session['user']['id']
+    style = request.args.get('style', 'all')
+    sort_by = request.args.get('sort_by', 'created_at')
+    order = request.args.get('order', 'DESC')
+    limit = int(request.args.get('limit', 20))
+    offset = int(request.args.get('offset', 0))
+    
+    history_data = db.get_advanced_history(user_id, style, sort_by, order, limit, offset)
+    return jsonify({"success": True, "data": history_data})
+
+@app.route('/api/user/history/delete', methods=['POST'])
+def delete_history():
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    user_id = session['user']['id']
+    data = request.json
+    history_id = data.get('history_id') # If None, delete all
+    
+    filenames = db.delete_user_history(user_id, history_id)
+    
+    # Physically delete files
+    for filename in filenames:
+        try:
+            path = Path("data/processed_images") / filename
+            if path.exists(): path.unlink()
+        except: pass
+        
+    return jsonify({"success": True, "message": "History deleted successfully"})
+
+@app.route('/api/user/history/download-all')
+def download_all_history():
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    user_id = session['user']['id']
+    history = db.get_user_history(user_id, limit=100)
+    
+    if not history:
+        return jsonify({"success": False, "message": "No history to download"}), 404
+        
+    import io
+    import zipfile
+    from flask import send_file
+    
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for item in history:
+            filename = item['processed_filename']
+            file_path = Path("data/processed_images") / filename
+            if file_path.exists():
+                zip_file.write(file_path, arcname=filename)
+                
+    zip_buffer.seek(0)
+    return send_file(
+        zip_buffer,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name=f"toonify_gallery_{user_id}.zip"
+    )
 
 @app.route('/api/user/transactions')
 def get_user_transactions():
@@ -321,12 +407,20 @@ def process():
         db.add_processing_history(user_id, file.filename, filename, style, proc_time)
         db.log_user_activity(user_id, "stylize", f"Created {style} art in {proc_time:.2f}s")
     
+    # Calculate Statistics (Task 13)
+    original_stats = image_processor.get_image_statistics(img)
+    processed_stats = image_processor.get_image_statistics(processed_img)
+
     return jsonify({
         "success": True,
         "processed_url": f"/data/processed/{filename}",
         "image_filename": filename,
         "proc_time": proc_time,
-        "style": style
+        "style": style,
+        "stats": {
+            "original": original_stats,
+            "processed": processed_stats
+        }
     })
 
 # --- RAZORPAY PAYMENT ROUTES ---
@@ -401,9 +495,130 @@ def admin_transactions():
     transactions = db.get_all_transactions_admin()
     return jsonify({"success": True, "transactions": transactions})
 
+from itsdangerous import URLSafeTimedSerializer
+download_serializer = URLSafeTimedSerializer(app.secret_key)
+
+@app.route('/api/user/download-token')
+def get_download_token():
+    """Generate a temporary signed token for download (Task 17)"""
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    filename = request.args.get('filename')
+    user_id = session['user']['id']
+    
+    # Verify payment
+    is_pro = session['user'].get('role') in ['admin', 'pro_member']
+    transaction = db.get_transaction_by_filename(user_id, filename)
+    
+    if not is_pro and (not transaction or transaction['status'] != 'completed'):
+        return jsonify({"success": False, "message": "Payment required"}), 402
+
+    token = download_serializer.dumps({"u": user_id, "f": filename})
+    return jsonify({"success": True, "token": token})
+
+@app.route('/api/user/download')
+def secure_download():
+    """
+    Secure download endpoint for Task 14 & 17.
+    Supports JWT-style signed tokens or active session.
+    """
+    token = request.args.get('token')
+    filename = request.args.get('filename')
+    format_ext = request.args.get('format', 'jpg').lower()
+    quality = int(request.args.get('quality', 95))
+    
+    # Access via Token (Task 17: Temporary Link)
+    if token:
+        try:
+            data = download_serializer.loads(token, max_age=3600) # 1 hour validity
+            filename = data['f']
+            user_id = data['u']
+        except:
+            return "Invalid or expired download link", 403
+    elif 'user' in session:
+        user_id = session['user']['id']
+    else:
+        return "Authentication required", 401
+
+    if not filename:
+        return "Filename missing", 400
+        
+    # Verify payment again if via session
+    if not token:
+        is_pro = session['user'].get('role') in ['admin', 'pro_member']
+        transaction = db.get_transaction_by_filename(user_id, filename)
+        if not is_pro and (not transaction or transaction['status'] != 'completed'):
+            return "Payment required", 403
+        
+    # Process Format Conversion (Task 14)
+    file_path = Path("data/processed_images") / filename
+    if not file_path.exists():
+        return "File not found", 404
+        
+    img = cv2.imread(str(file_path))
+    
+    import io
+    from flask import send_file
+    
+    if format_ext == 'png':
+        _, img_encoded = cv2.imencode('.png', img)
+        return send_file(io.BytesIO(img_encoded), mimetype='image/png', as_attachment=True, download_name=f"toonify_{filename.replace('.jpg', '.png')}")
+    
+    elif format_ext == 'pdf':
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        pil_img = Image.fromarray(img_rgb)
+        pdf_buffer = io.BytesIO()
+        pil_img.save(pdf_buffer, format='PDF')
+        pdf_buffer.seek(0)
+        return send_file(pdf_buffer, mimetype='application/pdf', as_attachment=True, download_name=f"toonify_{filename.replace('.jpg', '.pdf')}")
+        
+    else: # Default JPG
+        _, img_encoded = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, quality])
+        return send_file(io.BytesIO(img_encoded), mimetype='image/jpeg', as_attachment=True, download_name=f"toonify_{filename}")
+
 @app.route('/data/processed/<filename>')
 def get_processed_image(filename):
-    return send_from_directory('data/processed_images', filename)
+    """
+    Serve processed images with dynamic watermarking for Task 14.
+    If the user has paid (or is Pro), serve un-watermarked.
+    Otherwise, serve with a subtle watermark.
+    """
+    file_path = Path("data/processed_images") / filename
+    if not file_path.exists():
+        return "Not found", 404
+    
+    # Check if we should watermark
+    should_watermark = True
+    if 'user' in session:
+        user_id = session['user']['id']
+        is_pro = session['user'].get('role') in ['admin', 'pro_member']
+        transaction = db.get_transaction_by_filename(user_id, filename)
+        if is_pro or (transaction and transaction['status'] == 'completed'):
+            should_watermark = False
+            
+    if not should_watermark:
+        return send_from_directory('data/processed_images', filename)
+    
+    # Apply Watermark on-the-fly
+    img = cv2.imread(str(file_path))
+    h, w = img.shape[:2]
+    
+    # Add a professional watermark
+    watermark_text = "TOONIFY AI PREVIEW"
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    scale = w / 1000 # Scaling based on resolution
+    thickness = max(1, int(2 * scale))
+    
+    # Semi-transparent overlay
+    overlay = img.copy()
+    cv2.putText(overlay, watermark_text, (int(w*0.1), int(h*0.9)), font, scale, (255, 255, 255), thickness)
+    
+    cv2.addWeighted(overlay, 0.4, img, 0.6, 0, img)
+    
+    _, img_encoded = cv2.imencode('.jpg', img)
+    import io
+    return send_file(io.BytesIO(img_encoded), mimetype='image/jpeg')
 
 # --- WHATSAPP WEBHOOK ROUTES ---
 @app.route('/api/whatsapp/webhook', methods=['GET'])

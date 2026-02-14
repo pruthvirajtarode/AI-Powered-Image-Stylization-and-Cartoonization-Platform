@@ -20,8 +20,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle Download Click
     if (downloadBtn) {
-        downloadBtn.onclick = () => {
-            openPayment();
+        downloadBtn.onclick = async () => {
+            const format = document.getElementById('downloadFormat').value;
+            const quality = document.getElementById('downloadQuality').value;
+            const filename = window.currentImage;
+
+            if (!filename) return;
+
+            // Check if user is Pro/Admin or has paid
+            const user = JSON.parse(localStorage.getItem('toonify_user'));
+            if (!user) {
+                openAuth();
+                return;
+            }
+
+            // Simple check (server will double-check)
+            // If the user just processed it, they might not have paid yet
+            // If they are Admin/Pro, we allow direct download
+            if (user.role === 'admin' || user.role === 'pro_member') {
+                const url = `/api/user/download?filename=${filename}&format=${format}&quality=${quality}`;
+                window.location.href = url;
+            } else {
+                openPayment(format, quality);
+            }
         };
     }
 
@@ -395,6 +416,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 const imgAfter = document.querySelector('.img-after');
                 const handle = document.querySelector('.slider-handle');
 
+                // Stats Update (Task 13)
+                if (data.stats) {
+                    document.getElementById('statsPanel').style.display = 'block';
+                    document.getElementById('procTimeLabel').innerText = data.proc_time.toFixed(2) + 's';
+
+                    // Original Stats
+                    document.getElementById('origBright').innerText = data.stats.original.brightness;
+                    document.getElementById('origContrast').innerText = data.stats.original.contrast;
+
+                    const origTotal = data.stats.original.colors.red + data.stats.original.colors.green + data.stats.original.colors.blue;
+                    document.getElementById('origR').style.width = (data.stats.original.colors.red / origTotal * 100) + '%';
+                    document.getElementById('origG').style.width = (data.stats.original.colors.green / origTotal * 100) + '%';
+                    document.getElementById('origB').style.width = (data.stats.original.colors.blue / origTotal * 100) + '%';
+
+                    // Processed Stats
+                    document.getElementById('procBright').innerText = data.stats.processed.brightness;
+                    document.getElementById('procContrast').innerText = data.stats.processed.contrast;
+
+                    const procTotal = data.stats.processed.colors.red + data.stats.processed.colors.green + data.stats.processed.colors.blue;
+                    document.getElementById('procR').style.width = (data.stats.processed.colors.red / procTotal * 100) + '%';
+                    document.getElementById('procG').style.width = (data.stats.processed.colors.green / procTotal * 100) + '%';
+                    document.getElementById('procB').style.width = (data.stats.processed.colors.blue / procTotal * 100) + '%';
+                }
+
                 slider.oninput = () => {
                     const val = slider.value;
                     imgAfter.style.clipPath = `inset(0 0 0 ${val}%)`;
@@ -639,12 +684,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- PAYMENT & SUBSCRIPTION LOGIC ---
-    window.openPayment = () => { document.getElementById('paymentModal').style.display = 'flex'; };
+    window.openPayment = (format = 'jpg', quality = '95') => {
+        document.getElementById('paymentModal').style.display = 'flex';
+        // Store current format/quality in modal state
+        const payBtn = document.getElementById('payBtn');
+        payBtn.dataset.format = format;
+        payBtn.dataset.quality = quality;
+    };
     window.closePayment = () => { document.getElementById('paymentModal').style.display = 'none'; };
 
     window.processPayment = async () => {
         const payBtn = document.getElementById('payBtn');
         const isUpgrade = payBtn.dataset.type === 'subscription';
+        const format = payBtn.dataset.format || 'jpg';
+        const quality = payBtn.dataset.quality || '95';
 
         payBtn.disabled = true;
         payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing...';
@@ -700,10 +753,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             location.reload();
                         } else {
                             alert("💎 Payment Successful! Starting your high-res download...");
-                            const link = document.createElement('a');
-                            link.href = `/data/processed/${window.currentImage}`;
-                            link.download = `toonify_elite_${window.currentImage}`;
-                            link.click();
+                            const url = `/api/user/download?filename=${window.currentImage}&format=${format}&quality=${quality}`;
+                            window.location.href = url;
                         }
                         closePayment();
                     } else {

@@ -237,15 +237,24 @@
             </div>
             <div class="stat-card animate-fade" style="animation-delay: 0.2s;">
                 <div class="stat-icon" style="background: #fef3c7; color: #b45309;">
-                    <i class="fas fa-crown"></i>
+                    <i class="fas fa-heart"></i>
                 </div>
                 <div>
-                    <h3 style="font-size: 1.8rem; color: #1e293b;" id="planName">Free</h3>
-                    <p style="color: #64748b; font-size: 0.9rem;">Active Plan</p>
+                    <h3 style="font-size: 1.8rem; color: #1e293b; text-transform: capitalize;" id="favStyle">None</h3>
+                    <p style="color: #64748b; font-size: 0.9rem;">Favorite Style</p>
                 </div>
             </div>
             <div class="stat-card animate-fade" style="animation-delay: 0.3s;">
                 <div class="stat-icon" style="background: #dcfce7; color: #15803d;">
+                    <i class="fas fa-indian-rupee-sign"></i>
+                </div>
+                <div>
+                    <h3 id="statSpent" style="font-size: 1.8rem; color: #1e293b;">₹0</h3>
+                    <p style="color: #64748b; font-size: 0.9rem;">Total Spent</p>
+                </div>
+            </div>
+            <div class="stat-card animate-fade" style="animation-delay: 0.4s;">
+                <div class="stat-icon" style="background: #f3e8ff; color: #7e22ce;">
                     <i class="fas fa-bolt"></i>
                 </div>
                 <div>
@@ -255,7 +264,7 @@
             </div>
         </div>
 
-        <div class="history-section animate-fade" style="animation-delay: 0.4s;">
+        <div class="history-section animate-fade" style="animation-delay: 0.5s;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2 style="font-family: 'Baloo 2'; color: #1e293b;">Recent Production History</h2>
                 <a href="/gallery"
@@ -297,13 +306,13 @@
                 }
 
                 document.getElementById('welcomeUser').innerText = `Welcome back, ${user.fullname || user.username}!`;
-                document.getElementById('userEmail').innerText = user.email;
+                document.getElementById('userEmail').innerText = `${user.email} • Joined ${new Date(user.created_at).toLocaleDateString()}`;
                 document.getElementById('userAvatar').innerText = (user.fullname || user.username)[0].toUpperCase();
 
-                document.getElementById('planName').innerText = user.role === 'admin' ? 'Administrator' :
-                    user.role === 'pro_member' ? 'Creator Pro' : 'Starter';
+                document.getElementById('planName') ? document.getElementById('planName').innerText = user.role === 'admin' ? 'Administrator' :
+                    user.role === 'pro_member' ? 'Creator Pro' : 'Starter' : null;
 
-                // Fetch history from API (we'll need to create this)
+                // Fetch history from API
                 const response = await fetch('/api/user/history');
                 const data = await response.json();
 
@@ -311,6 +320,8 @@
                     const stats = data.stats;
                     document.getElementById('statTotal').innerText = stats.total_processed;
                     document.getElementById('statToday').innerText = user.role === 'user' ? (5 - stats.total_processed) : '∞';
+                    document.getElementById('favStyle').innerText = stats.favorite_style || 'None';
+                    document.getElementById('statSpent').innerText = `₹${stats.total_spent}`;
 
                     const history = data.history;
                     const tbody = document.getElementById('historyBody');
