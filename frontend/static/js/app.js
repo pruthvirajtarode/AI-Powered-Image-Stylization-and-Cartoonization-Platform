@@ -813,17 +813,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update Navbar if logged in
     const user = JSON.parse(localStorage.getItem('toonify_user'));
-    const authBtn = document.querySelector('.auth-section .btn-auth');
+    const loginBtn = document.getElementById('loginHeaderBtn');
+    const profileContainer = document.getElementById('profileDropdownContainer');
+    const profileBtn = document.getElementById('profilePillBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
 
-    if (user && authBtn) {
-        // Clear legacy inline styles that conflict with the profile pill
-        authBtn.removeAttribute('style');
-        authBtn.className = 'profile-pill';
-        authBtn.innerHTML = `
-            <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=100&h=100" class="profile-avatar" alt="User ${user.username}" id="userAvatar">
+    if (user && profileContainer) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        profileContainer.style.display = 'block';
+
+        profileBtn.innerHTML = `
+            <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=100&h=100" class="profile-avatar" alt="User ${user.username}">
             <span style="font-family: 'Inter';">${user.username}</span>
             <i class="fas fa-chevron-down" style="font-size: 0.7rem; color: #94a3b8; margin-left: auto;"></i>
         `;
+
+        profileBtn.onclick = (e) => {
+            e.stopPropagation();
+            const isVisible = profileDropdown.style.display === 'block';
+            profileDropdown.style.display = isVisible ? 'none' : 'block';
+        };
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            profileDropdown.style.display = 'none';
+        });
 
         // Add Admin Panel link if admin
         if (user.role === 'admin') {
@@ -832,19 +846,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const adminLink = document.createElement('a');
                 adminLink.id = 'adminLink';
                 adminLink.href = '/admin';
-                adminLink.innerHTML = '<i class="fas fa-user-shield"></i> Admin Command';
+                adminLink.innerHTML = '<i class="fas fa-user-shield"></i> Admin Settings';
                 adminLink.style.color = '#ff7e5f';
                 adminLink.style.fontWeight = '800';
                 navLinks.appendChild(adminLink);
             }
         }
-
-        authBtn.onclick = () => {
-            location.href = '/dashboard';
-        };
-    } else if (authBtn) {
-        authBtn.onclick = (e) => { e.preventDefault(); openAuth(); };
     }
+
+    window.handleLogout = async (e) => {
+        if (e) e.preventDefault();
+        if (confirm("Sign out from Toonify AI Studio?")) {
+            localStorage.removeItem('toonify_user');
+            await fetch('/api/auth/logout');
+            window.location.href = '/';
+        }
+    };
 
     // Hero Carousel Rotation (3 seconds)
 

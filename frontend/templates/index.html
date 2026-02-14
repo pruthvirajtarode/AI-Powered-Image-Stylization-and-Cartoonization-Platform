@@ -52,7 +52,21 @@
         </div>
 
         <div class="auth-section">
-            <button class="btn-auth" onclick="toggleAuth(event, 'login')">
+            <div id="profileDropdownContainer" style="position: relative; display: none;">
+                <button class="profile-pill" id="profilePillBtn">
+                    <!-- Dynamic content from app.js -->
+                </button>
+                <div class="profile-dropdown" id="profileDropdown" style="display: none;">
+                    <a href="/dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+                    <a href="/profile"><i class="fas fa-user-gear"></i> Profile Settings</a>
+                    <a href="/billing"><i class="fas fa-history"></i> Payment History</a>
+                    <a href="/gallery"><i class="fas fa-images"></i> My Gallery</a>
+                    <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 10px 0;">
+                    <a href="#" onclick="handleLogout(event)" style="color: #ef4444;"><i
+                            class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+            <button class="btn-auth" id="loginHeaderBtn" onclick="toggleAuth(event, 'login')">
                 <i class="fas fa-sign-in-alt"></i> Login
             </button>
         </div>

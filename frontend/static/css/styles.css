@@ -169,6 +169,60 @@ h3,
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 15px);
+    right: 0;
+    width: 250px;
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    z-index: 2000;
+    display: none;
+    transform-origin: top right;
+    animation: dropIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dropIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.profile-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 12px;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: 0.2s;
+}
+
+.profile-dropdown a i {
+    font-size: 1.1rem;
+    color: #94a3b8;
+}
+
+.profile-dropdown a:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.profile-dropdown a:hover i {
+    color: var(--primary);
+}
+
 /* SaaS Hero */
 .hero {
     padding: 8rem 8% 6rem;
