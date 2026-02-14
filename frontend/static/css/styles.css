@@ -38,11 +38,15 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: var(--white);
     color: var(--dark);
-    line-height: 1.6;
+    line-height: 1.7;
+    font-size: 16px;
+    font-weight: 400;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Scroll Reveal Animations */
@@ -60,9 +64,19 @@ body {
 h1,
 h2,
 h3,
-.logo-text {
+.logo-text,
+.hero h1 {
     font-family: 'Baloo 2', cursive;
     font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+h4,
+h5,
+h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
 }
 
 /* Decorative Background Art */
@@ -119,9 +133,10 @@ h3,
 .nav-links a {
     text-decoration: none;
     color: var(--slate);
-    font-weight: 700;
-    font-size: 1.1rem;
-    transition: 0.2s;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: -0.01em;
 }
 
 .nav-links a:hover {
@@ -1193,15 +1208,20 @@ h3,
 }
 
 .footer li {
-    margin-bottom: 0.8rem;
-    opacity: 0.6;
-    transition: 0.2s;
-    cursor: pointer;
+    margin-bottom: 1rem;
 }
 
-.footer li:hover {
-    opacity: 1;
+.footer a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.footer a:hover {
     color: var(--primary);
+    padding-left: 5px;
 }
 
 .social-icons {
