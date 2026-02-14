@@ -1050,4 +1050,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+    // --- SCROLL REVEAL ANIMATION ---
+    const revealElements = document.querySelectorAll('.feat-card, .gallery-card, .price-card, .section-title, .hero-content, .hero-visual');
+
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('reveal-active');
+                revealObserver.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.15
+    });
+
+    revealElements.forEach(el => {
+        el.classList.add('reveal-hidden');
+        revealObserver.observe(el);
+    });
 });
