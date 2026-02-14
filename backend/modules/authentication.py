@@ -298,8 +298,15 @@ class Authentication:
         # Update last login
         db.update_last_login(user['id'])
         
-        # Remove password hash from user data
-        user_data = {k: v for k, v in user.items() if k != 'password_hash'}
+        # Remove password hash from user data and ensure types are JSON serializable
+        user_data = {}
+        for k, v in user.items():
+            if k == 'password_hash':
+                continue
+            if k in ['created_at', 'last_login', 'last_active', 'last_logout'] and hasattr(v, 'isoformat'):
+                user_data[k] = v.isoformat()
+            else:
+                user_data[k] = v
         
         return True, user_data, "Login successful!"
     

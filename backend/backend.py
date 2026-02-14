@@ -95,7 +95,7 @@ def dashboard():
     try:
         filenames = db.cleanup_old_history(session['user']['id'])
         for f in filenames:
-            path = Path("data/processed_images") / f
+            path = settings.TEMP_FOLDER / f
             if path.exists(): path.unlink()
     except: pass
     
@@ -345,7 +345,8 @@ def verify_google_token():
             "username": user['username'],
             "email": user['email'],
             "fullname": user['full_name'],
-            "role": user['role']
+            "role": user['role'],
+            "created_at": user['created_at'].isoformat() if hasattr(user['created_at'], 'isoformat') else user['created_at']
         }
         
         session['user'] = session_user
@@ -402,7 +403,7 @@ def process():
     
     # Save processed image
     filename = f"processed_{uuid.uuid4().hex}.jpg"
-    temp_path = Path("data/processed_images") / filename
+    temp_path = settings.TEMP_FOLDER / filename
     cv2.imwrite(str(temp_path), processed_img)
     
     # Log activity for admin
@@ -587,7 +588,7 @@ def get_processed_image(filename):
     If the user has paid (or is Pro), serve un-watermarked.
     Otherwise, serve with a subtle watermark.
     """
-    file_path = Path("data/processed_images") / filename
+    file_path = settings.TEMP_FOLDER / filename
     if not file_path.exists():
         return "Not found", 404
     
@@ -601,7 +602,7 @@ def get_processed_image(filename):
             should_watermark = False
             
     if not should_watermark:
-        return send_from_directory('data/processed_images', filename)
+        return send_from_directory(settings.TEMP_FOLDER, filename)
     
     # Apply Watermark on-the-fly
     img = cv2.imread(str(file_path))
