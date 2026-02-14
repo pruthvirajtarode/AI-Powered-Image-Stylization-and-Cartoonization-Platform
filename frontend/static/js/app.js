@@ -829,14 +829,20 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         profileBtn.onclick = (e) => {
+            console.log("Profile clicked");
             e.stopPropagation();
-            const isVisible = profileDropdown.style.display === 'block';
-            profileDropdown.style.display = isVisible ? 'none' : 'block';
+            if (profileDropdown.style.display === 'none' || profileDropdown.style.display === '') {
+                profileDropdown.style.display = 'block';
+            } else {
+                profileDropdown.style.display = 'none';
+            }
         };
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', () => {
-            profileDropdown.style.display = 'none';
+        document.addEventListener('click', (e) => {
+            if (!profileBtn.contains(e.target)) {
+                profileDropdown.style.display = 'none';
+            }
         });
 
         // Add Admin Panel link if admin
