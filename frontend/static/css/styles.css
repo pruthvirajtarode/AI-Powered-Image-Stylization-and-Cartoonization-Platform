@@ -253,7 +253,7 @@ h6 {
 
 /* SaaS Hero */
 .hero {
-    padding: 10rem 8% 8rem;
+    padding: 4rem 8% 6rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
