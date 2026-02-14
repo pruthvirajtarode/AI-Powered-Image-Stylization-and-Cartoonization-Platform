@@ -169,7 +169,7 @@
 
 <body>
     <aside class="dash-sidebar">
-        <a href="/" class="logo" style="text-decoration: none;">
+        <a href="/" class="logo" style="text-decoration: none; margin-bottom: 20px;">
             <i class="fas fa-magic" style="color: var(--primary); font-size: 1.5rem;"></i>
             <span class="logo-text" style="font-family: 'Baloo 2'; font-size: 1.6rem; color: #1e293b;">Toonify<span
                     style="color: var(--primary);">.AI</span></span>
@@ -180,13 +180,16 @@
                 <i class="fas fa-th-large"></i> Overview
             </a>
             <a href="/#app" class="nav-item">
-                <i class="fas fa-wand-sparkles"></i> New Creation
+                <i class="fas fa-wand-sparkles"></i> Image Processing
             </a>
             <a href="/gallery" class="nav-item">
                 <i class="fas fa-images"></i> My Gallery
             </a>
             <a href="/billing" class="nav-item">
-                <i class="fas fa-credit-card"></i> Billing
+                <i class="fas fa-history"></i> Payment History
+            </a>
+            <a href="/profile" class="nav-item">
+                <i class="fas fa-user-gear"></i> Profile Settings
             </a>
             <a href="/security" class="nav-item">
                 <i class="fas fa-shield-halved"></i> Security
@@ -202,9 +205,17 @@
 
     <main class="dash-main">
         <header class="dash-header">
-            <div class="user-meta">
-                <h1 id="welcomeUser">Welcome back, Creator!</h1>
-                <p style="color: #64748b;">Here is what's happening in your art studio today.</p>
+            <div class="user-meta animate-fade">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                    <div id="userAvatar"
+                        style="width: 50px; height: 50px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; font-family: 'Baloo 2';">
+                        U
+                    </div>
+                    <div>
+                        <h1 id="welcomeUser" style="margin: 0; line-height: 1.2;">Welcome, Creator!</h1>
+                        <p id="userEmail" style="color: #64748b; margin: 0; font-size: 0.9rem;">yourname@example.com</p>
+                    </div>
+                </div>
             </div>
             <div class="header-actions">
                 <button class="btn-auth" onclick="window.location.href='/#app'"
@@ -286,6 +297,9 @@
                 }
 
                 document.getElementById('welcomeUser').innerText = `Welcome back, ${user.fullname || user.username}!`;
+                document.getElementById('userEmail').innerText = user.email;
+                document.getElementById('userAvatar').innerText = (user.fullname || user.username)[0].toUpperCase();
+
                 document.getElementById('planName').innerText = user.role === 'admin' ? 'Administrator' :
                     user.role === 'pro_member' ? 'Creator Pro' : 'Starter';
 

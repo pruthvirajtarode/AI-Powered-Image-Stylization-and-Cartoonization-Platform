@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CAMERA CAPTURE FUNCTIONALITY ---
     let cameraStream = null;
     let facingMode = 'user'; // 'user' for front camera, 'environment' for back camera
-    
+
     const cameraBtn = document.getElementById('cameraBtn');
     const cameraModal = document.getElementById('cameraModal');
     const cameraVideo = document.getElementById('cameraStream');
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             openAuth();
             return;
         }
-        
+
         if (cameraModal) {
             cameraModal.style.display = 'flex';
             setTimeout(startCamera, 300); // Give modal time to render
@@ -136,16 +136,16 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Stop any existing stream first
             stopCamera();
-            
+
             const constraints = {
-                video: { 
+                video: {
                     facingMode: facingMode,
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 },
                 audio: false
             };
-            
+
             cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
             if (cameraVideo) {
                 cameraVideo.srcObject = cameraStream;
@@ -187,17 +187,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Camera not initialized');
                 return;
             }
-            
+
             try {
                 const context = cameraCanvas.getContext('2d');
                 cameraCanvas.width = cameraVideo.videoWidth;
                 cameraCanvas.height = cameraVideo.videoHeight;
-                
+
                 if (cameraCanvas.width === 0 || cameraCanvas.height === 0) {
                     alert('Camera stream not ready. Please try again.');
                     return;
                 }
-                
+
                 // Flip the canvas if using front camera for more natural appearance
                 if (facingMode === 'user') {
                     context.scale(-1, 1);
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     context.drawImage(cameraVideo, 0, 0);
                 }
-                
+
                 cameraCanvas.toBlob((blob) => {
                     if (!blob) {
                         alert('Failed to capture image');
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         processBtn.disabled = false;
                     };
                     reader.readAsDataURL(blob);
-                    
+
                     // Close modal after capture
                     closeCameraModal();
                     alert('📸 Photo captured! Ready to transform.');
@@ -252,11 +252,11 @@ document.addEventListener('DOMContentLoaded', () => {
             openAuth();
             return;
         }
-        
+
         if (whatsappModal) {
             whatsappModal.style.display = 'flex';
         }
-        
+
         // Set WhatsApp Business API link (replace with your actual WhatsApp number)
         const phoneNumber = '919356992440'; // Your WhatsApp Business number
         const message = encodeURIComponent('Hi! I want to send a photo to Toonify AI for stylization.');
@@ -276,19 +276,19 @@ document.addEventListener('DOMContentLoaded', () => {
         whatsappFileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 const file = e.target.files[0];
-                
+
                 // Validate file type
                 if (!file.type.startsWith('image/')) {
                     alert('❌ Please select a valid image file');
                     return;
                 }
-                
+
                 // Validate file size (max 10MB)
                 if (file.size > 10 * 1024 * 1024) {
                     alert('❌ File size exceeds 10MB limit');
                     return;
                 }
-                
+
                 selectedFile = file;
                 const reader = new FileReader();
                 reader.onload = (event) => {
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     processBtn.disabled = false;
                 };
                 reader.readAsDataURL(file);
-                
+
                 closeWhatsappModal();
                 alert('✅ Image imported from WhatsApp! Ready to transform.');
             }
@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             whatsappUploadArea.style.borderColor = '#25d366';
             whatsappUploadArea.style.background = '#f8fafc';
-            
+
             if (e.dataTransfer.files.length) {
                 const file = e.dataTransfer.files[0];
                 if (file.type.startsWith('image/')) {
@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.user.role === 'admin') {
                     location.href = '/admin';
                 } else {
-                    location.reload();
+                    location.href = '/dashboard';
                 }
             } else {
                 if (data.message === "VERIFY_REQUIRED") {
@@ -518,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         if (data.success) {
             localStorage.setItem('toonify_user', JSON.stringify(data.user));
-            location.reload();
+            location.href = '/dashboard';
         } else {
             alert("Google Authentication Failed: " + data.message);
         }
@@ -789,10 +789,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         authBtn.onclick = () => {
-            if (confirm("Sign out?")) {
-                localStorage.removeItem('toonify_user');
-                fetch('/api/auth/logout').then(() => location.reload());
-            }
+            location.href = '/dashboard';
         };
     } else if (authBtn) {
         authBtn.onclick = (e) => { e.preventDefault(); openAuth(); };

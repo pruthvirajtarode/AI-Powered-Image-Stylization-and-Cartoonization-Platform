@@ -59,7 +59,15 @@ def tutorials():
 
 @app.route('/billing')
 def billing():
+    if 'user' not in session:
+        return redirect('/')
     return render_template('billing.html')
+
+@app.route('/profile')
+def profile():
+    if 'user' not in session:
+        return redirect('/')
+    return render_template('profile.html')
 
 @app.route('/security')
 def security():
@@ -113,6 +121,51 @@ def get_user_performance():
         "history": history,
         "stats": stats
     })
+
+@app.route('/api/user/profile')
+def get_user_profile():
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    user_id = session['user']['id']
+    user = db.get_user_by_id(user_id)
+    if user:
+        # Don't send password hash
+        user.pop('password_hash', None)
+        return jsonify({"success": True, "user": user})
+    return jsonify({"success": False, "message": "User not found"}), 404
+
+@app.route('/api/user/profile/update', methods=['POST'])
+def update_profile():
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    data = request.json
+    user_id = session['user']['id']
+    
+    success = db.update_user_profile(
+        user_id, 
+        full_name=data.get('fullname'),
+        email=data.get('email')
+    )
+    
+    if success:
+        # Update session data
+        updated_user = db.get_user_by_id(user_id)
+        session['user']['fullname'] = updated_user['full_name']
+        session['user']['email'] = updated_user['email']
+        return jsonify({"success": True, "message": "Profile updated successfully"})
+    
+    return jsonify({"success": False, "message": "Failed to update profile"})
+
+@app.route('/api/user/transactions')
+def get_user_transactions():
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    user_id = session['user']['id']
+    transactions = db.get_user_transactions(user_id)
+    return jsonify({"success": True, "transactions": transactions})
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
