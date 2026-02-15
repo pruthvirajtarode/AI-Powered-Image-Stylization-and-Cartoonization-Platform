@@ -862,22 +862,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 profileBtn.onclick = (e) => {
                     e.stopPropagation();
-                    const isHidden = profileDropdown.style.display === 'none' || profileDropdown.style.display === '';
-                    profileDropdown.style.display = isHidden ? 'block' : 'none';
+                    const isVisible = profileDropdown.classList.contains('active');
+                    if (isVisible) {
+                        profileDropdown.style.display = 'none';
+                        profileDropdown.classList.remove('active');
+                    } else {
+                        profileDropdown.style.display = 'block';
+                        profileDropdown.classList.add('active');
+                    }
                 };
 
                 // Close dropdown when clicking outside
                 document.addEventListener('click', (e) => {
                     if (profileContainer && !profileContainer.contains(e.target)) {
                         profileDropdown.style.display = 'none';
+                        profileDropdown.classList.remove('active');
                     }
                 });
 
-                // IMPORTANT: Close dropdown when a link inside it is clicked
-                profileDropdown.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => {
-                        profileDropdown.style.display = 'none';
-                    });
+                // Standard link navigation should work automatically. 
+                // We only hide it for 'Logout' or similar JS-based actions.
+                profileDropdown.addEventListener('click', (e) => {
+                    if (e.target.closest('a') && e.target.closest('a').getAttribute('href') !== '#') {
+                        // Allow navigation to proceed naturally
+                        console.log("Navigating to:", e.target.closest('a').href);
+                    }
                 });
 
                 // Add Admin Panel link if admin

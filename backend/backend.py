@@ -22,7 +22,7 @@ from google.auth.transport import requests
 app = Flask(__name__, 
             template_folder='../frontend/templates',
             static_folder='../frontend/static')
-app.secret_key = os.urandom(24)
+app.secret_key = settings.SECRET_KEY or os.urandom(24)
 CORS(app)
 
 # --- LIVE HEARTBEAT ---
