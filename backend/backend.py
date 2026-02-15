@@ -1,7 +1,7 @@
 import os
 import time
 import uuid
-from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect
+from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, send_file
 from flask_cors import CORS
 import cv2
 import numpy as np
@@ -9,6 +9,7 @@ from pathlib import Path
 from modules.image_processing import image_processor
 from modules.authentication import auth
 from PIL import Image
+import io
 from modules.payment import payment_processor
 from modules.database import db
 from modules.whatsapp import whatsapp_processor
@@ -641,9 +642,11 @@ def get_processed_image(filename):
     
     cv2.addWeighted(overlay, 0.4, img, 0.6, 0, img)
     
-    _, img_encoded = cv2.imencode('.jpg', img)
-    import io
-    return send_file(io.BytesIO(img_encoded), mimetype='image/jpeg')
+    _, img_encoded = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 90])
+    if not _:
+        return send_from_directory(settings.TEMP_FOLDER, filename)
+        
+    return send_file(io.BytesIO(img_encoded.tobytes()), mimetype='image/jpeg')
 
 # --- WHATSAPP WEBHOOK ROUTES ---
 @app.route('/api/whatsapp/webhook', methods=['GET'])

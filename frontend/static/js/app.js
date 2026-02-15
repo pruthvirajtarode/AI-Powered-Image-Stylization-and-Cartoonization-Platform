@@ -385,11 +385,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success) {
                     const filename = data.image_filename;
                     window.currentImage = filename;
-                    const path = `/data/processed/${filename}`;
+                    const timestamp = Date.now();
+                    const path = `/data/processed/${filename}?t=${timestamp}`;
 
                     // Update Views
                     if (document.getElementById('viewOriginal')) document.getElementById('viewOriginal').src = uploadPreview.src;
-                    if (document.getElementById('viewProcessed')) document.getElementById('viewProcessed').src = path;
+
+                    const processedImg = document.getElementById('viewProcessed');
+                    if (processedImg) {
+                        processedImg.src = path;
+                        processedImg.onerror = () => {
+                            console.error("Failed to load processed image:", path);
+                            processedImg.src = 'https://img.icons8.com/isometric/100/image-not-available.png';
+                        };
+                    }
+
                     if (document.getElementById('sliderOriginal')) document.getElementById('sliderOriginal').src = uploadPreview.src;
                     if (document.getElementById('sliderProcessed')) document.getElementById('sliderProcessed').src = path;
 
