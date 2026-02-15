@@ -887,19 +887,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                profileDropdown.addEventListener('click', (e) => {
-                    const link = e.target.closest('a');
-                    if (link && link.getAttribute('href') !== '#') {
-                        // Ensure the dropdown closes but navigation is NOT blocked
-                        profileDropdown.style.display = 'none';
-                        profileDropdown.classList.remove('active');
-
-                        // Force a small delay if the browser is being too aggressive with event cancellation
-                        if (link.href.includes(window.location.origin)) {
-                            console.log("Navigating to:", link.href);
-                        }
-                    }
-                });
+                // Rely on native browser navigation and the global click listener
+                // for closing the dropdown. This prevents navigation cancellation.
 
                 // Add Admin Panel link if admin
                 if (data.user.role === 'admin') {
