@@ -333,7 +333,13 @@
 
                     tbody.innerHTML = history.map(item => `
                         <tr>
-                            <td><img src="/data/processed/${item.processed_filename}" class="preview-img-mini" alt="Art"></td>
+                            <td>
+                                <img src="/data/processed/${item.processed_filename}" 
+                                     class="preview-img-mini" 
+                                     alt="Art" 
+                                     onerror="this.src='https://img.icons8.com/isometric/50/image-not-avialable.png'; this.title='Image file expired or missing on server'; this.parentElement.title='Images on Render are temporary and expire after inactivity.';"
+                                >
+                            </td>
                             <td>${item.original_filename}</td>
                             <td><span class="badge-style" style="background: var(--primary-soft); color: var(--primary);">${item.style}</span></td>
                             <td>${item.processing_time.toFixed(2)}s</td>

@@ -89,9 +89,6 @@ def create_directories():
     directories = [
         settings.TEMP_FOLDER,
         Path(settings.DATABASE_PATH).parent,
-        Path("assets/images"),
-        Path("assets/css"),
-        Path("data/processed_images")
     ]
     
     for directory in directories:

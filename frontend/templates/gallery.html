@@ -215,7 +215,11 @@
                         return `
                         <div class="art-card">
                             <div class="art-img-container">
-                                <img src="/data/processed/${item.processed_filename}" class="art-img" alt="${item.style}">
+                                <img src="/data/processed/${item.processed_filename}" 
+                                     class="art-img" 
+                                     alt="${item.style}"
+                                     onerror="this.src='https://img.icons8.com/isometric/100/image-not-avialable.png'; this.parentElement.title='Images on Render are temporary and expire after inactivity.';"
+                                >
                                 <div style="position: absolute; top: 15px; right: 15px; background: ${badgeColor}; color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; font-weight: 800;">
                                     ${badgeText}
                                 </div>

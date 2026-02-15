@@ -219,7 +219,7 @@ def delete_history():
     # Physically delete files
     for filename in filenames:
         try:
-            path = Path("data/processed_images") / filename
+            path = settings.TEMP_FOLDER / filename
             if path.exists(): path.unlink()
         except: pass
         
@@ -244,7 +244,7 @@ def download_all_history():
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
         for item in history:
             filename = item['processed_filename']
-            file_path = Path("data/processed_images") / filename
+            file_path = settings.TEMP_FOLDER / filename
             if file_path.exists():
                 zip_file.write(file_path, arcname=filename)
                 
@@ -556,7 +556,7 @@ def secure_download():
             return "Payment required", 403
         
     # Process Format Conversion (Task 14)
-    file_path = Path("data/processed_images") / filename
+    file_path = settings.TEMP_FOLDER / filename
     if not file_path.exists():
         return "File not found", 404
         
@@ -717,7 +717,7 @@ def process_whatsapp_image(message_data):
             
             # Save processed image
             filename = f"whatsapp_processed_{uuid.uuid4().hex}.jpg"
-            temp_path = Path("data/processed_images") / filename
+            temp_path = settings.TEMP_FOLDER / filename
             cv2.imwrite(str(temp_path), processed_img)
             
             # Send status update
