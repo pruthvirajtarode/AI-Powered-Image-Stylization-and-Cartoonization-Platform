@@ -334,11 +334,19 @@
                     tbody.innerHTML = history.map(item => `
                         <tr>
                             <td>
-                                <img src="/data/processed/${item.processed_filename}" 
-                                     class="preview-img-mini" 
-                                     alt="Art" 
-                                     onerror="this.src='https://img.icons8.com/isometric/50/image-not-avialable.png'; this.title='Image file expired or missing on server'; this.parentElement.title='Images on Render are temporary and expire after inactivity.';"
-                                >
+                                ${item.is_missing ?
+                            `<div class="preview-img-mini" style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;" title="Image expired on Render servers">
+                                        <i class="fas fa-image-slash"></i>
+                                    </div>` :
+                            `<img src="/data/processed/${item.processed_filename}" 
+                                         class="preview-img-mini" 
+                                         alt="Art" 
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                    >
+                                    <div class="preview-img-mini" style="display: none; background: #f1f5f9; align-items: center; justify-content: center; color: #94a3b8;">
+                                        <i class="fas fa-image-slash"></i>
+                                    </div>`
+                        }
                             </td>
                             <td>${item.original_filename}</td>
                             <td><span class="badge-style" style="background: var(--primary-soft); color: var(--primary);">${item.style}</span></td>
@@ -352,17 +360,9 @@
             }
         }
 
-        async function handleLogout(e) {
-            e.preventDefault();
-            if (confirm("Sign out from your studio?")) {
-                localStorage.removeItem('toonify_user');
-                await fetch('/api/auth/logout');
-                window.location.href = '/';
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', loadDashboard);
     </script>
+    <script src="/static/js/app.js?v=216"></script>
 </body>
 
 </html>

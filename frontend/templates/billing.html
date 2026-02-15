@@ -213,17 +213,9 @@
             }
         }
 
-        async function handleLogout(e) {
-            e.preventDefault();
-            if (confirm("Sign out from your studio?")) {
-                localStorage.removeItem('toonify_user');
-                await fetch('/api/auth/logout');
-                window.location.href = '/';
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', loadTransactions);
     </script>
+    <script src="/static/js/app.js?v=216"></script>
 </body>
 
 </html>

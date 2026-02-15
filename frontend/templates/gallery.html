@@ -131,7 +131,23 @@
             <a href="/dashboard">Dashboard</a>
             <a href="/docs">Docs</a>
         </div>
-        <a href="/#app" class="btn-auth">Create Art</a>
+        <div class="auth-section">
+            <button class="btn-auth" id="loginHeaderBtn" onclick="window.location.href='/?auth=login'">Login</button>
+            <div id="profileDropdownContainer" style="position: relative; display: none;">
+                <button class="profile-pill" id="profilePillBtn">
+                    <!-- Dynamic -->
+                </button>
+                <div class="profile-dropdown" id="profileDropdown" style="display: none;">
+                    <a href="/dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+                    <a href="/profile"><i class="fas fa-user-gear"></i> Profile Settings</a>
+                    <a href="/billing"><i class="fas fa-history"></i> Payment History</a>
+                    <a href="/gallery"><i class="fas fa-images"></i> My Gallery</a>
+                    <hr style="margin: 10px 0; border: none; border-top: 1px solid #f1f5f9;">
+                    <a href="#" onclick="handleLogout(event)" style="color: #ef4444;"><i
+                            class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
     </nav>
 
     <div class="gallery-hero">
@@ -215,11 +231,21 @@
                         return `
                         <div class="art-card">
                             <div class="art-img-container">
-                                <img src="/data/processed/${item.processed_filename}" 
-                                     class="art-img" 
-                                     alt="${item.style}"
-                                     onerror="this.src='https://img.icons8.com/isometric/100/image-not-avialable.png'; this.parentElement.title='Images on Render are temporary and expire after inactivity.';"
-                                >
+                                ${item.is_missing ?
+                                `<div class="art-img" style="background: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; gap: 15px;">
+                                        <i class="fas fa-ghost fa-3x"></i>
+                                        <span style="font-size: 0.8rem; font-weight: 600;">Neural data expired</span>
+                                    </div>` :
+                                `<img src="/data/processed/${item.processed_filename}" 
+                                         class="art-img" 
+                                         alt="${item.style}"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                    >
+                                    <div class="art-img" style="display: none; background: #f1f5f9; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; gap: 15px;">
+                                        <i class="fas fa-ghost fa-3x"></i>
+                                        <span style="font-size: 0.8rem; font-weight: 600;">Neural data expired</span>
+                                    </div>`
+                            }
                                 <div style="position: absolute; top: 15px; right: 15px; background: ${badgeColor}; color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; font-weight: 800;">
                                     ${badgeText}
                                 </div>
@@ -227,7 +253,9 @@
                                     <span class="style-tag">${item.style}</span>
                                     <h3 style="font-size: 0.9rem; font-weight: 500;">${new Date(item.created_at).toLocaleDateString()}</h3>
                                     <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                        <a href="/api/user/download?filename=${item.processed_filename}" class="btn-auth" style="padding: 8px 15px; font-size: 0.7rem; flex: 1;">
+                                        <a href="${item.is_missing ? '#' : `/api/user/download?filename=${item.processed_filename}`}" 
+                                           class="btn-auth ${item.is_missing ? 'disabled' : ''}" 
+                                           style="padding: 8px 15px; font-size: 0.7rem; flex: 1; ${item.is_missing ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
                                             <i class="fas fa-download"></i> ${isPaid ? 'Recover' : 'Export'}
                                         </a>
                                         <button onclick="deleteHistoryItem(${item.id})" class="btn-auth" style="padding: 8px 15px; font-size: 0.7rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444;">
@@ -282,6 +310,7 @@
 
         document.addEventListener('DOMContentLoaded', () => loadGallery(0));
     </script>
+    <script src="/static/js/app.js?v=216"></script>
 </body>
 
 </html>

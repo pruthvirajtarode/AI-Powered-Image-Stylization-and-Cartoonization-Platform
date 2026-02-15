@@ -126,6 +126,11 @@ def get_user_performance():
     history = db.get_user_history(user_id, limit=10) # Recent 10
     stats = db.get_user_stats(user_id)
     
+    # Check if files physically exist (Task for Render Ephemeral storage)
+    for item in history:
+        file_path = settings.TEMP_FOLDER / item['processed_filename']
+        item['is_missing'] = not file_path.exists()
+    
     return jsonify({
         "success": True, 
         "history": history,
@@ -143,6 +148,12 @@ def get_user_transactions():
         "success": True,
         "transactions": transactions
     })
+
+@app.route('/api/auth/session')
+def check_session():
+    if 'user' in session:
+        return jsonify({"success": True, "user": session['user']})
+    return jsonify({"success": False, "message": "No active session"})
 
 @app.route('/api/user/profile')
 def get_user_profile():
@@ -203,6 +214,12 @@ def get_advanced_history():
     offset = int(request.args.get('offset', 0))
     
     history_data = db.get_advanced_history(user_id, style, sort_by, order, limit, offset)
+    
+    # Check physical existence for Render
+    for item in history_data.get('items', []):
+        file_path = settings.TEMP_FOLDER / item['processed_filename']
+        item['is_missing'] = not file_path.exists()
+        
     return jsonify({"success": True, "data": history_data})
 
 @app.route('/api/user/history/delete', methods=['POST'])
@@ -606,6 +623,10 @@ def get_processed_image(filename):
     
     # Apply Watermark on-the-fly
     img = cv2.imread(str(file_path))
+    if img is None:
+        # Fallback to serving original file if OpenCV fails to read (corruption or format issue)
+        return send_from_directory(settings.TEMP_FOLDER, filename)
+        
     h, w = img.shape[:2]
     
     # Add a professional watermark

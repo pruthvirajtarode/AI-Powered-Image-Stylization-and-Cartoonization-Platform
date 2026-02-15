@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewOriginal = document.getElementById('viewOriginal');
     const viewProcessed = document.getElementById('viewProcessed');
 
+    // Safe Element existence checks
+    /* This ensures that if we are on a page without a specific UI element (like the editor), 
+       the script continues to run for other features like the Navbar and Authentication. */
+    const hasEditor = fileInput && dropZone && processBtn;
+
     // Handle Download Click
     if (downloadBtn) {
         downloadBtn.onclick = async () => {
@@ -47,13 +52,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // SaaS Style Switcher
-    styleItems.forEach(item => {
-        item.onclick = () => {
-            styleItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            selectedStyle = item.dataset.style;
-        };
-    });
+    if (styleItems.length > 0) {
+        styleItems.forEach(item => {
+            item.onclick = () => {
+                styleItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                selectedStyle = item.dataset.style;
+            };
+        });
+    }
 
     // Password Visibility Toggle Logic
     document.querySelectorAll('.toggle-password').forEach(icon => {
@@ -74,41 +81,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Dashboard Upload Trigger (Protected)
-    dropZone.onclick = () => {
-        const user = JSON.parse(localStorage.getItem('toonify_user'));
-        if (!user) {
-            openAuth();
-        } else {
-            fileInput.click();
-        }
-    };
+    if (dropZone) {
+        dropZone.onclick = () => {
+            const user = JSON.parse(localStorage.getItem('toonify_user'));
+            if (!user) {
+                openAuth();
+            } else {
+                fileInput.click();
+            }
+        };
 
-    fileInput.onchange = (e) => {
-        if (e.target.files.length) handleFile(e.target.files[0]);
-    };
+        dropZone.ondragover = (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ff7e5f';
+            dropZone.style.background = 'rgba(255, 126, 95, 0.1)';
+        };
+        dropZone.ondragleave = () => {
+            dropZone.style.borderColor = '#e2e8f0';
+            dropZone.style.background = 'white';
+        };
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#e2e8f0';
+            dropZone.style.background = 'white';
 
-    dropZone.ondragover = (e) => {
-        e.preventDefault();
-        dropZone.style.borderColor = '#ff7e5f';
-        dropZone.style.background = 'rgba(255, 126, 95, 0.1)';
-    };
-    dropZone.ondragleave = () => {
-        dropZone.style.borderColor = '#e2e8f0';
-        dropZone.style.background = 'white';
-    };
-    dropZone.ondrop = (e) => {
-        e.preventDefault();
-        dropZone.style.borderColor = '#e2e8f0';
-        dropZone.style.background = 'white';
+            const user = JSON.parse(localStorage.getItem('toonify_user'));
+            if (!user) {
+                openAuth();
+                return;
+            }
 
-        const user = JSON.parse(localStorage.getItem('toonify_user'));
-        if (!user) {
-            openAuth();
-            return;
-        }
-
-        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-    };
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        };
+    }
 
     function handleFile(file) {
         selectedFile = file;
@@ -361,100 +366,108 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // AI SaaS Processing Logic
-    processBtn.onclick = async () => {
-        if (!selectedFile) return;
+    if (processBtn) {
+        processBtn.onclick = async () => {
+            if (!selectedFile) return;
 
-        loader.style.display = 'flex';
-        const formData = new FormData();
-        formData.append('image', selectedFile);
-        formData.append('style', selectedStyle);
+            loader.style.display = 'flex';
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+            formData.append('style', selectedStyle);
 
-        try {
-            const response = await fetch('/api/process', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
+            try {
+                const response = await fetch('/api/process', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
 
-            if (data.success) {
-                const filename = data.image_filename;
-                window.currentImage = filename;
-                const path = `/data/processed/${filename}`;
+                if (data.success) {
+                    const filename = data.image_filename;
+                    window.currentImage = filename;
+                    const path = `/data/processed/${filename}`;
 
-                // Update Views
-                document.getElementById('viewOriginal').src = uploadPreview.src;
-                document.getElementById('viewProcessed').src = path;
-                document.getElementById('sliderOriginal').src = uploadPreview.src;
-                document.getElementById('sliderProcessed').src = path;
+                    // Update Views
+                    if (document.getElementById('viewOriginal')) document.getElementById('viewOriginal').src = uploadPreview.src;
+                    if (document.getElementById('viewProcessed')) document.getElementById('viewProcessed').src = path;
+                    if (document.getElementById('sliderOriginal')) document.getElementById('sliderOriginal').src = uploadPreview.src;
+                    if (document.getElementById('sliderProcessed')) document.getElementById('sliderProcessed').src = path;
 
-                document.getElementById('placeholder').style.display = 'none';
-                document.getElementById('resultView').style.display = 'grid';
-                document.getElementById('downloadArea').style.display = 'block';
+                    if (document.getElementById('placeholder')) document.getElementById('placeholder').style.display = 'none';
+                    if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'grid';
+                    if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'block';
 
-                // Initial Tab Setup
-                const tabSide = document.getElementById('tabSideBySide');
-                const tabDynamic = document.getElementById('tabDynamic');
-                const sideView = document.getElementById('resultView');
-                const sliderView = document.getElementById('sliderView');
+                    // Initial Tab Setup
+                    const tabSide = document.getElementById('tabSideBySide');
+                    const tabDynamic = document.getElementById('tabDynamic');
+                    const sideView = document.getElementById('resultView');
+                    const sliderView = document.getElementById('sliderView');
 
-                tabSide.onclick = () => {
-                    tabSide.classList.add('active');
-                    tabDynamic.classList.remove('active');
-                    sideView.style.display = 'grid';
-                    sliderView.style.display = 'none';
-                };
+                    if (tabSide) {
+                        tabSide.onclick = () => {
+                            tabSide.classList.add('active');
+                            if (tabDynamic) tabDynamic.classList.remove('active');
+                            if (sideView) sideView.style.display = 'grid';
+                            if (sliderView) sliderView.style.display = 'none';
+                        };
+                    }
 
-                tabDynamic.onclick = () => {
-                    tabDynamic.classList.add('active');
-                    tabSide.classList.remove('active');
-                    sideView.style.display = 'none';
-                    sliderView.style.display = 'flex';
-                };
+                    if (tabDynamic) {
+                        tabDynamic.onclick = () => {
+                            tabDynamic.classList.add('active');
+                            if (tabSide) tabSide.classList.remove('active');
+                            if (sideView) sideView.style.display = 'none';
+                            if (sliderView) sliderView.style.display = 'flex';
+                        };
+                    }
 
-                // Slider Interaction
-                const slider = document.getElementById('compareSlider');
-                const imgAfter = document.querySelector('.img-after');
-                const handle = document.querySelector('.slider-handle');
+                    // Slider Interaction
+                    const slider = document.getElementById('compareSlider');
+                    const imgAfter = document.querySelector('.img-after');
+                    const handle = document.querySelector('.slider-handle');
 
-                // Stats Update (Task 13)
-                if (data.stats) {
-                    document.getElementById('statsPanel').style.display = 'block';
-                    document.getElementById('procTimeLabel').innerText = data.proc_time.toFixed(2) + 's';
+                    // Stats Update (Task 13)
+                    if (data.stats && document.getElementById('statsPanel')) {
+                        document.getElementById('statsPanel').style.display = 'block';
+                        document.getElementById('procTimeLabel').innerText = data.proc_time.toFixed(2) + 's';
 
-                    // Original Stats
-                    document.getElementById('origBright').innerText = data.stats.original.brightness;
-                    document.getElementById('origContrast').innerText = data.stats.original.contrast;
+                        // Original Stats
+                        document.getElementById('origBright').innerText = data.stats.original.brightness;
+                        document.getElementById('origContrast').innerText = data.stats.original.contrast;
 
-                    const origTotal = data.stats.original.colors.red + data.stats.original.colors.green + data.stats.original.colors.blue;
-                    document.getElementById('origR').style.width = (data.stats.original.colors.red / origTotal * 100) + '%';
-                    document.getElementById('origG').style.width = (data.stats.original.colors.green / origTotal * 100) + '%';
-                    document.getElementById('origB').style.width = (data.stats.original.colors.blue / origTotal * 100) + '%';
+                        const origTotal = data.stats.original.colors.red + data.stats.original.colors.green + data.stats.original.colors.blue;
+                        document.getElementById('origR').style.width = (data.stats.original.colors.red / origTotal * 100) + '%';
+                        document.getElementById('origG').style.width = (data.stats.original.colors.green / origTotal * 100) + '%';
+                        document.getElementById('origB').style.width = (data.stats.original.colors.blue / origTotal * 100) + '%';
 
-                    // Processed Stats
-                    document.getElementById('procBright').innerText = data.stats.processed.brightness;
-                    document.getElementById('procContrast').innerText = data.stats.processed.contrast;
+                        // Processed Stats
+                        document.getElementById('procBright').innerText = data.stats.processed.brightness;
+                        document.getElementById('procContrast').innerText = data.stats.processed.contrast;
 
-                    const procTotal = data.stats.processed.colors.red + data.stats.processed.colors.green + data.stats.processed.colors.blue;
-                    document.getElementById('procR').style.width = (data.stats.processed.colors.red / procTotal * 100) + '%';
-                    document.getElementById('procG').style.width = (data.stats.processed.colors.green / procTotal * 100) + '%';
-                    document.getElementById('procB').style.width = (data.stats.processed.colors.blue / procTotal * 100) + '%';
+                        const procTotal = data.stats.processed.colors.red + data.stats.processed.colors.green + data.stats.processed.colors.blue;
+                        document.getElementById('procR').style.width = (data.stats.processed.colors.red / procTotal * 100) + '%';
+                        document.getElementById('procG').style.width = (data.stats.processed.colors.green / procTotal * 100) + '%';
+                        document.getElementById('procB').style.width = (data.stats.processed.colors.blue / procTotal * 100) + '%';
+                    }
+
+                    if (slider) {
+                        slider.oninput = () => {
+                            const val = slider.value;
+                            if (imgAfter) imgAfter.style.clipPath = `inset(0 0 0 ${val}%)`;
+                            if (handle) handle.style.left = `${val}%`;
+                        };
+                    }
+                } else {
+                    alert("Neural Logic Error: " + data.message);
                 }
-
-                slider.oninput = () => {
-                    const val = slider.value;
-                    imgAfter.style.clipPath = `inset(0 0 0 ${val}%)`;
-                    handle.style.left = `${val}%`;
-                };
-            } else {
-                alert("Neural Logic Error: " + data.message);
+            } catch (error) {
+                console.error(error);
+                alert("Connection lost during neural stylization.");
+            } finally {
+                if (loader) loader.style.display = 'none';
             }
-        } catch (error) {
-            console.error(error);
-            alert("Connection lost during neural stylization.");
-        } finally {
-            loader.style.display = 'none';
-        }
-    };
+        };
+    }
 
     // --- AUTH LOGIC ---
     window.closeAuth = () => { document.getElementById('authModal').style.display = 'none'; };
@@ -811,54 +824,76 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("✅ Current Plan: Starter. You have 5 generations remaining today. Upgrade to Pro for unlimited 4K exports!");
     };
 
-    // Update Navbar if logged in
-    const user = JSON.parse(localStorage.getItem('toonify_user'));
-    const loginBtn = document.getElementById('loginHeaderBtn');
-    const profileContainer = document.getElementById('profileDropdownContainer');
-    const profileBtn = document.getElementById('profilePillBtn');
-    const profileDropdown = document.getElementById('profileDropdown');
+    // --- SESSION & NAV SYNC ---
+    async function syncSession() {
+        const localUser = JSON.parse(localStorage.getItem('toonify_user'));
+        const loginBtn = document.getElementById('loginHeaderBtn');
+        const profileContainer = document.getElementById('profileDropdownContainer');
+        const profileBtn = document.getElementById('profilePillBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
 
-    if (user && profileContainer) {
-        if (loginBtn) loginBtn.style.display = 'none';
-        profileContainer.style.display = 'block';
+        if (!localUser || !profileContainer) return;
 
-        profileBtn.innerHTML = `
-            <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=100&h=100" class="profile-avatar" alt="User ${user.username}">
-            <span style="font-family: 'Inter';">${user.username}</span>
-            <i class="fas fa-chevron-down" style="font-size: 0.7rem; color: #94a3b8; margin-left: auto;"></i>
-        `;
+        try {
+            // Verify session with server
+            const res = await fetch('/api/auth/session');
+            const data = await res.json();
 
-        profileBtn.onclick = (e) => {
-            console.log("Profile clicked");
-            e.stopPropagation();
-            if (profileDropdown.style.display === 'none' || profileDropdown.style.display === '') {
-                profileDropdown.style.display = 'block';
+            if (data.success) {
+                // Session is valid
+                if (loginBtn) loginBtn.style.display = 'none';
+                profileContainer.style.display = 'block';
+
+                profileBtn.innerHTML = `
+                    <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=100&h=100" class="profile-avatar" alt="User ${data.user.username}">
+                    <span style="font-family: 'Inter';">${data.user.username}</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.7rem; color: #94a3b8; margin-left: auto;"></i>
+                `;
+
+                profileBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const isHidden = profileDropdown.style.display === 'none' || profileDropdown.style.display === '';
+                    profileDropdown.style.display = isHidden ? 'block' : 'none';
+                };
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (profileContainer && !profileContainer.contains(e.target)) {
+                        profileDropdown.style.display = 'none';
+                    }
+                });
+
+                // IMPORTANT: Close dropdown when a link inside it is clicked
+                profileDropdown.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        profileDropdown.style.display = 'none';
+                    });
+                });
+
+                // Add Admin Panel link if admin
+                if (data.user.role === 'admin') {
+                    const navLinks = document.querySelector('.nav-links');
+                    if (navLinks && !document.getElementById('adminLink')) {
+                        const adminLink = document.createElement('a');
+                        adminLink.id = 'adminLink';
+                        adminLink.href = '/admin';
+                        adminLink.innerHTML = '<i class="fas fa-user-shield"></i> Admin Settings';
+                        adminLink.style.color = '#ff7e5f';
+                        adminLink.style.fontWeight = '800';
+                        navLinks.appendChild(adminLink);
+                    }
+                }
             } else {
-                profileDropdown.style.display = 'none';
+                // Session expired on server - clear local state
+                localStorage.removeItem('toonify_user');
+                if (loginBtn) loginBtn.style.display = 'block';
+                profileContainer.style.display = 'none';
             }
-        };
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (profileContainer && !profileContainer.contains(e.target)) {
-                profileDropdown.style.display = 'none';
-            }
-        });
-
-        // Add Admin Panel link if admin
-        if (user.role === 'admin') {
-            const navLinks = document.querySelector('.nav-links');
-            if (navLinks && !document.getElementById('adminLink')) {
-                const adminLink = document.createElement('a');
-                adminLink.id = 'adminLink';
-                adminLink.href = '/admin';
-                adminLink.innerHTML = '<i class="fas fa-user-shield"></i> Admin Settings';
-                adminLink.style.color = '#ff7e5f';
-                adminLink.style.fontWeight = '800';
-                navLinks.appendChild(adminLink);
-            }
+        } catch (err) {
+            console.error("Session sync failed:", err);
         }
     }
+    syncSession();
 
     window.handleLogout = async (e) => {
         if (e) e.preventDefault();
@@ -1068,4 +1103,10 @@ document.addEventListener('DOMContentLoaded', () => {
         el.classList.add('reveal-hidden');
         revealObserver.observe(el);
     });
+
+    // Check if we should open auth modal on load
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auth') === 'login') {
+        if (typeof openAuth === 'function') openAuth();
+    }
 });
