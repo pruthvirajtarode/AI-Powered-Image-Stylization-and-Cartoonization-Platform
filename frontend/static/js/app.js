@@ -880,12 +880,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // Standard link navigation should work automatically. 
-                // We only hide it for 'Logout' or similar JS-based actions.
                 profileDropdown.addEventListener('click', (e) => {
-                    if (e.target.closest('a') && e.target.closest('a').getAttribute('href') !== '#') {
-                        // Allow navigation to proceed naturally
-                        console.log("Navigating to:", e.target.closest('a').href);
+                    const link = e.target.closest('a');
+                    if (link && link.getAttribute('href') !== '#') {
+                        // Ensure the dropdown closes but navigation is NOT blocked
+                        profileDropdown.style.display = 'none';
+                        profileDropdown.classList.remove('active');
+
+                        // Force a small delay if the browser is being too aggressive with event cancellation
+                        if (link.href.includes(window.location.origin)) {
+                            console.log("Navigating to:", link.href);
+                        }
                     }
                 });
 
