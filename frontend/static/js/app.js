@@ -380,6 +380,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     body: formData
                 });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Server Error:", response.status, errorText);
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+
                 const data = await response.json();
 
                 if (data.success) {

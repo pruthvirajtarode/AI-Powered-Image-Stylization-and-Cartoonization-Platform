@@ -45,8 +45,8 @@ class ImageProcessor:
         return Image.fromarray(cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB))
     
     @staticmethod
-    def resize_image(image: np.ndarray, max_width: int = 1920, 
-                    max_height: int = 1080) -> np.ndarray:
+    def resize_image(image: np.ndarray, max_width: int = 1280, 
+                    max_height: int = 720) -> np.ndarray:
         """Resize image while maintaining aspect ratio"""
         height, width = image.shape[:2]
         
