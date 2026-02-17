@@ -123,10 +123,22 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function handleFile(inputFiles) {
-        const filesArray = Array.from(inputFiles);
+    function handleFile(input) {
+        let filesArray = [];
+        if (input instanceof FileList) {
+            filesArray = Array.from(input);
+        } else if (input instanceof File || input instanceof Blob) {
+            filesArray = [input];
+            // If it's a blob from camera, give it a name
+            if (input instanceof Blob && !input.name) {
+                input.name = `capture_${Date.now()}.jpg`;
+            }
+        } else if (Array.isArray(input)) {
+            filesArray = input;
+        }
+
         filesArray.forEach(file => {
-            if (!file.type.startsWith('image/')) return;
+            if (file.type && !file.type.startsWith('image/')) return;
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -315,19 +327,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert('Failed to capture image');
                         return;
                     }
-                    selectedFile = blob;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        uploadPreview.src = e.target.result;
-                        uploadPreview.style.display = 'block';
-                        uploadText.style.display = 'none';
-                        processBtn.disabled = false;
-                    };
-                    reader.readAsDataURL(blob);
+
+                    handleFile(blob);
 
                     // Close modal after capture
                     closeCameraModal();
-                    alert('📸 Photo captured! Ready to transform.');
+                    alert('📸 Photo captured! Added to batch queue.');
                 }, 'image/jpeg', 0.95);
             } catch (error) {
                 console.error('Error capturing image:', error);
@@ -393,18 +398,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    uploadPreview.src = event.target.result;
-                    uploadPreview.style.display = 'block';
-                    uploadText.style.display = 'none';
-                    processBtn.disabled = false;
-                };
-                reader.readAsDataURL(file);
+                handleFile(file);
 
                 closeWhatsappModal();
-                alert('✅ Image imported from WhatsApp! Ready to transform.');
+                alert('✅ Image imported from WhatsApp! Added to batch queue.');
             }
         });
     }
