@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     let selectedFile = null;
     let selectedStyle = 'cartoon';
+    let batchQueue = [];
+
 
     const fileInput = document.getElementById('fileInput');
     const dropZone = document.getElementById('dropZone');
@@ -11,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const styleItems = document.querySelectorAll('.style-item');
     const loader = document.getElementById('loader');
     const placeholder = document.getElementById('placeholder');
+
+    if (fileInput) {
+        fileInput.onchange = (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files);
+        };
+    }
     const resultView = document.getElementById('resultView');
     const downloadArea = document.getElementById('downloadArea');
     const downloadBtn = document.getElementById('downloadBtn');
@@ -111,20 +119,90 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files);
         };
     }
 
-    function handleFile(file) {
-        selectedFile = file;
-        const reader = new FileReader();
-        reader.onload = (re) => {
-            uploadPreview.src = re.target.result;
-            uploadPreview.style.display = 'block';
+    function handleFile(inputFiles) {
+        const filesArray = Array.from(inputFiles);
+        filesArray.forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const item = {
+                    file: file,
+                    preview: e.target.result,
+                    style: selectedStyle,
+                    id: Math.random().toString(36).substr(2, 9)
+                };
+                batchQueue.push(item);
+                updateBatchUI();
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    window.clearBatch = () => {
+        batchQueue = [];
+        updateBatchUI();
+    };
+
+    window.updateItemStyle = (id, style) => {
+        const item = batchQueue.find(i => i.id === id);
+        if (item) item.style = style;
+    };
+
+    window.removeItem = (id) => {
+        batchQueue = batchQueue.filter(i => i.id !== id);
+        updateBatchUI();
+    };
+
+    function updateBatchUI() {
+        const batchList = document.getElementById('batchList');
+        const batchItems = document.getElementById('batchItems');
+        const batchCount = document.getElementById('batchCount');
+        const uploadText = document.getElementById('uploadText');
+        const uploadPreview = document.getElementById('uploadPreview');
+        const processBtn = document.getElementById('processBtn');
+
+        if (batchQueue.length > 0) {
+            batchList.style.display = 'block';
+            batchCount.innerText = batchQueue.length;
             uploadText.style.display = 'none';
+            uploadPreview.style.display = 'none';
             processBtn.disabled = false;
-        };
-        reader.readAsDataURL(file);
+            processBtn.innerHTML = `Transform ${batchQueue.length} ${batchQueue.length > 1 ? 'Images' : 'Image'} <i class="fas fa-sparkles"></i>`;
+        } else {
+            batchList.style.display = 'none';
+            uploadText.style.display = 'block';
+            processBtn.disabled = true;
+            processBtn.innerHTML = `Launch Transformation <i class="fas fa-sparkles"></i>`;
+        }
+
+        if (batchItems) {
+            batchItems.innerHTML = batchQueue.map((item, index) => `
+                <div class="batch-item" style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom:5px;">
+                    <img src="${item.preview}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">
+                    <div style="flex: 1; overflow: hidden;">
+                        <p style="font-size: 0.75rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; color: #1e293b;">${item.file.name}</p>
+                        <select onchange="updateItemStyle('${item.id}', this.value)" style="font-size: 0.7rem; border: none; background: transparent; color: var(--primary); font-weight: 700; cursor: pointer; padding: 0; outline: none;">
+                            <option value="cartoon" ${item.style === 'cartoon' ? 'selected' : ''}>3D Pixar</option>
+                            <option value="sketch" ${item.style === 'sketch' ? 'selected' : ''}>Lead Sketch</option>
+                            <option value="pencil_color" ${item.style === 'pencil_color' ? 'selected' : ''}>Color Pencil</option>
+                            <option value="oil_painting" ${item.style === 'oil_painting' ? 'selected' : ''}>Oil Master</option>
+                            <option value="watercolor" ${item.style === 'watercolor' ? 'selected' : ''}>Watercolor</option>
+                            <option value="pop_art" ${item.style === 'pop_art' ? 'selected' : ''}>Pop Art</option>
+                            <option value="vintage" ${item.style === 'vintage' ? 'selected' : ''}>Vintage</option>
+                            <option value="anime" ${item.style === 'anime' ? 'selected' : ''}>Anime</option>
+                            <option value="ghibli" ${item.style === 'ghibli' ? 'selected' : ''}>Ghibli Art</option>
+                            <option value="comic_book" ${item.style === 'comic_book' ? 'selected' : ''}>Comic Book</option>
+                        </select>
+                    </div>
+                    <button onclick="removeItem('${item.id}')" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 5px;"><i class="fas fa-times"></i></button>
+                </div>
+            `).join('');
+        }
     }
 
     // --- CAMERA CAPTURE FUNCTIONALITY ---
@@ -368,15 +446,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // AI SaaS Processing Logic
     if (processBtn) {
         processBtn.onclick = async () => {
-            if (!selectedFile) return;
+            if (batchQueue.length === 0) return;
 
+            const batchQueue_at_start = [...batchQueue];
             loader.style.display = 'flex';
+
             const formData = new FormData();
-            formData.append('image', selectedFile);
-            formData.append('style', selectedStyle);
+
+            const styles = [];
+            batchQueue.forEach(item => {
+                formData.append('images', item.file);
+                styles.push(item.style);
+            });
+            formData.append('styles', styles.join(','));
 
             try {
-                const response = await fetch('/api/process', {
+                const response = await fetch('/api/process/batch', {
                     method: 'POST',
                     body: formData
                 });
@@ -389,91 +474,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = await response.json();
 
-                if (data.success) {
-                    const filename = data.image_filename;
+                if (data.success && data.results && data.results.length > 0) {
+                    // Clear batch queue after success
+                    const completedBatch = data.results;
+                    batchQueue = [];
+                    updateBatchUI();
+
+                    // For now, show the first processed image in the main stage 
+                    // and provide a link to the gallery where all are stored.
+                    const firstSuccess = completedBatch.find(r => r.success);
+                    if (!firstSuccess) {
+                        alert("Batch processing failed for all images.");
+                        return;
+                    }
+
+                    const filename = firstSuccess.image_filename;
                     window.currentImage = filename;
                     const timestamp = Date.now();
                     const path = `/data/processed/${filename}?t=${timestamp}`;
 
-                    // Update Views
-                    if (document.getElementById('viewOriginal')) document.getElementById('viewOriginal').src = uploadPreview.src;
+                    // Find original preview for the first successful item
+                    const originalObj = completedBatch.find(r => r.success);
+                    // Since we cleared batchQueue, we should have saved the previews elsewhere or do it before clearing.
+                    // Let's just use firstSuccess.original_filename if we had it, but we need the dataURL.
+                    // I will modify the loop to keep the first preview.
+
+                    const firstItem = batchQueue_at_start.find(i => i.file.name === firstSuccess.original_filename);
+                    const originalSrc = firstItem ? firstItem.preview : '';
+
+                    // Update Views (Show first one)
+                    if (document.getElementById('viewOriginal')) document.getElementById('viewOriginal').src = originalSrc;
 
                     const processedImg = document.getElementById('viewProcessed');
                     if (processedImg) {
                         processedImg.src = path;
-                        processedImg.onerror = () => {
-                            console.error("Failed to load processed image:", path);
-                            processedImg.src = 'https://img.icons8.com/isometric/100/image-not-available.png';
-                        };
+                        processedImg.onerror = () => { processedImg.src = 'https://img.icons8.com/isometric/100/image-not-available.png'; };
                     }
 
-                    if (document.getElementById('sliderOriginal')) document.getElementById('sliderOriginal').src = uploadPreview.src;
+                    if (document.getElementById('sliderOriginal')) document.getElementById('sliderOriginal').src = originalSrc;
                     if (document.getElementById('sliderProcessed')) document.getElementById('sliderProcessed').src = path;
+
 
                     if (document.getElementById('placeholder')) document.getElementById('placeholder').style.display = 'none';
                     if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'grid';
                     if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'block';
 
-                    // Initial Tab Setup
-                    const tabSide = document.getElementById('tabSideBySide');
-                    const tabDynamic = document.getElementById('tabDynamic');
-                    const sideView = document.getElementById('resultView');
-                    const sliderView = document.getElementById('sliderView');
-
-                    if (tabSide) {
-                        tabSide.onclick = () => {
-                            tabSide.classList.add('active');
-                            if (tabDynamic) tabDynamic.classList.remove('active');
-                            if (sideView) sideView.style.display = 'grid';
-                            if (sliderView) sliderView.style.display = 'none';
-                        };
+                    // Show a specialized Batch Result Banner
+                    const canvasHeader = document.querySelector('.canvas-header');
+                    if (canvasHeader) {
+                        let banner = document.getElementById('batchSuccessBanner');
+                        if (!banner) {
+                            banner = document.createElement('div');
+                            banner.id = 'batchSuccessBanner';
+                            banner.style = "background: #dcfce7; color: #15803d; padding: 15px 25px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 0.9rem; border: 1px solid #bbf7d0;";
+                            canvasHeader.after(banner);
+                        }
+                        banner.innerHTML = `
+                            <span><i class="fas fa-check-circle"></i> Batch transformation complete! processed ${completedBatch.length} images.</span>
+                            <a href="/gallery" style="color: #15803d; text-decoration: underline;">View All in Gallery</a>
+                        `;
+                        banner.style.display = 'flex';
                     }
 
-                    if (tabDynamic) {
-                        tabDynamic.onclick = () => {
-                            tabDynamic.classList.add('active');
-                            if (tabSide) tabSide.classList.remove('active');
-                            if (sideView) sideView.style.display = 'none';
-                            if (sliderView) sliderView.style.display = 'flex';
-                        };
-                    }
-
-                    // Slider Interaction
-                    const slider = document.getElementById('compareSlider');
-                    const imgAfter = document.querySelector('.img-after');
-                    const handle = document.querySelector('.slider-handle');
-
-                    // Stats Update (Task 13)
-                    if (data.stats && document.getElementById('statsPanel')) {
-                        document.getElementById('statsPanel').style.display = 'block';
-                        document.getElementById('procTimeLabel').innerText = data.proc_time.toFixed(2) + 's';
-
-                        // Original Stats
-                        document.getElementById('origBright').innerText = data.stats.original.brightness;
-                        document.getElementById('origContrast').innerText = data.stats.original.contrast;
-
-                        const origTotal = data.stats.original.colors.red + data.stats.original.colors.green + data.stats.original.colors.blue;
-                        document.getElementById('origR').style.width = (data.stats.original.colors.red / origTotal * 100) + '%';
-                        document.getElementById('origG').style.width = (data.stats.original.colors.green / origTotal * 100) + '%';
-                        document.getElementById('origB').style.width = (data.stats.original.colors.blue / origTotal * 100) + '%';
-
-                        // Processed Stats
-                        document.getElementById('procBright').innerText = data.stats.processed.brightness;
-                        document.getElementById('procContrast').innerText = data.stats.processed.contrast;
-
-                        const procTotal = data.stats.processed.colors.red + data.stats.processed.colors.green + data.stats.processed.colors.blue;
-                        document.getElementById('procR').style.width = (data.stats.processed.colors.red / procTotal * 100) + '%';
-                        document.getElementById('procG').style.width = (data.stats.processed.colors.green / procTotal * 100) + '%';
-                        document.getElementById('procB').style.width = (data.stats.processed.colors.blue / procTotal * 100) + '%';
-                    }
-
-                    if (slider) {
-                        slider.oninput = () => {
-                            const val = slider.value;
-                            if (imgAfter) imgAfter.style.clipPath = `inset(0 0 0 ${val}%)`;
-                            if (handle) handle.style.left = `${val}%`;
-                        };
-                    }
+                    alert(`✅ Batch Complete! ${completedBatch.filter(r => r.success).length} images processed successfully.`);
                 } else {
                     alert("Neural Logic Error: " + data.message);
                 }

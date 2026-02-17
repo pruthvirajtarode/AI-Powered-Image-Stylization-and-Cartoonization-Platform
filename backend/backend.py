@@ -445,6 +445,65 @@ def process():
         }
     })
 
+@app.route('/api/process/batch', methods=['POST'])
+def process_batch():
+    if 'user' not in session and not app.debug:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    if 'images' not in request.files:
+        return jsonify({"success": False, "message": "No images uploaded"}), 400
+    
+    files = request.files.getlist('images')
+    styles = request.form.get('styles', 'cartoon') # This will be a comma separated list
+    style_list = styles.split(',')
+    
+    user_id = session['user'].get('id', 0) if 'user' in session else 0
+    results = []
+    
+    for i, file in enumerate(files):
+        try:
+            # Re-read file stream for each image or use seek(0) if needed
+            # In Flask, multiple files are separate file objects.
+            img_bytes = file.read()
+            nparr = np.frombuffer(img_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            
+            if img is None:
+                results.append({"success": False, "filename": file.filename, "message": "Invalid image"})
+                continue
+                
+            style = style_list[i] if i < len(style_list) else style_list[-1]
+            
+            # Process
+            processed_img, proc_time = image_processor.process_image(img, style)
+            
+            # Save processed image
+            filename = f"processed_{uuid.uuid4().hex}.jpg"
+            temp_path = settings.TEMP_FOLDER / filename
+            cv2.imwrite(str(temp_path), processed_img)
+            
+            # Log activity
+            if user_id:
+                db.add_processing_history(user_id, file.filename, filename, style, proc_time)
+                db.log_user_activity(user_id, "stylize_batch", f"Created {style} art in batch")
+                
+            results.append({
+                "success": True,
+                "original_filename": file.filename,
+                "processed_url": f"/data/processed/{filename}",
+                "image_filename": filename,
+                "proc_time": proc_time,
+                "style": style
+            })
+        except Exception as e:
+            results.append({"success": False, "filename": file.filename, "message": str(e)})
+
+    return jsonify({
+        "success": True,
+        "results": results
+    })
+
+
 # --- RAZORPAY PAYMENT ROUTES ---
 @app.route('/api/payment/razorpay/order', methods=['POST'])
 def create_razorpay_order():

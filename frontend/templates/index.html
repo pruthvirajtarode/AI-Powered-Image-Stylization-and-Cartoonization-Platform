@@ -232,13 +232,29 @@
                 <div class="sidebar-group">
                     <h3><i class="fas fa-file-import"></i> Media Asset</h3>
                     <div class="upload-card" id="dropZone">
-                        <input type="file" id="fileInput" hidden accept="image/*">
+                        <input type="file" id="fileInput" hidden accept="image/*" multiple>
                         <div id="uploadText">
                             <i class="fas fa-cloud-arrow-up"></i>
-                            <p><strong>Upload Photo</strong></p>
-                            <p style="font-size:11px; opacity:0.6;">Ready for AI analysis</p>
+                            <p><strong>Upload Photo(s)</strong></p>
+                            <p style="font-size:11px; opacity:0.6;">Ready for batch processing</p>
                         </div>
-                        <img id="uploadPreview" class="upload-preview-small" src="" alt="">
+                        <img id="uploadPreview" class="upload-preview-small" src="" alt="" style="display: none;">
+                    </div>
+
+                    <!-- Batch List Container -->
+                    <div id="batchList" style="display: none; margin-top: 15px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Batch Queue (<span
+                                    id="batchCount">0</span>)</h4>
+                            <button onclick="clearBatch()"
+                                style="background: none; border: none; color: #ef4444; font-size: 0.75rem; font-weight: 700; cursor: pointer;">Clear
+                                All</button>
+                        </div>
+                        <div id="batchItems"
+                            style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                            <!-- Batch items injected here -->
+                        </div>
                     </div>
 
                     <!-- Camera & WhatsApp Options -->
@@ -253,6 +269,7 @@
                         </button>
                     </div>
                 </div>
+
 
                 <button id="processBtn" class="btn-convert" disabled>
                     Launch Transformation <i class="fas fa-sparkles"></i>
