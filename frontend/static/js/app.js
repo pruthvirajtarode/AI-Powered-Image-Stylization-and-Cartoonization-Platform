@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedFile = null;
     let selectedStyle = 'cartoon';
     let batchQueue = [];
+    let selectedBatchItemId = null;
 
 
     const fileInput = document.getElementById('fileInput');
@@ -66,6 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 styleItems.forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
                 selectedStyle = item.dataset.style;
+
+                // If an item is selected in the batch queue, update its style
+                if (selectedBatchItemId) {
+                    updateItemStyle(selectedBatchItemId, selectedStyle);
+                }
             };
         });
     }
@@ -149,6 +155,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: Math.random().toString(36).substr(2, 9)
                 };
                 batchQueue.push(item);
+
+                // If it's the first image, select it automatically
+                if (batchQueue.length === 1) {
+                    selectedBatchItemId = item.id;
+                }
+
                 updateBatchUI();
             };
             reader.readAsDataURL(file);
@@ -162,11 +174,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.updateItemStyle = (id, style) => {
         const item = batchQueue.find(i => i.id === id);
-        if (item) item.style = style;
+        if (item) {
+            item.style = style;
+            updateBatchUI(); // Re-render to show updated style in the list if needed
+        }
+    };
+
+    window.selectBatchItem = (id) => {
+        selectedBatchItemId = id;
+        const item = batchQueue.find(i => i.id === id);
+        if (item) {
+            // Update sidebar style to match selected item
+            styleItems.forEach(si => {
+                if (si.dataset.style === item.style) {
+                    si.classList.add('active');
+                } else {
+                    si.classList.remove('active');
+                }
+            });
+            selectedStyle = item.style;
+        }
+        updateBatchUI();
     };
 
     window.removeItem = (id) => {
         batchQueue = batchQueue.filter(i => i.id !== id);
+        if (selectedBatchItemId === id) selectedBatchItemId = null;
         updateBatchUI();
     };
 
@@ -181,39 +214,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (batchQueue.length > 0) {
             batchList.style.display = 'block';
             batchCount.innerText = batchQueue.length;
-            uploadText.style.display = 'none';
+
+            // Hide the single preview and text, show "Add More" button instead
             uploadPreview.style.display = 'none';
+            uploadText.innerHTML = `
+                <div style="padding: 10px; border: 2px dashed var(--primary); border-radius: 12px; background: var(--primary-soft); color: var(--primary);">
+                    <i class="fas fa-plus-circle" style="font-size: 1.5rem; margin-bottom: 5px; display: block;"></i>
+                    <strong style="font-size: 0.8rem;">Add More Photos</strong>
+                </div>
+            `;
+            uploadText.style.display = 'block';
+
             processBtn.disabled = false;
-            processBtn.innerHTML = `Transform ${batchQueue.length} ${batchQueue.length > 1 ? 'Images' : 'Image'} <i class="fas fa-sparkles"></i>`;
+            processBtn.innerHTML = `Transform ${batchQueue.length} ${batchQueue.length > 1 ? 'Images' : 'Image'} <span style="font-size:0.75rem; opacity:0.8; font-weight:400; display:block;">Neural Batch Enabled</span>`;
         } else {
             batchList.style.display = 'none';
-            uploadText.style.display = 'block';
+            uploadPreview.style.display = 'none';
+            uploadText.innerHTML = '<i class="fas fa-cloud-arrow-up"></i><p><strong>Upload Photo(s)</strong></p><p style="font-size:11px; opacity:0.6;">Select multiple files at once</p>';
             processBtn.disabled = true;
             processBtn.innerHTML = `Launch Transformation <i class="fas fa-sparkles"></i>`;
         }
 
         if (batchItems) {
-            batchItems.innerHTML = batchQueue.map((item, index) => `
-                <div class="batch-item" style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom:5px;">
-                    <img src="${item.preview}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">
+            batchItems.innerHTML = batchQueue.map((item, index) => {
+                const isSelected = item.id === selectedBatchItemId;
+                return `
+                <div class="batch-item ${isSelected ? 'selected' : ''}" 
+                     onclick="selectBatchItem('${item.id}')"
+                     style="display: flex; align-items: center; gap: 10px; background: ${isSelected ? 'rgba(255, 126, 95, 0.08)' : '#f8fafc'}; padding: 10px; border-radius: 12px; border: 1px solid ${isSelected ? 'var(--primary)' : '#e2e8f0'}; margin-bottom:5px; cursor: pointer; transition: 0.2s; position: relative;">
+                    <img src="${item.preview}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #e2e8f0;">
                     <div style="flex: 1; overflow: hidden;">
                         <p style="font-size: 0.75rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; color: #1e293b;">${item.file.name}</p>
-                        <select onchange="updateItemStyle('${item.id}', this.value)" style="font-size: 0.7rem; border: none; background: transparent; color: var(--primary); font-weight: 700; cursor: pointer; padding: 0; outline: none;">
-                            <option value="cartoon" ${item.style === 'cartoon' ? 'selected' : ''}>3D Pixar</option>
-                            <option value="sketch" ${item.style === 'sketch' ? 'selected' : ''}>Lead Sketch</option>
-                            <option value="pencil_color" ${item.style === 'pencil_color' ? 'selected' : ''}>Color Pencil</option>
-                            <option value="oil_painting" ${item.style === 'oil_painting' ? 'selected' : ''}>Oil Master</option>
-                            <option value="watercolor" ${item.style === 'watercolor' ? 'selected' : ''}>Watercolor</option>
-                            <option value="pop_art" ${item.style === 'pop_art' ? 'selected' : ''}>Pop Art</option>
-                            <option value="vintage" ${item.style === 'vintage' ? 'selected' : ''}>Vintage</option>
-                            <option value="anime" ${item.style === 'anime' ? 'selected' : ''}>Anime</option>
-                            <option value="ghibli" ${item.style === 'ghibli' ? 'selected' : ''}>Ghibli Art</option>
-                            <option value="comic_book" ${item.style === 'comic_book' ? 'selected' : ''}>Comic Book</option>
-                        </select>
+                        <p style="font-size: 0.65rem; color: var(--primary); font-weight: 800; margin: 0; text-transform: uppercase;">Style: ${item.style.replace(/_/g, ' ')}</p>
                     </div>
-                    <button onclick="removeItem('${item.id}')" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 5px;"><i class="fas fa-times"></i></button>
+                    <button onclick="event.stopPropagation(); removeItem('${item.id}')" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 5px; font-size: 0.8rem;"><i class="fas fa-trash-alt"></i></button>
+                    ${isSelected ? '<div style="position: absolute; right: 8px; top: 10px; width: 6px; height: 6px; background: var(--primary); border-radius: 50%;"></div>' : ''}
                 </div>
-            `).join('');
+            `}).join('');
         }
     }
 
@@ -474,47 +511,91 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.success && data.results && data.results.length > 0) {
                     // Clear batch queue after success
                     const completedBatch = data.results;
+                    const previewsCopy = batchQueue_at_start; // Use our copy
                     batchQueue = [];
+                    selectedBatchItemId = null;
                     updateBatchUI();
 
-                    // For now, show the first processed image in the main stage 
-                    // and provide a link to the gallery where all are stored.
-                    const firstSuccess = completedBatch.find(r => r.success);
-                    if (!firstSuccess) {
-                        alert("Batch processing failed for all images.");
-                        return;
-                    }
-
-                    const filename = firstSuccess.image_filename;
-                    window.currentImage = filename;
-                    const timestamp = Date.now();
-                    const path = `/data/processed/${filename}?t=${timestamp}`;
-
-                    // Find original preview for the first successful item
-                    const originalObj = completedBatch.find(r => r.success);
-                    // Since we cleared batchQueue, we should have saved the previews elsewhere or do it before clearing.
-                    // Let's just use firstSuccess.original_filename if we had it, but we need the dataURL.
-                    // I will modify the loop to keep the first preview.
-
-                    const firstItem = batchQueue_at_start.find(i => i.file.name === firstSuccess.original_filename);
-                    const originalSrc = firstItem ? firstItem.preview : '';
-
-                    // Update Views (Show first one)
-                    if (document.getElementById('viewOriginal')) document.getElementById('viewOriginal').src = originalSrc;
-
-                    const processedImg = document.getElementById('viewProcessed');
-                    if (processedImg) {
-                        processedImg.src = path;
-                        processedImg.onerror = () => { processedImg.src = 'https://img.icons8.com/isometric/100/image-not-available.png'; };
-                    }
-
-                    if (document.getElementById('sliderOriginal')) document.getElementById('sliderOriginal').src = originalSrc;
-                    if (document.getElementById('sliderProcessed')) document.getElementById('sliderProcessed').src = path;
-
-
+                    // Hide slider/result views initially
                     if (document.getElementById('placeholder')) document.getElementById('placeholder').style.display = 'none';
-                    if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'grid';
-                    if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'block';
+                    if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'none';
+                    if (document.getElementById('sliderView')) document.getElementById('sliderView').style.display = 'none';
+                    if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'none';
+                    if (document.getElementById('statsPanel')) document.getElementById('statsPanel').style.display = 'none';
+
+                    // Show Batch Results Container
+                    const batchResultsView = document.getElementById('batchResultsView');
+                    const batchResultsGrid = document.getElementById('batchResultsGrid');
+                    const batchResultsCount = document.getElementById('batchResultsCount');
+
+                    if (batchResultsView && batchResultsGrid) {
+                        batchResultsView.style.display = 'block';
+                        batchResultsCount.innerText = `${completedBatch.length} Images`;
+
+                        batchResultsGrid.innerHTML = completedBatch.map(res => {
+                            if (!res.success) return `
+                                <div class="batch-result-card" style="background:#fff1f2; border: 1px solid #fecaca; padding:15px; border-radius:16px; text-align:center;">
+                                    <i class="fas fa-exclamation-triangle" style="color:#ef4444; font-size:1.5rem;"></i>
+                                    <p style="font-size:0.75rem; margin-top:10px; color:#991b1b;">Failed: ${res.original_filename}</p>
+                                </div>
+                            `;
+
+                            const previewItem = previewsCopy.find(p => p.file.name === res.original_filename);
+                            const originalSrc = previewItem ? previewItem.preview : '';
+
+                            return `
+                                <div class="batch-result-card" style="background:white; border: 1px solid #e2e8f0; border-radius:16px; overflow:hidden; transition: 0.3s; cursor:pointer;" onclick="viewBatchSingle('${res.image_filename}', '${originalSrc.replace(/'/g, "\\'")}')">
+                                    <div style="position:relative; aspect-ratio: 1; overflow:hidden;">
+                                        <img src="${res.processed_url}" style="width:100%; height:100%; object-fit:cover;">
+                                        <div style="position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(0,0,0,0.6)); padding:10px;">
+                                            <span style="font-size:0.65rem; color:white; font-weight:700; text-transform:uppercase;">${res.style}</span>
+                                        </div>
+                                    </div>
+                                    <div style="padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                                        <span style="font-size:0.7rem; color:#64748b; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100px;">${res.original_filename}</span>
+                                        <a href="${res.processed_url}" download="toonify_${res.image_filename}" style="color:var(--primary); font-size:0.9rem;" onclick="event.stopPropagation()"><i class="fas fa-download"></i></a>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    // Define helper for viewing single image from batch
+                    window.viewBatchSingle = (filename, originalSrc) => {
+                        window.currentImage = filename;
+                        const timestamp = Date.now();
+                        const path = `/data/processed/${filename}?t=${timestamp}`;
+
+                        // Hide batch grid, show single view
+                        if (batchResultsView) batchResultsView.style.display = 'none';
+                        if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'grid';
+                        if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'block';
+
+                        if (document.getElementById('viewOriginal')) document.getElementById('viewOriginal').src = originalSrc;
+                        const processedImg = document.getElementById('viewProcessed');
+                        if (processedImg) processedImg.src = path;
+
+                        if (document.getElementById('sliderOriginal')) document.getElementById('sliderOriginal').src = originalSrc;
+                        if (document.getElementById('sliderProcessed')) document.getElementById('sliderProcessed').src = path;
+
+                        // Add "Back to Batch" button if it doesn't exist
+                        let backBtn = document.getElementById('backToBatchBtn');
+                        if (!backBtn) {
+                            backBtn = document.createElement('button');
+                            backBtn.id = 'backToBatchBtn';
+                            backBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Batch Results';
+                            backBtn.className = 'btn-auth';
+                            backBtn.style = 'margin-bottom: 20px; background: #64748b; font-size: 0.8rem; padding: 8px 15px;';
+                            backBtn.onclick = () => {
+                                if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'none';
+                                if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'none';
+                                if (batchResultsView) batchResultsView.style.display = 'block';
+                            };
+                            document.querySelector('.app-canvas').prepend(backBtn);
+                        } else {
+                            backBtn.style.display = 'block';
+                        }
+                    };
 
                     // Show a specialized Batch Result Banner
                     const canvasHeader = document.querySelector('.canvas-header');

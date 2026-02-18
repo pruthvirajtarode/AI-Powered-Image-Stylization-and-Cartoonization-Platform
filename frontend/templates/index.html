@@ -236,7 +236,7 @@
                         <div id="uploadText">
                             <i class="fas fa-cloud-arrow-up"></i>
                             <p><strong>Upload Photo(s)</strong></p>
-                            <p style="font-size:11px; opacity:0.6;">Ready for batch processing</p>
+                            <p style="font-size:11px; opacity:0.6;">Select multiple files at once</p>
                         </div>
                         <img id="uploadPreview" class="upload-preview-small" src="" alt="" style="display: none;">
                     </div>
@@ -319,6 +319,22 @@
                             <div class="slider-handle">
                                 <i class="fas fa-arrows-left-right"></i>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Batch Results Grid -->
+                    <div id="batchResultsView" style="display:none; margin-top: 2rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h4 style="font-family: 'Baloo 2'; color: #1e293b; margin: 0;"><i class="fas fa-images"></i>
+                                Batch Results</h4>
+                            <span id="batchResultsCount"
+                                style="font-size: 0.8rem; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700;">0
+                                Images</span>
+                        </div>
+                        <div id="batchResultsGrid"
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;">
+                            <!-- Processed items will be injected here -->
                         </div>
                     </div>
 
