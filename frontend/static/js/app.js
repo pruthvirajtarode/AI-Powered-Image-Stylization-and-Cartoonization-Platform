@@ -11,6 +11,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadText = document.getElementById('uploadText');
     const processBtn = document.getElementById('processBtn');
 
+    // Task 13: Neural Reality Slider Logic
+    const compareSlider = document.getElementById('compareSlider');
+    const imgAfter = document.querySelector('.img-after');
+    const sliderHandle = document.querySelector('.slider-handle');
+
+    if (compareSlider && imgAfter && sliderHandle) {
+        compareSlider.oninput = (e) => {
+            const value = e.target.value;
+            imgAfter.style.width = `${value}%`;
+            sliderHandle.style.left = `${value}%`;
+        };
+    }
+
     const styleItems = document.querySelectorAll('.style-item');
     const loader = document.getElementById('loader');
     const placeholder = document.getElementById('placeholder');
@@ -27,10 +40,66 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewOriginal = document.getElementById('viewOriginal');
     const viewProcessed = document.getElementById('viewProcessed');
 
+    // Neural View Controls (Task 13)
+    const tabSideBySide = document.getElementById('tabSideBySide');
+    const tabDynamic = document.getElementById('tabDynamic');
+    const sliderView = document.getElementById('sliderView');
+
+    if (tabSideBySide && tabDynamic) {
+        tabSideBySide.onclick = () => {
+            tabSideBySide.classList.add('active');
+            tabDynamic.classList.remove('active');
+            if (resultView) resultView.style.display = 'grid';
+            if (sliderView) sliderView.style.display = 'none';
+        };
+        tabDynamic.onclick = () => {
+            tabDynamic.classList.add('active');
+            tabSideBySide.classList.remove('active');
+            if (resultView) resultView.style.display = 'none';
+            if (sliderView) sliderView.style.display = 'block';
+        };
+    }
+
     // Safe Element existence checks
     /* This ensures that if we are on a page without a specific UI element (like the editor), 
        the script continues to run for other features like the Navbar and Authentication. */
     const hasEditor = fileInput && dropZone && processBtn;
+
+    // Handle Download from Batch Results
+    window.handleBatchDownload = async (event, filename) => {
+        event.stopPropagation();
+        
+        const user = JSON.parse(localStorage.getItem('toonify_user'));
+        if (!user) {
+            openAuth();
+            return;
+        }
+
+        const isPro = user.role === 'admin' || user.role === 'pro_member';
+        
+        if (!isPro) {
+            // Non-pro users MUST pay
+            try {
+                const checkRes = await fetch(`/api/user/check-payment?filename=${filename}`);
+                const checkData = await checkRes.json();
+                
+                if (!checkData.has_paid) {
+                    // User hasn't paid - open payment modal
+                    window.currentImage = filename;
+                    openPayment('jpg', '95');
+                    return;
+                }
+            } catch (err) {
+                console.error('Error checking payment:', err);
+                alert('Unable to verify payment status. Please try again.');
+                return;
+            }
+        }
+
+        // User is Pro/Admin or has paid - allow download
+        const url = `/api/user/download?filename=${filename}&format=jpg&quality=95`;
+        window.location.href = url;
+    };
 
     // Handle Download Click
     if (downloadBtn) {
@@ -41,22 +110,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!filename) return;
 
-            // Check if user is Pro/Admin or has paid
+            // Check if user is logged in
             const user = JSON.parse(localStorage.getItem('toonify_user'));
             if (!user) {
                 openAuth();
                 return;
             }
 
-            // Simple check (server will double-check)
-            // If the user just processed it, they might not have paid yet
-            // If they are Admin/Pro, we allow direct download
-            if (user.role === 'admin' || user.role === 'pro_member') {
-                const url = `/api/user/download?filename=${filename}&format=${format}&quality=${quality}`;
-                window.location.href = url;
-            } else {
-                openPayment(format, quality);
+            // ENFORCE PAYMENT: Check payment status before allowing download
+            const isPro = user.role === 'admin' || user.role === 'pro_member';
+            
+            if (!isPro) {
+                // Non-pro users MUST pay
+                try {
+                    const checkRes = await fetch(`/api/user/check-payment?filename=${filename}`);
+                    const checkData = await checkRes.json();
+                    
+                    if (!checkData.has_paid) {
+                        // User hasn't paid - open payment modal
+                        openPayment(format, quality);
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Error checking payment:', err);
+                    alert('Unable to verify payment status. Please try again.');
+                    return;
+                }
             }
+
+            // User is Pro/Admin or has paid - allow download
+            const url = `/api/user/download?filename=${filename}&format=${format}&quality=${quality}`;
+            window.location.href = url;
         };
     }
 
@@ -546,14 +630,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             return `
                                 <div class="batch-result-card" style="background:white; border: 1px solid #e2e8f0; border-radius:16px; overflow:hidden; transition: 0.3s; cursor:pointer;" onclick="viewBatchSingle('${res.image_filename}', '${originalSrc.replace(/'/g, "\\'")}')">
                                     <div style="position:relative; aspect-ratio: 1; overflow:hidden;">
-                                        <img src="${res.processed_url}" style="width:100%; height:100%; object-fit:cover;">
+                                        <img src="${res.processed_url}?thumb=1" style="width:100%; height:100%; object-fit:cover;" loading="lazy">
                                         <div style="position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(0,0,0,0.6)); padding:10px;">
                                             <span style="font-size:0.65rem; color:white; font-weight:700; text-transform:uppercase;">${res.style}</span>
                                         </div>
                                     </div>
                                     <div style="padding:10px; display:flex; justify-content:space-between; align-items:center;">
                                         <span style="font-size:0.7rem; color:#64748b; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100px;">${res.original_filename}</span>
-                                        <a href="${res.processed_url}" download="toonify_${res.image_filename}" style="color:var(--primary); font-size:0.9rem;" onclick="event.stopPropagation()"><i class="fas fa-download"></i></a>
+                                        <button onclick="handleBatchDownload(event, '${res.image_filename}')" style="background:none; border:none; color:var(--primary); font-size:0.9rem; cursor:pointer;"><i class="fas fa-download"></i></button>
                                     </div>
                                 </div>
                             `;
@@ -568,7 +652,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Hide batch grid, show single view
                         if (batchResultsView) batchResultsView.style.display = 'none';
-                        if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'grid';
+                        const isDynamic = document.getElementById('tabDynamic').classList.contains('active');
+                        if (isDynamic) {
+                            if (sliderView) sliderView.style.display = 'block';
+                            if (resultView) resultView.style.display = 'none';
+                        } else {
+                            if (resultView) resultView.style.display = 'grid';
+                            if (sliderView) sliderView.style.display = 'none';
+                        }
                         if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'block';
 
                         if (document.getElementById('viewOriginal')) document.getElementById('viewOriginal').src = originalSrc;
@@ -577,6 +668,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (document.getElementById('sliderOriginal')) document.getElementById('sliderOriginal').src = originalSrc;
                         if (document.getElementById('sliderProcessed')) document.getElementById('sliderProcessed').src = path;
+
+                        // NEW: Update Stats if available
+                        const result = completedBatch.find(r => r.image_filename === filename);
+                        if (result && result.stats) {
+                            const statsPanel = document.getElementById('statsPanel');
+                            if (statsPanel) statsPanel.style.display = 'block';
+
+                            const s = result.stats;
+                            if (document.getElementById('origBright')) document.getElementById('origBright').innerText = s.original.brightness;
+                            if (document.getElementById('procBright')) document.getElementById('procBright').innerText = s.processed.brightness;
+                            if (document.getElementById('origContrast')) document.getElementById('origContrast').innerText = s.original.contrast;
+                            if (document.getElementById('procContrast')) document.getElementById('procContrast').innerText = s.processed.contrast;
+                            if (document.getElementById('procTimeLabel')) document.getElementById('procTimeLabel').innerText = `${result.proc_time.toFixed(2)}s`;
+
+                            // Color Bars
+                            if (document.getElementById('origR')) document.getElementById('origR').style.width = `${s.original.colors.r}%`;
+                            if (document.getElementById('origG')) document.getElementById('origG').style.width = `${s.original.colors.g}%`;
+                            if (document.getElementById('origB')) document.getElementById('origB').style.width = `${s.original.colors.b}%`;
+                            if (document.getElementById('procR')) document.getElementById('procR').style.width = `${s.processed.colors.r}%`;
+                            if (document.getElementById('procG')) document.getElementById('procG').style.width = `${s.processed.colors.g}%`;
+                            if (document.getElementById('procB')) document.getElementById('procB').style.width = `${s.processed.colors.b}%`;
+                        }
 
                         // Add "Back to Batch" button if it doesn't exist
                         let backBtn = document.getElementById('backToBatchBtn');

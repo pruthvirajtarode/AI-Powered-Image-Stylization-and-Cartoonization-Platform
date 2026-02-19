@@ -35,9 +35,13 @@ MAX_IMAGE_SIZE = int(os.getenv("MAX_IMAGE_SIZE", "10485760"))  # 10MB
 ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"]
 PROCESSED_IMAGE_QUALITY = int(os.getenv("PROCESSED_IMAGE_QUALITY", "95"))
 TEMP_FOLDER = Path(os.getenv("TEMP_FOLDER", str(BASE_DIR / "data" / "processed_images")))
+CACHE_FOLDER = Path(os.getenv("CACHE_FOLDER", str(BASE_DIR / "data" / "cache")))
 
 # Create necessary directories
 TEMP_FOLDER.mkdir(parents=True, exist_ok=True)
+CACHE_FOLDER.mkdir(parents=True, exist_ok=True)
+(CACHE_FOLDER / "watermarked").mkdir(parents=True, exist_ok=True)
+(CACHE_FOLDER / "thumbnails").mkdir(parents=True, exist_ok=True)
 Path(DATABASE_PATH).parent.mkdir(parents=True, exist_ok=True)
 
 # Session Settings

@@ -279,12 +279,30 @@ class Authentication:
         if not user:
             user = db.get_user_by_email(username)
         
-        if not user:
-            return False, None, "Invalid username or password"
-        
+        # Check for lockout
+        now = datetime.now()
+        lockout_until = user.get('lockout_until')
+        if lockout_until:
+            if isinstance(lockout_until, str):
+                lockout_until = datetime.fromisoformat(lockout_until.replace('Z', '+00:00'))
+            
+            if lockout_until > now:
+                return False, None, f"Account locked due to multiple failed attempts. Please try again after {lockout_until.strftime('%H:%M')}."
+
         # Verify password
         if not Authentication.verify_password(password, user['password_hash']):
-            return False, None, "Invalid username or password"
+            # Increment failed attempts
+            attempts = (user.get('failed_attempts') or 0) + 1
+            if attempts >= 5:
+                # Lock for 15 minutes
+                db.update_user_lockout(user['id'], attempts, now + timedelta(minutes=15))
+                return False, None, "Too many failed attempts. Your account is locked for 15 minutes."
+            else:
+                db.update_user_lockout(user['id'], attempts)
+                return False, None, f"Invalid username or password. {5 - attempts} attempts remaining."
+        
+        # Reset attempts on success
+        db.update_user_lockout(user['id'], 0, None)
         
         # Check if user is active
         if not user.get('is_active', True):

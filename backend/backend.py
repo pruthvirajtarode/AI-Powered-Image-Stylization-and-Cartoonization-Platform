@@ -18,6 +18,7 @@ from utils.validators import sanitize_filename
 import config.settings as settings
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__, 
             template_folder='../frontend/templates',
@@ -127,10 +128,10 @@ def get_user_performance():
     history = db.get_user_history(user_id, limit=10) # Recent 10
     stats = db.get_user_stats(user_id)
     
-    # Check if files physically exist (Task for Render Ephemeral storage)
+    # We no longer check .exists() on every file here, as it slows down the API significantly.
+    # The frontend handles missing images via the 'onerror' event for better performance.
     for item in history:
-        file_path = settings.TEMP_FOLDER / item['processed_filename']
-        item['is_missing'] = not file_path.exists()
+        item['is_missing'] = False 
     
     return jsonify({
         "success": True, 
@@ -216,10 +217,10 @@ def get_advanced_history():
     
     history_data = db.get_advanced_history(user_id, style, sort_by, order, limit, offset)
     
-    # Check physical existence for Render
+    # We no longer check .exists() on every file here, as it slows down the API significantly.
+    # The frontend handles missing images via the 'onerror' event for better performance.
     for item in history_data.get('items', []):
-        file_path = settings.TEMP_FOLDER / item['processed_filename']
-        item['is_missing'] = not file_path.exists()
+        item['is_missing'] = False 
         
     return jsonify({"success": True, "data": history_data})
 
@@ -454,49 +455,63 @@ def process_batch():
         return jsonify({"success": False, "message": "No images uploaded"}), 400
     
     files = request.files.getlist('images')
-    styles = request.form.get('styles', 'cartoon') # This will be a comma separated list
-    style_list = styles.split(',')
+    styles_raw = request.form.get('styles', 'cartoon')
+    style_list = styles_raw.split(',')
     
     user_id = session['user'].get('id', 0) if 'user' in session else 0
-    results = []
+    results = [None] * len(files)
     
-    for i, file in enumerate(files):
+    def process_single_task(index, file, style):
         try:
-            # Re-read file stream for each image or use seek(0) if needed
-            # In Flask, multiple files are separate file objects.
+            # Read image
             img_bytes = file.read()
             nparr = np.frombuffer(img_bytes, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             
             if img is None:
-                results.append({"success": False, "filename": file.filename, "message": "Invalid image"})
-                continue
+                return {"success": False, "original_filename": file.filename, "message": "Invalid image"}
                 
-            style = style_list[i] if i < len(style_list) else style_list[-1]
-            
-            # Process
+            # Stylize
             processed_img, proc_time = image_processor.process_image(img, style)
             
-            # Save processed image
+            # Sub-Task 13: Analysis Stats
+            orig_stats = image_processor.get_image_stats(img)
+            proc_stats = image_processor.get_image_stats(processed_img)
+            
+            # Save
             filename = f"processed_{uuid.uuid4().hex}.jpg"
             temp_path = settings.TEMP_FOLDER / filename
-            cv2.imwrite(str(temp_path), processed_img)
+            cv2.imwrite(str(temp_path), processed_img, [cv2.IMWRITE_JPEG_QUALITY, 90])
             
-            # Log activity
+            # Database tasks
             if user_id:
                 db.add_processing_history(user_id, file.filename, filename, style, proc_time)
-                db.log_user_activity(user_id, "stylize_batch", f"Created {style} art in batch")
-                
-            results.append({
+            
+            return {
                 "success": True,
                 "original_filename": file.filename,
                 "processed_url": f"/data/processed/{filename}",
                 "image_filename": filename,
                 "proc_time": proc_time,
-                "style": style
-            })
+                "style": style,
+                "stats": {
+                    "original": orig_stats,
+                    "processed": proc_stats
+                }
+            }
         except Exception as e:
-            results.append({"success": False, "filename": file.filename, "message": str(e)})
+            return {"success": False, "original_filename": file.filename, "message": str(e)}
+
+    # Launch parallel neural tasks
+    max_workers = min(os.cpu_count() or 4, len(files))
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = []
+        for i, file in enumerate(files):
+            style = style_list[i] if i < len(style_list) else style_list[-1]
+            futures.append(executor.submit(process_single_task, i, file, style))
+        
+        for i, future in enumerate(futures):
+            results[i] = future.result()
 
     return jsonify({
         "success": True,
@@ -579,6 +594,28 @@ def admin_transactions():
 from itsdangerous import URLSafeTimedSerializer
 download_serializer = URLSafeTimedSerializer(app.secret_key)
 
+@app.route('/api/user/check-payment')
+def check_payment_status():
+    """Check if user has paid for a specific image"""
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Unauthorized", "has_paid": False}), 401
+    
+    filename = request.args.get('filename')
+    user_id = session['user']['id']
+    
+    # Pro/Admin users don't need to pay
+    is_pro = session['user'].get('role') in ['admin', 'pro_member']
+    if is_pro:
+        return jsonify({"success": True, "has_paid": True, "message": "Pro/Admin user"})
+    
+    # Check if payment exists for this image
+    transaction = db.get_transaction_by_filename(user_id, filename)
+    
+    if transaction and transaction['status'] == 'completed':
+        return jsonify({"success": True, "has_paid": True, "message": "Payment verified"})
+    
+    return jsonify({"success": True, "has_paid": False, "message": "Payment required"})
+
 @app.route('/api/user/download-token')
 def get_download_token():
     """Generate a temporary signed token for download (Task 17)"""
@@ -602,6 +639,7 @@ def get_download_token():
 def secure_download():
     """
     Secure download endpoint for Task 14 & 17.
+    Enforces payment requirement for non-pro users.
     Supports JWT-style signed tokens or active session.
     """
     token = request.args.get('token')
@@ -615,22 +653,25 @@ def secure_download():
             data = download_serializer.loads(token, max_age=3600) # 1 hour validity
             filename = data['f']
             user_id = data['u']
+            is_pro = False  # Token users still need to have paid
         except:
             return "Invalid or expired download link", 403
     elif 'user' in session:
         user_id = session['user']['id']
+        is_pro = session['user'].get('role') in ['admin', 'pro_member']
     else:
         return "Authentication required", 401
 
     if not filename:
         return "Filename missing", 400
-        
-    # Verify payment again if via session
-    if not token:
-        is_pro = session['user'].get('role') in ['admin', 'pro_member']
+    
+    # STRICT: Always verify payment for non-pro users
+    # Even if via session, check that payment was completed
+    if not is_pro:
         transaction = db.get_transaction_by_filename(user_id, filename)
-        if not is_pro and (not transaction or transaction['status'] != 'completed'):
-            return "Payment required", 403
+        if not transaction or transaction['status'] != 'completed':
+            # Return 402 Payment Required status
+            return jsonify({"success": False, "message": "Payment required to download this image"}), 402
         
     # Process Format Conversion (Task 14)
     file_path = settings.TEMP_FOLDER / filename
@@ -661,13 +702,16 @@ def secure_download():
 @app.route('/data/processed/<filename>')
 def get_processed_image(filename):
     """
-    Serve processed images with dynamic watermarking for Task 14.
+    Serve processed images with high-performance caching for Task 14.
     If the user has paid (or is Pro), serve un-watermarked.
-    Otherwise, serve with a subtle watermark.
+    Otherwise, serve a cached watermarked version.
     """
     file_path = settings.TEMP_FOLDER / filename
     if not file_path.exists():
         return "Not found", 404
+    
+    # Check if thumbnail requested for gallery performance
+    is_thumb = request.args.get('thumb', '0') == '1'
     
     # Check if we should watermark
     should_watermark = True
@@ -679,33 +723,68 @@ def get_processed_image(filename):
             should_watermark = False
             
     if not should_watermark:
+        # Paid users get the real deal immediately
+        if is_thumb:
+            thumb_path = settings.CACHE_FOLDER / "thumbnails" / f"thumb_{filename}"
+            if not thumb_path.exists():
+                img = cv2.imread(str(file_path))
+                if img is not None:
+                    h, w = img.shape[:2]
+                    scale = 400 / w
+                    thumb = cv2.resize(img, (400, int(h * scale)))
+                    cv2.imwrite(str(thumb_path), thumb, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            if thumb_path.exists():
+                response = send_from_directory(settings.CACHE_FOLDER / "thumbnails", f"thumb_{filename}")
+                response.headers['Cache-Control'] = 'public, max-age=31536000'
+                return response
+        
         return send_from_directory(settings.TEMP_FOLDER, filename)
     
-    # Apply Watermark on-the-fly
+    # Caching Logic for Watermarked results
+    cache_subdir = "thumbnails" if is_thumb else "watermarked"
+    prefix = "thumb_wm_" if is_thumb else "wm_"
+    cache_filename = f"{prefix}{filename}"
+    cache_path = settings.CACHE_FOLDER / cache_subdir / cache_filename
+    
+    # Return cached version if exists
+    if cache_path.exists():
+        response = send_from_directory(settings.CACHE_FOLDER / cache_subdir, cache_filename)
+        response.headers['Cache-Control'] = 'public, max-age=31536000'
+        return response
+    
+    # Generate and Store in Cache
     img = cv2.imread(str(file_path))
     if img is None:
-        # Fallback to serving original file if OpenCV fails to read (corruption or format issue)
         return send_from_directory(settings.TEMP_FOLDER, filename)
-        
-    h, w = img.shape[:2]
     
     # Add a professional watermark
+    h, w = img.shape[:2]
     watermark_text = "TOONIFY AI PREVIEW"
     font = cv2.FONT_HERSHEY_SIMPLEX
-    scale = w / 1000 # Scaling based on resolution
-    thickness = max(1, int(2 * scale))
+    
+    if is_thumb:
+        # Resize first for thumbnail speed
+        scale_w = 400 / w
+        img = cv2.resize(img, (400, int(h * scale_w)))
+        h, w = img.shape[:2]
+        font_scale = 0.6
+        thickness = 1
+    else:
+        font_scale = w / 1000 
+        thickness = max(1, int(2 * font_scale))
     
     # Semi-transparent overlay
     overlay = img.copy()
-    cv2.putText(overlay, watermark_text, (int(w*0.1), int(h*0.9)), font, scale, (255, 255, 255), thickness)
-    
+    cv2.putText(overlay, watermark_text, (int(w*0.1), int(h*0.9)), font, font_scale, (255, 255, 255), thickness)
     cv2.addWeighted(overlay, 0.4, img, 0.6, 0, img)
     
-    _, img_encoded = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 90])
-    if not _:
-        return send_from_directory(settings.TEMP_FOLDER, filename)
-        
-    return send_file(io.BytesIO(img_encoded.tobytes()), mimetype='image/jpeg')
+    # Save to Cache
+    cv2.imwrite(str(cache_path), img, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    
+    response = send_file(str(cache_path), mimetype='image/jpeg')
+    # Add aggressive caching for these static-ish assets
+    response.headers['Cache-Control'] = 'public, max-age=31536000' # 1 year
+    return response
 
 # --- WHATSAPP WEBHOOK ROUTES ---
 @app.route('/api/whatsapp/webhook', methods=['GET'])

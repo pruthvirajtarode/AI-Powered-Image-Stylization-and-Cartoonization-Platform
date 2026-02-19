@@ -338,9 +338,10 @@
                             `<div class="preview-img-mini" style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;" title="Image expired on Render servers">
                                         <i class="fas fa-image-slash"></i>
                                     </div>` :
-                            `<img src="/data/processed/${item.processed_filename}" 
+                            `<img src="/data/processed/${item.processed_filename}?thumb=1" 
                                          class="preview-img-mini" 
                                          alt="Art" 
+                                         loading="lazy"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                     >
                                     <div class="preview-img-mini" style="display: none; background: #f1f5f9; align-items: center; justify-content: center; color: #94a3b8;">

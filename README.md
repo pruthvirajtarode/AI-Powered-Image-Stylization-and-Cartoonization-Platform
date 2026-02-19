@@ -21,17 +21,22 @@
 
 ## ✨ Key Features
 
-### 🧠 1. Neural Stylization Engine
-*   **Real-time Processing**: High-speed image transformation for **Cartoon, Pencil Sketch, Anime, Oil Painting**, and more.
+### ⚡ 1. Neural Batch System
+*   **Parallel Processing**: Upload multiple images and apply different styles to each in a single batch.
+*   **Dynamic Queue**: Real-time management of your processing queue with individual style selection.
+*   **Real-time Feedback**: Visual status tracking for every image in the batch.
+
+### 🧠 2. Neural Stylization Engine
+*   **High-Fidelity Engine**: Optimized recursive edge-preserving filters for stunning, sharp artistic results.
 *   **A/B Comparison**: Dynamic slider and side-by-side view to witness the artistic evolution.
 *   **Neural Statistics**: In-depth analysis of **Brightness, Contrast, and Color Distribution** for every generation.
 
-### 💰 2. Premium Monetization
-*   **Seamless Payments**: Integrated **Razorpay** for HD exports and Pro subscriptions.
+### 💰 3. Premium Monetization
+*   **Instant Exports**: Integrated **Razorpay** for HD exports and Pro subscriptions.
 *   **Multi-Format Exports**: Save your art in **JPG, PNG, or professional PDF**.
-*   **Elite Downloads**: Secure, signed, temporary download links for maximum privacy.
+*   **Secure Access**: Temporary signed download links and server-side caching for instant delivery.
 
-### 🔒 3. Personal Creative Vault
+### 🔒 4. Personal Creative Vault
 *   **Neural History**: A comprehensive, paginated gallery of all your past creations.
 *   **Secure Privacy**: "Neural Burn" (Danger Zone) for permanent data wiping.
 *   **Smart Management**: Bulk recovery and automated cleanup settings.
@@ -56,16 +61,26 @@ git clone https://github.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-C
 cd AI-Powered-Image-Stylization-and-Cartoonization-Platform
 ```
 
-2️⃣ **Install Dependencies**
-```bash
-pip install -r requirements.txt
-```
+2️⃣ **Configure Environment**
+*   Create a `.env` file in the `backend/` directory from `.env.example`.
+*   Update your API keys (Google, Razorpay, etc.).
 
-3️⃣ **Run the Engine**
+3️⃣ **Run Automated Setup (Windows)**
+```powershell
+./setup.bat
+```
+*Manual Setup:* `pip install -r backend/requirements.txt`
+
+4️⃣ **Launch the Platform**
 ```bash
 python backend/backend.py
 ```
 *Dashboards will be live at `http://localhost:5000`*
+
+---
+
+## 🎨 System Architecture
+See the detailed [System Flowchart](docs/FLOWCHART.md) for a technical breakdown of the processing pipeline.
 
 ---
 
@@ -80,5 +95,4 @@ python backend/backend.py
 
 <p align="center">
   Made with ❤️ by <strong>Pruthviraj Tarode</strong>
-</p>
 

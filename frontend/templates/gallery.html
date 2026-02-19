@@ -236,9 +236,10 @@
                                         <i class="fas fa-ghost fa-3x"></i>
                                         <span style="font-size: 0.8rem; font-weight: 600;">Neural data expired</span>
                                     </div>` :
-                                `<img src="/data/processed/${item.processed_filename}" 
+                                `<img src="/data/processed/${item.processed_filename}?thumb=1" 
                                          class="art-img" 
                                          alt="${item.style}"
+                                         loading="lazy"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                     >
                                     <div class="art-img" style="display: none; background: #f1f5f9; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; gap: 15px;">
@@ -253,11 +254,12 @@
                                     <span class="style-tag">${item.style}</span>
                                     <h3 style="font-size: 0.9rem; font-weight: 500;">${new Date(item.created_at).toLocaleDateString()}</h3>
                                     <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                        <a href="${item.is_missing ? '#' : `/api/user/download?filename=${item.processed_filename}`}" 
+                                        <button onclick="galleryDownload(event, '${item.processed_filename}')" 
                                            class="btn-auth ${item.is_missing ? 'disabled' : ''}" 
-                                           style="padding: 8px 15px; font-size: 0.7rem; flex: 1; ${item.is_missing ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                                           style="padding: 8px 15px; font-size: 0.7rem; flex: 1; ${item.is_missing ? 'opacity: 0.5; cursor: not-allowed;' : ''}" 
+                                           ${item.is_missing ? 'disabled' : ''}>
                                             <i class="fas fa-download"></i> ${isPaid ? 'Recover' : 'Export'}
-                                        </a>
+                                        </button>
                                         <button onclick="deleteHistoryItem(${item.id})" class="btn-auth" style="padding: 8px 15px; font-size: 0.7rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444;">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -283,6 +285,13 @@
                 }
             } catch (err) {
                 console.error("Gallery check error:", err);
+                grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 100px;">
+                    <i class="fas fa-exclamation-triangle fa-3x" style="color: #ef4444;"></i>
+                    <p style="margin-top: 20px; color: #1e293b; font-weight: 600;">Neural Synchronization Failed</p>
+                    <p style="color: #64748b; font-size: 0.9rem;">We couldn't reach your archives. Please try refreshing the page.</p>
+                    <button onclick="loadGallery(0)" class="btn-auth" style="margin-top: 20px;">Retry Now</button>
+                </div>`;
             }
         }
 
@@ -303,6 +312,47 @@
                 }
             }
         }
+
+        async function galleryDownload(event, filename) {
+            event.preventDefault();
+            
+            const user = JSON.parse(localStorage.getItem('toonify_user'));
+            if (!user) {
+                window.location.href = '/?auth=login';
+                return;
+            }
+
+            const isPro = user.role === 'admin' || user.role === 'pro_member';
+            
+            if (!isPro) {
+                // Non-pro users MUST pay
+                try {
+                    const checkRes = await fetch(`/api/user/check-payment?filename=${filename}`);
+                    const checkData = await checkRes.json();
+                    
+                    if (!checkData.has_paid) {
+                        // User hasn't paid - open payment modal
+                        window.currentImage = filename;
+                        // Note: openPayment is defined in app.js
+                        if (typeof openPayment === 'function') {
+                            openPayment('jpg', '95');
+                        } else {
+                            alert('Payment modal not available. Please refresh the page.');
+                        }
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Error checking payment:', err);
+                    alert('Unable to verify payment status. Please try again.');
+                    return;
+                }
+            }
+
+            // User is Pro/Admin or has paid - allow download
+            const url = `/api/user/download?filename=${filename}&format=jpg&quality=95`;
+            window.location.href = url;
+        }
+
 
         function downloadAllHistory() {
             window.location.href = '/api/user/history/download-all';

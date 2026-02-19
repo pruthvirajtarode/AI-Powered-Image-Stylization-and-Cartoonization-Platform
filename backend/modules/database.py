@@ -103,6 +103,8 @@ class Database:
         add_column("users", "last_active", "TIMESTAMP WITH TIME ZONE")
         add_column("users", "is_verified", f"BOOLEAN DEFAULT {self.bool_false}")
         add_column("users", "auto_delete_days", "INTEGER DEFAULT 0") # 0 = Never
+        add_column("users", "failed_attempts", "INTEGER DEFAULT 0")
+        add_column("users", "lockout_until", "TIMESTAMP WITH TIME ZONE")
 
         # Create Default Admin User
         try:
@@ -127,6 +129,16 @@ class Database:
         cursor.execute(f"CREATE TABLE IF NOT EXISTS transactions (id {id_serial}, user_id INTEGER NOT NULL, transaction_id VARCHAR(100) UNIQUE NOT NULL, amount DOUBLE PRECISION NOT NULL, currency VARCHAR(10) DEFAULT 'usd', status VARCHAR(30) DEFAULT 'pending', payment_method VARCHAR(50), image_filename TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)")
         cursor.execute(f"CREATE TABLE IF NOT EXISTS processing_history (id {id_serial}, user_id INTEGER NOT NULL, original_filename TEXT NOT NULL, processed_filename TEXT NOT NULL, style VARCHAR(50) NOT NULL, processing_time DOUBLE PRECISION, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)")
         cursor.execute(f"CREATE TABLE IF NOT EXISTS user_logs (id {id_serial}, user_id INTEGER NOT NULL, action VARCHAR(50) NOT NULL, details TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)")
+
+        conn.commit()
+
+        # Create Indexes for performance (Milestone 3 optimization)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_history_user_id ON processing_history(user_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_history_filename ON processing_history(processed_filename)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_transactions_filename ON transactions(image_filename)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_history_user_style ON processing_history(user_id, style)")
 
         conn.commit()
         conn.close()
@@ -229,6 +241,17 @@ class Database:
         conn.commit()
         conn.close()
 
+    def update_user_lockout(self, user_id: int, attempts: int, lockout_until: datetime = None):
+        """Update failed login attempts and lockout timestamp"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            UPDATE users SET failed_attempts = {self.placeholder}, lockout_until = {self.placeholder}
+            WHERE id = {self.placeholder}
+        """, (attempts, lockout_until, user_id))
+        conn.commit()
+        conn.close()
+    
     def log_user_activity(self, user_id: int, action: str, details: str = None):
         """Log user activity for admin monitoring"""
         conn = self.get_connection()
@@ -391,14 +414,15 @@ class Database:
             params.append(style)
             
         # Count total for pagination (Simplified count)
-        count_query = f"SELECT COUNT(*) FROM processing_history WHERE user_id = {self.placeholder}"
+        count_query = f"SELECT COUNT(*) as total FROM processing_history WHERE user_id = {self.placeholder}"
         count_params = [user_id]
         if style and style != 'all':
             count_query += f" AND style = {self.placeholder}"
             count_params.append(style)
             
         cursor.execute(count_query, tuple(count_params))
-        total_count = cursor.fetchone()[0]
+        row = cursor.fetchone()
+        total_count = row['total'] if self.is_postgres else row[0]
         
         # Sort and Page
         valid_sorts = ['created_at', 'style', 'processing_time']
@@ -444,39 +468,30 @@ class Database:
     
     # Statistics
     def get_user_stats(self, user_id: int) -> Dict:
-        """Get user statistics"""
+        """Get user statistics (High performance optimized)"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
-        # Total images processed
-        cursor.execute(f"SELECT COUNT(*) as total FROM processing_history WHERE user_id = {self.placeholder}", (user_id,))
-        total_processed = cursor.fetchone()['total']
-        
-        # Total transactions
+        # Combined stats query using subqueries for maximum efficiency
         cursor.execute(f"""
-            SELECT COUNT(*) as total_transactions, 
-                   COALESCE(SUM(amount), 0) as total_spent
-            FROM transactions
-            WHERE user_id = {self.placeholder} AND status = 'completed'
-        """, (user_id,))
-        trans_data = cursor.fetchone()
+            SELECT 
+                (SELECT COUNT(*) FROM processing_history WHERE user_id = {self.placeholder}) as total_processed,
+                (SELECT COUNT(*) FROM transactions WHERE user_id = {self.placeholder} AND status = 'completed') as total_transactions,
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = {self.placeholder} AND status = 'completed') as total_spent,
+                (SELECT style FROM processing_history WHERE user_id = {self.placeholder} GROUP BY style ORDER BY COUNT(*) DESC LIMIT 1) as favorite_style
+        """, (user_id, user_id, user_id, user_id))
         
-        # Favorite style
-        cursor.execute(f"""
-            SELECT style, COUNT(*) as count FROM processing_history
-            WHERE user_id = {self.placeholder}
-            GROUP BY style ORDER BY count DESC LIMIT 1
-        """, (user_id,))
-        fav_row = cursor.fetchone()
-        fav_style = fav_row['style'] if fav_row else "None"
-        
+        row = cursor.fetchone()
         conn.close()
         
+        if not row:
+            return {'total_processed': 0, 'total_transactions': 0, 'total_spent': 0, 'favorite_style': "None"}
+
         return {
-            'total_processed': total_processed,
-            'total_transactions': trans_data['total_transactions'],
-            'total_spent': trans_data['total_spent'],
-            'favorite_style': fav_style
+            'total_processed': row['total_processed'] if self.is_postgres else row[0],
+            'total_transactions': row['total_transactions'] if self.is_postgres else row[1],
+            'total_spent': row['total_spent'] if self.is_postgres else row[2],
+            'favorite_style': (row['favorite_style'] if self.is_postgres else row[3]) or "None"
         }
 
     # Verification Operations
