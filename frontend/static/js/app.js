@@ -1361,32 +1361,164 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // ---- PLAN SUBSCRIPTION FLOW ----
+
+    // Shared state for the plan modal
+    let _activePlan = null;   // 'pro' | 'elite'
+    let _activePlanAmount = 0; // INR amount (e.g. 1900 or 4900)
+
+    window.openPlanModal = (plan, amountINR, priceLabel, priceUSD, tagline, badge, features) => {
+        _activePlan = plan;
+        _activePlanAmount = amountINR;
+
+        document.getElementById('planBadge').textContent = badge;
+        document.getElementById('planTagline').textContent = tagline;
+        document.getElementById('planPriceDisplay').textContent = priceLabel;
+        document.getElementById('planPriceUSD').textContent = '≈ ' + priceUSD + ' USD';
+
+        const ul = document.getElementById('planFeatureList');
+        ul.innerHTML = features.map(f =>
+            `<li style="padding:7px 0;border-bottom:1px solid var(--light);color:var(--dark);font-size:0.93rem;"><i class="fas fa-check-circle" style="color:#22c55e;margin-right:10px;"></i>${f}</li>`
+        ).join('');
+        if (ul.lastElementChild) ul.lastElementChild.style.borderBottom = 'none';
+
+        const payBtn = document.getElementById('planPayBtn');
+        payBtn.disabled = false;
+        payBtn.innerHTML = '<i class="fas fa-bolt"></i> Pay &amp; Activate';
+
+        document.getElementById('planModal').style.display = 'flex';
+    };
+
+    window.closePlanModal = () => {
+        document.getElementById('planModal').style.display = 'none';
+    };
+
+    window.startPlanCheckout = async () => {
+        const payBtn = document.getElementById('planPayBtn');
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initialising...';
+
+        try {
+            // 1. Get Razorpay key
+            const configRes = await fetch('/api/config');
+            const configData = await configRes.json();
+
+            // 2. Create order on server
+            const orderRes = await fetch('/api/payment/razorpay/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: _activePlanAmount })
+            });
+            const orderData = await orderRes.json();
+            if (!orderData.success) {
+                alert('Could not create payment order: ' + orderData.message);
+                return;
+            }
+
+            const user = JSON.parse(localStorage.getItem('toonify_user')) || {};
+            const planLabel = _activePlan === 'pro' ? 'Creator Pro' : 'Agency Elite';
+
+            // 3. Open Razorpay checkout
+            const options = {
+                key: configData.razorpay_key,
+                amount: orderData.order.amount,
+                currency: 'INR',
+                name: 'Toonify AI',
+                description: planLabel + ' Subscription',
+                image: '/static/images/logo.png',
+                order_id: orderData.order.id,
+                handler: async function (response) {
+                    // 4. Verify + activate plan
+                    const subRes = await fetch('/api/payment/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            plan: _activePlan,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    });
+                    const subData = await subRes.json();
+                    if (subData.success) {
+                        // Update cached user
+                        const localUser = JSON.parse(localStorage.getItem('toonify_user') || '{}');
+                        localUser.plan = subData.plan;
+                        localStorage.setItem('toonify_user', JSON.stringify(localUser));
+
+                        closePlanModal();
+                        alert('🎉 ' + planLabel + ' activated! Enjoy unlimited generations.');
+                        location.reload();
+                    } else {
+                        alert('Activation failed: ' + (subData.message || 'Please contact support.'));
+                    }
+                },
+                prefill: { name: user.username || '', email: user.email || '' },
+                theme: { color: '#ff7e5f' }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (resp) {
+                alert('Payment failed: ' + resp.error.description);
+            });
+            rzp.open();
+
+        } catch (err) {
+            console.error(err);
+            alert('Unexpected error. Please try again.');
+        } finally {
+            payBtn.disabled = false;
+            payBtn.innerHTML = '<i class="fas fa-bolt"></i> Pay &amp; Activate';
+        }
+    };
+
     window.upgradeToPro = () => {
         const user = JSON.parse(localStorage.getItem('toonify_user'));
-        if (!user) {
-            openAuth();
-            return;
-        }
-
-        const modal = document.getElementById('paymentModal');
-        const payBtn = document.getElementById('payBtn');
-        const modalTitle = modal.querySelector('h2');
-        const modalPrice = modal.querySelector('h1');
-
-        modalTitle.innerHTML = 'Upgrade to <span>Creator Pro</span>';
-        modalPrice.innerHTML = '$19<span>/mo</span>';
-        payBtn.innerHTML = 'Confirm Upgrade <i class="fas fa-rocket"></i>';
-        payBtn.dataset.type = 'subscription';
-
-        openPayment();
+        if (!user) { openAuth(); return; }
+        openPlanModal(
+            'pro', 1900,
+            '₹1,900', '$19',
+            'Unlimited 4K exports & priority processing',
+            'Creator Pro',
+            [
+                'Unlimited Neural Transformations',
+                '4K / 8K Export Quality',
+                'Batch Processing (up to 20 images)',
+                'Priority GPU Queue',
+                'Watermark-Free Downloads'
+            ]
+        );
     };
 
     window.contactSales = () => {
-        alert("🏢 Agency Elite Inquiry Sent! Our enterprise team will contact you within 2 hours to set up your custom neural training cluster.");
+        const user = JSON.parse(localStorage.getItem('toonify_user'));
+        if (!user) { openAuth(); return; }
+        openPlanModal(
+            'elite', 4900,
+            '₹4,900', '$49',
+            'Custom neural clusters & dedicated account manager',
+            'Agency Elite',
+            [
+                'Everything in Creator Pro',
+                'Unlimited Batch (100+ images)',
+                'Custom Style Training',
+                'Dedicated GPU Cluster',
+                'API Access + White-Label',
+                'Priority 24/7 Support'
+            ]
+        );
     };
 
     window.showStarterPlan = () => {
-        alert("✅ Current Plan: Starter. You have 5 generations remaining today. Upgrade to Pro for unlimited 4K exports!");
+        const user = JSON.parse(localStorage.getItem('toonify_user'));
+        if (!user) { openAuth(); return; }
+        const plan = user.plan || 'starter';
+        if (plan === 'starter') {
+            alert('✅ You are on the Free Starter plan.\n\nYou get 5 generations/day with standard quality.\n\nUpgrade to Creator Pro for unlimited 4K exports!');
+        } else {
+            const label = plan === 'pro' ? 'Creator Pro' : 'Agency Elite';
+            alert('🌟 You are already on the ' + label + ' plan. Enjoy your premium features!');
+        }
     };
 
     // --- SESSION & NAV SYNC ---

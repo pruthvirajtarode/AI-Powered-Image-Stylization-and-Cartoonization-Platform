@@ -551,6 +551,36 @@ def verify_razorpay_payment():
         
     return jsonify({"success": success})
 
+@app.route('/api/payment/subscribe', methods=['POST'])
+def subscribe_plan():
+    """Verify a Razorpay payment and upgrade the user's subscription plan."""
+    if 'user' not in session:
+        return jsonify({"success": False, "message": "Login required"}), 401
+
+    data = request.json
+    plan = data.get('plan')  # 'pro' or 'elite'
+    if plan not in ('pro', 'elite'):
+        return jsonify({"success": False, "message": "Invalid plan"}), 400
+
+    from modules.payment import razorpay_processor
+    success = razorpay_processor.verify_payment(
+        data.get('razorpay_order_id'),
+        data.get('razorpay_payment_id'),
+        data.get('razorpay_signature')
+    )
+
+    if success:
+        user_id = session['user']['id']
+        updated = db.update_user_plan(user_id, plan)
+        if updated:
+            session['user']['plan'] = plan
+            db.log_user_activity(user_id, "subscription", f"Upgraded to {plan}")
+            return jsonify({"success": True, "plan": plan})
+        else:
+            return jsonify({"success": False, "message": "Plan update failed"}), 500
+
+    return jsonify({"success": False, "message": "Payment verification failed"}), 400
+
 # --- ADMIN DASHBOARD ROUTES ---
 def admin_required(f):
     from functools import wraps

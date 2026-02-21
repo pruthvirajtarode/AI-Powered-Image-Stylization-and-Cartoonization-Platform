@@ -105,6 +105,7 @@ class Database:
         add_column("users", "auto_delete_days", "INTEGER DEFAULT 0") # 0 = Never
         add_column("users", "failed_attempts", "INTEGER DEFAULT 0")
         add_column("users", "lockout_until", "TIMESTAMP WITH TIME ZONE")
+        add_column("users", "plan", "VARCHAR(20) DEFAULT 'starter'")
 
         # Create Default Admin User
         try:
@@ -281,6 +282,30 @@ class Database:
         conn.close()
         return True
     
+    def update_user_plan(self, user_id: int, plan: str) -> bool:
+        """Update the subscription plan for a user"""
+        allowed_plans = ['starter', 'pro', 'elite']
+        if plan not in allowed_plans:
+            return False
+        conn = None
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                f"UPDATE users SET plan = {self.placeholder} WHERE id = {self.placeholder}",
+                (plan, user_id)
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            print(f"DATABASE ERROR during update_user_plan: {e}")
+            return False
+        finally:
+            if conn:
+                conn.close()
+
     def update_user_settings(self, user_id: int, auto_delete_days: int):
         """Update user privacy settings"""
         conn = self.get_connection()

@@ -840,6 +840,41 @@
         </div>
     </div>
 
+    <!-- Plan Subscription Modal -->
+    <div id="planModal" class="loader-overlay" style="background: rgba(15,23,42,0.92); display: none; z-index: 9999;">
+        <div style="background: var(--white); border-radius: 24px; max-width: 480px; width: 92%; padding: 40px 36px; position: relative; box-shadow: 0 32px 80px rgba(0,0,0,0.4); text-align: center;">
+            <button onclick="closePlanModal()" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--slate);line-height:1;">&times;</button>
+
+            <!-- Plan badge -->
+            <div id="planBadge" style="display:inline-block;background:var(--gradient);color:#fff;font-size:0.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 18px;border-radius:50px;margin-bottom:18px;">Creator Pro</div>
+
+            <h2 style="margin:0 0 6px;font-size:1.9rem;color:var(--dark);">Upgrade Your <span>Plan</span></h2>
+            <p id="planTagline" style="color:var(--slate);margin:0 0 24px;font-size:0.95rem;">Unlimited 4K exports &amp; priority processing</p>
+
+            <!-- Price block -->
+            <div style="background:var(--light);border-radius:16px;padding:20px;margin-bottom:24px;">
+                <div style="display:flex;align-items:baseline;justify-content:center;gap:4px;">
+                    <span style="font-size:2.6rem;font-weight:800;color:var(--dark);" id="planPriceDisplay">₹1,900</span>
+                    <span style="color:var(--slate);font-size:1rem;">/month</span>
+                </div>
+                <p id="planPriceUSD" style="margin:4px 0 0;color:var(--slate);font-size:0.82rem;">≈ $19 USD</p>
+            </div>
+
+            <!-- Feature list -->
+            <ul id="planFeatureList" style="list-style:none;padding:0;margin:0 0 28px;text-align:left;">
+                <li style="padding:7px 0;border-bottom:1px solid var(--light);color:var(--dark);font-size:0.93rem;"><i class="fas fa-check-circle" style="color:#22c55e;margin-right:10px;"></i>Unlimited Neural Transformations</li>
+                <li style="padding:7px 0;border-bottom:1px solid var(--light);color:var(--dark);font-size:0.93rem;"><i class="fas fa-check-circle" style="color:#22c55e;margin-right:10px;"></i>4K / 8K Export Quality</li>
+                <li style="padding:7px 0;border-bottom:1px solid var(--light);color:var(--dark);font-size:0.93rem;"><i class="fas fa-check-circle" style="color:#22c55e;margin-right:10px;"></i>Batch Processing (up to 20 images)</li>
+                <li style="padding:7px 0;color:var(--dark);font-size:0.93rem;"><i class="fas fa-check-circle" style="color:#22c55e;margin-right:10px;"></i>Priority GPU Queue</li>
+            </ul>
+
+            <button id="planPayBtn" class="btn-convert" onclick="startPlanCheckout()" style="width:100%;padding:16px;font-size:1.05rem;">
+                <i class="fas fa-bolt"></i> Pay &amp; Activate
+            </button>
+            <p style="margin:12px 0 0;color:var(--slate);font-size:0.78rem;">Secured by Razorpay &bull; Cancel anytime &bull; No hidden fees</p>
+        </div>
+    </div>
+
     <!-- Camera Capture Modal -->
     <div id="cameraModal" class="loader-overlay" style="display: none; z-index: 9999;">
         <div class="app-container"
@@ -947,7 +982,7 @@
     </button>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="/static/js/app.js?v=300"></script>
+    <script src="/static/js/app.js?v=302"></script>
 
     <script>
         // Go to Top Button Functionality
