@@ -364,68 +364,71 @@
                         </div>
                     </div>
 
-                    <!-- Task 13: Image Statistics Panel -->
-                    <div id="statsPanel"
-                        style="display:none; margin-top: 2rem; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden;">
-                        <div onclick="toggleStatsPanel()" style="display:flex; align-items:center; justify-content:space-between; padding: 18px 25px; cursor:pointer; user-select:none;">
-                            <h4 style="margin:0; font-family: 'Baloo 2'; color: #475569; font-size:1rem;"><i class="fas fa-chart-simple"></i> Neural Analysis Statistics</h4>
+                    <!-- Task 13: Image Statistics + Adjustment Panel -->
+                    <div id="statsPanel" style="display:none; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden;">
+                        <div onclick="toggleStatsPanel()" style="display:flex; align-items:center; justify-content:space-between; padding: 16px 22px; cursor:pointer; user-select:none; background:#fff; border-bottom: 1px solid #e2e8f0;">
+                            <h4 style="margin:0; font-family: 'Baloo 2'; color: #475569; font-size:0.95rem;"><i class="fas fa-chart-simple"></i> Neural Analysis Statistics</h4>
                             <span id="statsPanelChevron" style="color:#94a3b8; font-size:0.85rem; transition: transform 0.3s;"><i class="fas fa-chevron-down"></i></span>
                         </div>
-                        <div id="statsPanelBody" style="padding: 0 25px 25px 25px; display:none;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                            <div id="originalStats">
-                                <h5
-                                    style="color: #64748b; margin-bottom: 12px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                                    Source Analysis</h5>
-                                <div class="stat-row"
-                                    style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
-                                    <span>Brightness:</span> <strong id="origBright">-</strong>
-                                </div>
-                                <div class="stat-row"
-                                    style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
-                                    <span>Contrast:</span> <strong id="origContrast">-</strong>
-                                </div>
-                                <div style="margin-top: 15px;">
-                                    <div
-                                        style="height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; display: flex;">
-                                        <div id="origR" style="width: 33%; background: #ef4444;"></div>
-                                        <div id="origG" style="width: 33%; background: #22c55e;"></div>
-                                        <div id="origB" style="width: 34%; background: #3b82f6;"></div>
+                        <div id="statsPanelBody" style="display:none; padding: 20px 22px;">
+
+                            <!-- Stats Grid -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                <div>
+                                    <h5 style="color: #64748b; margin-bottom: 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Source Analysis</h5>
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;"><span>Brightness:</span><strong id="origBright">-</strong></div>
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.85rem;"><span>Contrast:</span><strong id="origContrast">-</strong></div>
+                                    <div style="height:5px; background:#e2e8f0; border-radius:3px; overflow:hidden; display:flex;">
+                                        <div id="origR" style="width:33%; background:#ef4444;"></div>
+                                        <div id="origG" style="width:33%; background:#22c55e;"></div>
+                                        <div id="origB" style="width:34%; background:#3b82f6;"></div>
                                     </div>
-                                    <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 5px; text-align: center;">
-                                        Vibrant Color Distribution</p>
+                                    <p style="font-size:0.65rem; color:#94a3b8; margin-top:4px; text-align:center;">Vibrant Color Distribution</p>
+                                </div>
+                                <div>
+                                    <h5 style="color: #64748b; margin-bottom: 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Neural Output</h5>
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;"><span>Brightness:</span><strong id="procBright">-</strong></div>
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.85rem;"><span>Contrast:</span><strong id="procContrast">-</strong></div>
+                                    <div style="height:5px; background:#e2e8f0; border-radius:3px; overflow:hidden; display:flex;">
+                                        <div id="procR" style="width:33%; background:#ef4444;"></div>
+                                        <div id="procG" style="width:33%; background:#22c55e;"></div>
+                                        <div id="procB" style="width:34%; background:#3b82f6;"></div>
+                                    </div>
+                                    <p style="font-size:0.65rem; color:#94a3b8; margin-top:4px; text-align:center;">Neural Color Calibration</p>
                                 </div>
                             </div>
-                            <div id="processedStats">
-                                <h5
-                                    style="color: #64748b; margin-bottom: 12px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                                    Neural Output</h5>
-                                <div class="stat-row"
-                                    style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
-                                    <span>Brightness:</span> <strong id="procBright">-</strong>
+
+                            <div style="padding-top:12px; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; font-size:0.78rem; color:#94a3b8; margin-bottom:22px;">
+                                <span>Processing Time: <strong id="procTimeLabel" style="color:var(--primary);">0.00s</strong></span>
+                                <span>Engine: <strong style="color:#64748b;">OpenCV v4.x</strong></span>
+                            </div>
+
+                            <!-- User Adjustment Controls -->
+                            <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; padding:16px;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                                    <h5 style="margin:0; font-family:'Baloo 2'; color:#334155; font-size:0.9rem;"><i class="fas fa-sliders" style="color:var(--primary);"></i> Adjust Output</h5>
+                                    <button onclick="resetAdjustments()" style="background:none; border:1px solid #e2e8f0; border-radius:8px; padding:4px 12px; font-size:0.75rem; color:#64748b; cursor:pointer; font-weight:600;">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
                                 </div>
-                                <div class="stat-row"
-                                    style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
-                                    <span>Contrast:</span> <strong id="procContrast">-</strong>
-                                </div>
-                                <div style="margin-top: 15px;">
-                                    <div
-                                        style="height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; display: flex;">
-                                        <div id="procR" style="width: 33%; background: #ef4444;"></div>
-                                        <div id="procG" style="width: 33%; background: #22c55e;"></div>
-                                        <div id="procB" style="width: 34%; background: #3b82f6;"></div>
+
+                                <div style="margin-bottom:14px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                        <label style="font-size:0.8rem; font-weight:600; color:#475569;"><i class="fas fa-sun" style="color:#f59e0b;"></i> Brightness</label>
+                                        <span id="brightnessVal" style="font-size:0.8rem; font-weight:700; color:var(--primary);">100%</span>
                                     </div>
-                                    <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 5px; text-align: center;">
-                                        Neural Color Calibration</p>
+                                    <input type="range" id="brightnessSlider" class="adjust-slider" min="0" max="200" value="100" oninput="applyAdjustments()">
+                                </div>
+
+                                <div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                        <label style="font-size:0.8rem; font-weight:600; color:#475569;"><i class="fas fa-circle-half-stroke" style="color:#6366f1;"></i> Contrast</label>
+                                        <span id="contrastVal" style="font-size:0.8rem; font-weight:700; color:var(--primary);">100%</span>
+                                    </div>
+                                    <input type="range" id="contrastSlider" class="adjust-slider" min="0" max="200" value="100" oninput="applyAdjustments()">
                                 </div>
                             </div>
-                        </div>
-                        <div
-                            style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8;">
-                            <span>Processing Time: <strong id="procTimeLabel"
-                                    style="color: var(--primary);">0.00s</strong></span>
-                            <span>Engine: <strong style="color: #64748b;">OpenCV v4.x</strong></span>
-                        </div>
+
                         </div><!-- /statsPanelBody -->
                     </div>
 

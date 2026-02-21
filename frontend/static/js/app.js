@@ -821,6 +821,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateBatchUI();
 
                     // Hide all stage views before showing results
+                    document.querySelector('.main-stage').classList.add('main-stage--active');
+                    resetAdjustments();
                     if (document.getElementById('placeholder')) document.getElementById('placeholder').style.display = 'none';
                     if (document.getElementById('cropBoxView')) document.getElementById('cropBoxView').style.display = 'none';
                     if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'none';
@@ -872,6 +874,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const path = `/data/processed/${filename}?t=${timestamp}`;
 
                         // Hide batch grid, show single view
+                        document.querySelector('.main-stage').classList.add('main-stage--active');
+                        resetAdjustments();
                         if (batchResultsView) batchResultsView.style.display = 'none';
                         if (document.getElementById('cropBoxView')) document.getElementById('cropBoxView').style.display = 'none';
                         const isDynamic = document.getElementById('tabDynamic').classList.contains('active');
@@ -975,6 +979,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const isOpen = body.style.display !== 'none';
         body.style.display = isOpen ? 'none' : 'block';
         if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    };
+
+    // Apply CSS brightness/contrast filter to output images
+    window.applyAdjustments = () => {
+        const b = document.getElementById('brightnessSlider').value;
+        const c = document.getElementById('contrastSlider').value;
+        document.getElementById('brightnessVal').innerText = b + '%';
+        document.getElementById('contrastVal').innerText = c + '%';
+        const filterVal = `brightness(${b}%) contrast(${c}%)`;
+        const imgs = [
+            document.getElementById('viewProcessed'),
+            document.getElementById('sliderProcessed')
+        ];
+        imgs.forEach(img => { if (img) img.style.filter = filterVal; });
+    };
+
+    // Reset brightness/contrast sliders and clear filter
+    window.resetAdjustments = () => {
+        const bs = document.getElementById('brightnessSlider');
+        const cs = document.getElementById('contrastSlider');
+        if (bs) bs.value = 100;
+        if (cs) cs.value = 100;
+        if (document.getElementById('brightnessVal')) document.getElementById('brightnessVal').innerText = '100%';
+        if (document.getElementById('contrastVal')) document.getElementById('contrastVal').innerText = '100%';
+        const imgs = [
+            document.getElementById('viewProcessed'),
+            document.getElementById('sliderProcessed')
+        ];
+        imgs.forEach(img => { if (img) img.style.filter = ''; });
     };
 
     window.closeAuth = () => { document.getElementById('authModal').style.display = 'none'; };

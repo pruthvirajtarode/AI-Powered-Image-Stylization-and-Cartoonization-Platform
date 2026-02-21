@@ -767,6 +767,47 @@ h6 {
     box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.02);
 }
 
+/* When results are active, stack everything vertically and allow scroll */
+.main-stage--active {
+    align-items: stretch;
+    justify-content: flex-start;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 24px;
+    gap: 20px;
+}
+
+/* Adjustment slider track styling */
+.adjust-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
+    outline: none;
+    cursor: pointer;
+}
+.adjust-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(255,100,60,0.35);
+    transition: transform 0.15s;
+}
+.adjust-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.adjust-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    border: none;
+}
+
 .placeholder-view {
     text-align: center;
 }
