@@ -1617,28 +1617,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
-    // --- MOBILE MENU LOGIC ---
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.querySelector('.nav-links');
-    if (menuToggle && navLinks) {
-        menuToggle.onclick = () => {
-            navLinks.classList.toggle('active');
-            const icon = menuToggle.querySelector('i');
-            if (navLinks.classList.contains('active')) {
-                icon.className = 'fas fa-times';
-            } else {
-                icon.className = 'fas fa-bars';
-            }
-        };
-        // Close menu on link click
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.onclick = () => {
-                navLinks.classList.remove('active');
-                menuToggle.querySelector('i').className = 'fas fa-bars';
-            };
-        });
-    }
-
     // Gallery Slider Logic (3 seconds)
     const track = document.getElementById('galleryTrack');
     const cards = document.querySelectorAll('.gallery-card');
