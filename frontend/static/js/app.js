@@ -971,6 +971,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- AUTH LOGIC ---
+    // Hamburger menu toggle for mobile
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.querySelector('.nav-links');
+    if (menuToggle && navLinks) {
+        menuToggle.onclick = () => {
+            navLinks.classList.toggle('active');
+            const icon = menuToggle.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-bars');
+                icon.classList.toggle('fa-times');
+            }
+        };
+        // Close menu when a nav link is clicked
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                const icon = menuToggle.querySelector('i');
+                if (icon) { icon.classList.add('fa-bars'); icon.classList.remove('fa-times'); }
+            });
+        });
+    }
+
     // Toggle Neural Analysis Statistics panel open/closed
     window.toggleStatsPanel = () => {
         const body = document.getElementById('statsPanelBody');
