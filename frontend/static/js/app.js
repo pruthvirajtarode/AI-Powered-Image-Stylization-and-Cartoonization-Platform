@@ -820,8 +820,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectedBatchItemId = null;
                     updateBatchUI();
 
-                    // Hide slider/result views initially
+                    // Hide all stage views before showing results
                     if (document.getElementById('placeholder')) document.getElementById('placeholder').style.display = 'none';
+                    if (document.getElementById('cropBoxView')) document.getElementById('cropBoxView').style.display = 'none';
                     if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'none';
                     if (document.getElementById('sliderView')) document.getElementById('sliderView').style.display = 'none';
                     if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'none';
@@ -872,6 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Hide batch grid, show single view
                         if (batchResultsView) batchResultsView.style.display = 'none';
+                        if (document.getElementById('cropBoxView')) document.getElementById('cropBoxView').style.display = 'none';
                         const isDynamic = document.getElementById('tabDynamic').classList.contains('active');
                         if (isDynamic) {
                             if (sliderView) sliderView.style.display = 'block';
