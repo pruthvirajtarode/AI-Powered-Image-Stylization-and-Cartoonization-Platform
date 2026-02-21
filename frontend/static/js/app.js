@@ -895,7 +895,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         const result = completedBatch.find(r => r.image_filename === filename);
                         if (result && result.stats) {
                             const statsPanel = document.getElementById('statsPanel');
+                            const statsPanelBody = document.getElementById('statsPanelBody');
+                            const chevron = document.getElementById('statsPanelChevron');
                             if (statsPanel) statsPanel.style.display = 'block';
+                            if (statsPanelBody) statsPanelBody.style.display = 'block';
+                            if (chevron) chevron.style.transform = 'rotate(180deg)';
 
                             const s = result.stats;
                             if (document.getElementById('origBright')) document.getElementById('origBright').innerText = s.original.brightness;
@@ -963,6 +967,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- AUTH LOGIC ---
+    // Toggle Neural Analysis Statistics panel open/closed
+    window.toggleStatsPanel = () => {
+        const body = document.getElementById('statsPanelBody');
+        const chevron = document.getElementById('statsPanelChevron');
+        if (!body) return;
+        const isOpen = body.style.display !== 'none';
+        body.style.display = isOpen ? 'none' : 'block';
+        if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    };
+
     window.closeAuth = () => { document.getElementById('authModal').style.display = 'none'; };
     window.toggleAuth = (e, target) => {
         if (e && e.preventDefault) e.preventDefault();
