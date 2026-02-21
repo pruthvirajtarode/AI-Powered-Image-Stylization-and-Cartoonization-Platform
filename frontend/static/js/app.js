@@ -983,10 +983,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Apply CSS brightness/contrast filter to output images
     window.applyAdjustments = () => {
-        const b = document.getElementById('brightnessSlider').value;
-        const c = document.getElementById('contrastSlider').value;
-        document.getElementById('brightnessVal').innerText = b + '%';
-        document.getElementById('contrastVal').innerText = c + '%';
+        const bsEl = document.getElementById('brightnessSlider');
+        const csEl = document.getElementById('contrastSlider');
+        if (!bsEl || !csEl) return;
+        const b = bsEl.value;
+        const c = csEl.value;
+        if (document.getElementById('brightnessVal')) document.getElementById('brightnessVal').innerText = b + '%';
+        if (document.getElementById('contrastVal')) document.getElementById('contrastVal').innerText = c + '%';
         const filterVal = `brightness(${b}%) contrast(${c}%)`;
         const imgs = [
             document.getElementById('viewProcessed'),
