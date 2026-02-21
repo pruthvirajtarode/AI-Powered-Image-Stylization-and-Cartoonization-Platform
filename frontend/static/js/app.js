@@ -60,6 +60,183 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // Neural Canvas Crop Box Logic
+    const cropBoxView = document.getElementById('cropBoxView');
+    const canvasImage = document.getElementById('canvasImage');
+    const cropBox = document.getElementById('cropBox');
+    const cropOverlay = document.getElementById('cropOverlay');
+    const canvasImageWrapper = document.getElementById('canvasImageWrapper');
+    
+    let cropBoxState = {
+        isActive: false,
+        cropData: null,
+        isDragging: false,
+        dragStartX: 0,
+        dragStartY: 0,
+        dragStartLeft: 0,
+        dragStartTop: 0,
+        activeHandle: null
+    };
+
+    // Initialize crop box events
+    if (cropBox && cropOverlay) {
+        cropOverlay.onmousedown = (e) => {
+            if (!cropBoxState.isActive) {
+                // Create new crop box
+                const rect = canvasImageWrapper.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                cropBox.style.left = x + 'px';
+                cropBox.style.top = y + 'px';
+                cropBox.style.width = '150px';
+                cropBox.style.height = '150px';
+                cropBox.style.display = 'block';
+                cropBoxState.isActive = true;
+                cropBoxState.isDragging = true;
+                cropBoxState.dragStartX = e.clientX;
+                cropBoxState.dragStartY = e.clientY;
+            }
+        };
+        
+        cropBox.onmousedown = (e) => {
+            if (e.target.classList.contains('crop-box-handle')) {
+                cropBoxState.activeHandle = e.target.className.split(' ')[1];
+                cropBoxState.isDragging = true;
+                cropBoxState.dragStartX = e.clientX;
+                cropBoxState.dragStartY = e.clientY;
+                cropBoxState.dragStartLeft = parseInt(cropBox.style.left);
+                cropBoxState.dragStartTop = parseInt(cropBox.style.top);
+                e.preventDefault();
+            } else {
+                // Drag the entire box
+                cropBoxState.isDragging = true;
+                cropBoxState.dragStartX = e.clientX;
+                cropBoxState.dragStartY = e.clientY;
+                cropBoxState.dragStartLeft = parseInt(cropBox.style.left);
+                cropBoxState.dragStartTop = parseInt(cropBox.style.top);
+            }
+        };
+    }
+
+    document.onmousemove = (e) => {
+        if (!cropBoxState.isDragging || !cropBox) return;
+        
+        const deltaX = e.clientX - cropBoxState.dragStartX;
+        const deltaY = e.clientY - cropBoxState.dragStartY;
+        
+        if (cropBoxState.activeHandle) {
+            // Resize operation
+            const newWidth = Math.max(50, parseInt(cropBox.style.width || '150') + deltaX);
+            const newHeight = Math.max(50, parseInt(cropBox.style.height || '150') + deltaY);
+            
+            if (cropBoxState.activeHandle.includes('e')) {
+                cropBox.style.width = newWidth + 'px';
+            }
+            if (cropBoxState.activeHandle.includes('s')) {
+                cropBox.style.height = newHeight + 'px';
+            }
+            if (cropBoxState.activeHandle.includes('w')) {
+                cropBox.style.width = Math.max(50, parseInt(cropBox.style.width || '150') - deltaX) + 'px';
+                cropBox.style.left = (cropBoxState.dragStartLeft + deltaX) + 'px';
+            }
+            if (cropBoxState.activeHandle.includes('n')) {
+                cropBox.style.height = Math.max(50, parseInt(cropBox.style.height || '150') - deltaY) + 'px';
+                cropBox.style.top = (cropBoxState.dragStartTop + deltaY) + 'px';
+            }
+        } else {
+            // Move operation
+            cropBox.style.left = (cropBoxState.dragStartLeft + deltaX) + 'px';
+            cropBox.style.top = (cropBoxState.dragStartTop + deltaY) + 'px';
+        }
+    };
+
+    document.onmouseup = () => {
+        cropBoxState.isDragging = false;
+        cropBoxState.activeHandle = null;
+    };
+
+    // Global Crop Box Functions
+    window.resetCropBox = () => {
+        if (cropBox) {
+            cropBox.style.display = 'none';
+        }
+        cropBoxState.isActive = false;
+        cropBoxState.cropData = null;
+        alert('Crop area reset. Click to draw a new crop box.');
+    };
+
+    window.applyCrop = () => {
+        if (!cropBox || !cropBoxState.isActive) {
+            alert('Please draw a crop box first');
+            return;
+        }
+        
+        const canvasRect = canvasImageWrapper.getBoundingClientRect();
+        const cropRect = cropBox.getBoundingClientRect();
+        
+        // Calculate crop coordinates relative to the image
+        const img = new Image();
+        img.src = canvasImage.src;
+        img.onload = () => {
+            const scaleX = img.width / canvasRect.width;
+            const scaleY = img.height / canvasRect.height;
+            
+            const cropData = {
+                x: (cropRect.left - canvasRect.left) * scaleX,
+                y: (cropRect.top - canvasRect.top) * scaleY,
+                width: cropRect.width * scaleX,
+                height: cropRect.height * scaleY
+            };
+            
+            // Store crop data for this batch item
+            const selectedItem = batchQueue.find(i => i.id === selectedBatchItemId);
+            if (selectedItem) {
+                selectedItem.cropData = cropData;
+                cropBoxState.cropData = cropData;
+                alert('✅ Crop area applied! This selected region will be processed by the neural engine.');
+            }
+        };
+    };
+
+    // Helper function to crop an image file based on crop data
+    window.cropImageFile = async (file, cropData) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Create a canvas with the cropped dimensions
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(cropData.width);
+                    canvas.height = Math.round(cropData.height);
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(
+                        img,
+                        Math.round(cropData.x), 
+                        Math.round(cropData.y), 
+                        Math.round(cropData.width), 
+                        Math.round(cropData.height),
+                        0, 
+                        0, 
+                        Math.round(cropData.width), 
+                        Math.round(cropData.height)
+                    );
+                    
+                    // Convert canvas to blob
+                    canvas.toBlob((blob) => {
+                        // Create a new File object from the blob
+                        const croppedFile = new File([blob], file.name, { type: 'image/jpeg' });
+                        resolve(croppedFile);
+                    }, 'image/jpeg', 0.95);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
     // Safe Element existence checks
     /* This ensures that if we are on a page without a specific UI element (like the editor), 
        the script continues to run for other features like the Navbar and Authentication. */
@@ -243,6 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // If it's the first image, select it automatically
                 if (batchQueue.length === 1) {
                     selectedBatchItemId = item.id;
+                    window.selectBatchItem(item.id); // Trigger crop box view
                 }
 
                 updateBatchUI();
@@ -277,6 +455,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             selectedStyle = item.style;
+            
+            // Show crop box view for this image
+            if (canvasImage && cropBoxView) {
+                canvasImage.src = item.preview;
+                placeholder.style.display = 'none';
+                resultView.style.display = 'none';
+                sliderView.style.display = 'none';
+                cropBoxView.style.display = 'flex';
+                
+                // Reset crop box state and create default crop box
+                cropBoxState.isActive = false;
+                cropBoxState.cropData = null;
+                
+                // Wait for image to load then create default crop box
+                canvasImage.onload = () => {
+                    if (cropBox && canvasImageWrapper) {
+                        const wrapperRect = canvasImageWrapper.getBoundingClientRect();
+                        const padding = 40; // Pixels from edge
+                        
+                        cropBox.style.left = padding + 'px';
+                        cropBox.style.top = padding + 'px';
+                        cropBox.style.width = (wrapperRect.width - padding * 2) + 'px';
+                        cropBox.style.height = (wrapperRect.height - padding * 2) + 'px';
+                        cropBox.style.display = 'block';
+                        cropBoxState.isActive = true;
+                    }
+                };
+                
+                // Trigger load if already cached
+                if (canvasImage.complete) {
+                    canvasImage.onload();
+                }
+            }
         }
         updateBatchUI();
     };
@@ -570,15 +781,24 @@ document.addEventListener('DOMContentLoaded', () => {
             loader.style.display = 'flex';
 
             const formData = new FormData();
-
             const styles = [];
-            batchQueue.forEach(item => {
-                formData.append('images', item.file);
-                styles.push(item.style);
-            });
-            formData.append('styles', styles.join(','));
 
             try {
+                // Process each item, applying crop if needed
+                for (const item of batchQueue) {
+                    let imageToSend = item.file;
+                    
+                    // If item has crop data, crop the image before sending
+                    if (item.cropData) {
+                        imageToSend = await window.cropImageFile(item.file, item.cropData);
+                    }
+                    
+                    formData.append('images', imageToSend);
+                    styles.push(item.style);
+                }
+                
+                formData.append('styles', styles.join(','));
+
                 const response = await fetch('/api/process/batch', {
                     method: 'POST',
                     body: formData

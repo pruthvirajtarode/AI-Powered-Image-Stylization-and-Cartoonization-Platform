@@ -292,6 +292,32 @@
                         <p>Upload your scene from the sidebar to begin the neural process</p>
                     </div>
 
+                    <!-- Neural Canvas Crop Box View -->
+                    <div class="canvas-crop-container" id="cropBoxView" style="display: none;">
+                        <div class="canvas-image-wrapper" id="canvasImageWrapper">
+                            <img id="canvasImage" class="canvas-image" src="" alt="Crop Area">
+                            <div class="crop-box-overlay" id="cropOverlay"></div>
+                            <div class="crop-box" id="cropBox" style="display: none;">
+                                <div class="crop-box-handle crop-handle-nw"></div>
+                                <div class="crop-box-handle crop-handle-ne"></div>
+                                <div class="crop-box-handle crop-handle-sw"></div>
+                                <div class="crop-box-handle crop-handle-se"></div>
+                                <div class="crop-box-handle crop-handle-n"></div>
+                                <div class="crop-box-handle crop-handle-s"></div>
+                                <div class="crop-box-handle crop-handle-w"></div>
+                                <div class="crop-box-handle crop-handle-e"></div>
+                            </div>
+                        </div>
+                        <div class="crop-box-controls">
+                            <button class="crop-btn crop-btn-reset" onclick="resetCropBox()" style="margin-right: auto;">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                            <button class="crop-btn crop-btn-apply" onclick="applyCrop()">
+                                <i class="fas fa-check"></i> Use This Area for Processing
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Side-by-Side View -->
                     <div class="comparison-view" id="resultView">
                         <div class="compare-item">
@@ -397,6 +423,12 @@
                                     style="color: var(--primary);">0.00s</strong></span>
                             <span>Engine: <strong style="color: #64748b;">OpenCV v4.x</strong></span>
                         </div>
+                    </div>
+
+                    <!-- Scoped Stage Loader — scoped to .main-stage only -->
+                    <div id="loader" class="stage-loader">
+                        <div class="spinner"></div>
+                        <h3 style="margin-top:1.5rem; font-family:'Baloo 2'; color:var(--primary); font-size:1.8rem;">Neural Artist at Work...</h3>
                     </div>
                 </div>
 
@@ -591,11 +623,7 @@
         </div>
     </footer>
 
-    <div id="loader" class="loader-overlay">
-        <div class="spinner"></div>
-        <h3 style="margin-top:2rem; font-family:'Baloo 2'; color:var(--primary); font-size:2.2rem;">Neural Artist at
-            Work...</h3>
-    </div>
+    <!-- #loader moved inside .main-stage for scoped loading -->
 
     <!-- Modals -->
     <!-- Authentication Modals -->
