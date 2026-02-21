@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('[Toonify] app.js v303 loaded ✓');
     let selectedFile = null;
     let selectedStyle = 'cartoon';
     let batchQueue = [];
