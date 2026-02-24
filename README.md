@@ -1,6 +1,10 @@
 # <p align="center">🎨 Toonify AI - Professional Image Stylization Platform 🤖</p>
 
 <p align="center">
+  <img src="assets/images/hero.png" alt="Toonify AI Banner" width="100%">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Status-Live-brightgreen?style=for-the-badge" alt="Status">
   <img src="https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python" alt="Python">
   <img src="https://img.shields.io/badge/Framework-Flask-lightgrey?style=for-the-badge&logo=flask" alt="Flask">
@@ -15,6 +19,19 @@
 
 <p align="center">
   <a href="https://toonify-ai-saas.onrender.com/"><strong>🚀 Live Demo: toonify-ai-saas.onrender.com</strong></a>
+</p>
+
+---
+
+## 📸 Visual Preview
+
+<p align="center">
+  <img src="assets/images/editor.png" alt="Neural Production Stage" width="45%">
+  <img src="assets/images/styles.png" alt="Artistic Styles" width="45%">
+</p>
+
+<p align="center">
+  <em>The Neural Production Stage and available Artistic Stylization effects.</em>
 </p>
 
 ---
@@ -86,6 +103,10 @@ See the detailed [System Flowchart](docs/FLOWCHART.md) for a technical breakdown
 
 ## 🎨 Dashboard Tour
 
+<p align="center">
+  <img src="assets/images/login.png" alt="Neural Vault Login" width="80%">
+</p>
+
 *   **Home**: Upload directly via Drag-and-Drop or Camera Capture.
 *   **Dashboard**: View your Account Statistics, Favorite Styles, and Lifetime Spend.
 *   **Vault**: Search through your historical art pieces and manage your exports.
@@ -93,6 +114,18 @@ See the detailed [System Flowchart](docs/FLOWCHART.md) for a technical breakdown
 
 ---
 
+## 📚 Learning & Resources
+
+<p align="center">
+  <img src="assets/images/tutorials.png" alt="Video Tutorials" width="80%">
+</p>
+
+*   Detailed [User Guide](docs/user_guide.md) for getting started.
+*   Technical [Developer Guide](docs/developer_guide.md) for contributors.
+*   [Flowchart](docs/FLOWCHART.md) for deep-dive into the AI pipeline.
+
+---
+
 <p align="center">
   Made with ❤️ by <strong>Pruthviraj Tarode</strong>
-
+</p>
