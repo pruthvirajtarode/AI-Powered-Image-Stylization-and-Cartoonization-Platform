@@ -6,7 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google Identity SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <title>Toonify SaaS | Professional AI Image Stylization</title>
+    <title>Toonify AI | Professional Neural Stylization Studio</title>
+    <meta name="description"
+        content="Transform your photos into breathtaking AI art. Toonify AI uses advanced neural networks for professional cartoonization and artistic stylization.">
+    <meta name="keywords"
+        content="AI Art, Cartoonify, Image Stylization, Toonify, Photo to Cartoon, Neural Network Art">
+    <meta property="og:title" content="Toonify AI - Professional Image Stylization">
+    <meta property="og:description" content="Turn any photo into a masterpiece with our world-class AI engine.">
+    <meta property="og:image" content="/static/images/social-preview.png">
+    <meta name="twitter:card" content="summary_large_image">
+
     <link rel="stylesheet" href="/static/css/styles.css?v=301">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
@@ -237,6 +246,21 @@
                                 alt="Comic Book">
                             <span>💥 Comic Book</span>
                         </div>
+
+                        <!-- Feature 4: Custom Style DNA Transfer -->
+                        <div class="style-item" id="dnaStyleItem" onclick="triggerDnaTransfer()"
+                            style="border: 2px dashed var(--primary); background: rgba(99, 102, 241, 0.05); min-height: 100px;">
+                            <div
+                                style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px;">
+                                <i class="fas fa-dna"
+                                    style="font-size: 1.5rem; color: var(--primary); margin-bottom: 8px;"></i>
+                                <span
+                                    style="font-size: 0.7rem; font-weight: 800; text-align: center; line-height: 1.2;">🎨
+                                    Custom Style<br>DNA Transfer</span>
+                            </div>
+                        </div>
+                        <input type="file" id="dnaFileInput" hidden accept="image/*"
+                            onchange="handleDnaStyleUpload(event)">
                     </div>
                 </div>
 
@@ -506,6 +530,70 @@
                             <option value="80">Optimized (80%)</option>
                         </select>
                     </div>
+                    <div class="ai-post-process"
+                        style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                        <h5
+                            style="margin-bottom: 20px; font-size: 1rem; color: var(--dark); font-weight: 800; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-wand-magic-sparkles" style="color:var(--primary);"></i> AI Post-Processing
+                        </h5>
+
+                        <!-- Magic Backgrounds -->
+                        <div style="margin-bottom: 25px;">
+                            <label
+                                style="display: block; margin-bottom: 12px; font-weight: 600; font-size: 0.85rem; color: var(--slate);">🌍
+                                Teleport to Hand-Drawn Worlds</label>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                                <div class="bg-option active" id="bg-none" onclick="applyMagicBg('none')"
+                                    title="Original Background"
+                                    style="height: 50px; border: 2px solid #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s;">
+                                    <i class="fas fa-ban" style="color: #94a3b8;"></i>
+                                </div>
+                                <div class="bg-option" id="bg-tokyo" onclick="applyMagicBg('tokyo')"
+                                    title="Tokyo Night Sketch"
+                                    style="height: 50px; border: 2px solid #e2e8f0; border-radius: 10px; overflow: hidden; cursor: pointer; transition: 0.3s;">
+                                    <img src="/static/images/backgrounds/tokyo.png"
+                                        style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                                <div class="bg-option" id="bg-cyberpunk" onclick="applyMagicBg('cyberpunk')"
+                                    title="Pastel Cyberpunk"
+                                    style="height: 50px; border: 2px solid #e2e8f0; border-radius: 10px; overflow: hidden; cursor: pointer; transition: 0.3s;">
+                                    <img src="/static/images/backgrounds/cyberpunk.png"
+                                        style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                                <div class="bg-option" id="bg-forest" onclick="applyMagicBg('forest')"
+                                    title="Ghibli Forest"
+                                    style="height: 50px; border: 2px solid #e2e8f0; border-radius: 10px; overflow: hidden; cursor: pointer; transition: 0.3s;">
+                                    <img src="/static/images/backgrounds/forest.png"
+                                        style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Toon-Mo Animation -->
+                        <div
+                            style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; background: #f1f5f9; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <div>
+                                <span
+                                    style="display: block; font-weight: 800; font-size: 0.9rem; color: var(--dark);">🎬
+                                    Toon-Mo Animation</span>
+                                <span style="font-size: 0.75rem; color: #64748b;">Add breathing & blinking life</span>
+                            </div>
+                            <label class="switch"
+                                style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                                <input type="checkbox" id="toonMoToggle" onchange="toggleToonMo()"
+                                    style="opacity: 0; width: 0; height: 0;">
+                                <span class="slider round"
+                                    style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px;"></span>
+                            </label>
+                        </div>
+
+                        <!-- NFT Minting -->
+                        <button class="btn-nft" onclick="mintNFT()"
+                            style="width: 100%; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; padding: 16px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); transition: 0.3s;">
+                            <i class="fas fa-gem"></i> Mint as Digital Asset (NFT)
+                        </button>
+                    </div>
+
                     <button class="btn-auth" id="downloadBtn"
                         style="width:100%; border-radius:12px; height:64px; font-size:1.1rem;">
                         <i class="fas fa-download"></i> Save Ultra-HD Export
@@ -1075,6 +1163,47 @@
         title="Go to Top">
         <i class="fas fa-arrow-up"></i>
     </button>
+
+    <footer class="saas-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="logo">
+                    <i class="fas fa-magic"></i>
+                    <span>Toonify.AI</span>
+                </div>
+                <p>The premier AI stylization engine for professional creators and digital artists worldwide. Transform
+                    your reality into art.</p>
+                <div class="social-links">
+                    <a href="/twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="/instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="/discord"><i class="fab fa-discord"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h5>Product</h5>
+                <a href="/#app">Neural Editor</a>
+                <a href="/gallery">Art Gallery</a>
+                <a href="/#features">AI Styles</a>
+                <a href="/docs">Documentation</a>
+            </div>
+            <div class="footer-links">
+                <h5>Company</h5>
+                <a href="/our-story">Our Story</a>
+                <a href="/privacy-policy">Privacy Policy</a>
+                <a href="/terms-of-service">Terms of Service</a>
+                <a href="/security">Security Pulse</a>
+            </div>
+            <div class="footer-links">
+                <h5>Support</h5>
+                <a href="mailto:support@toonify.ai">Contact Support</a>
+                <a href="/tutorials">Tutorials</a>
+                <a href="/billing">Billing FAQ</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Toonify Creative Inc. Built with ❤️ for the AI Generation.</p>
+        </div>
+    </footer>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="/static/js/app.js?v=303"></script>

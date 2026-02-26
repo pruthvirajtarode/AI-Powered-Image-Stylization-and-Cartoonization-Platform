@@ -519,6 +519,20 @@ class Database:
             'favorite_style': (row['favorite_style'] if self.is_postgres else row[3]) or "None"
         }
 
+    def get_user_usage_24h(self, user_id: int) -> int:
+        """Count how many images a user processed in the last 24 hours"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        interval_sql = "NOW() - INTERVAL '24 HOURS'" if self.is_postgres else "datetime('now', '-24 hours')"
+        cursor.execute(f"""
+            SELECT COUNT(*) as current FROM processing_history 
+            WHERE user_id = {self.placeholder} AND created_at >= {interval_sql}
+        """, (user_id,))
+        row = cursor.fetchone()
+        count = row['current'] if self.is_postgres else row[0]
+        conn.close()
+        return count
+
     # Verification Operations
     def store_verification_code(self, email: str, code: str, expires_at: datetime):
         """Store a verification code for an email"""

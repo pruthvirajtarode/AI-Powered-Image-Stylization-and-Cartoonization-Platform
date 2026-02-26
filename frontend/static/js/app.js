@@ -974,6 +974,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (!response.ok) {
+                    if (response.status === 402) {
+                        const errorData = await response.json();
+                        alert(errorData.message);
+                        if (typeof window.upgradeToPro === 'function') {
+                            window.upgradeToPro();
+                        }
+                        loader.style.display = 'none';
+                        return;
+                    }
                     const errorText = await response.text();
                     console.error("Server Error:", response.status, errorText);
                     throw new Error(`Server responded with ${response.status}`);
@@ -1276,6 +1285,70 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             btn.innerHTML = originalContent;
             btn.disabled = false;
+        }
+    };
+
+    // --- 🎨 CUSTOM STYLE DNA TRANSFER ---
+    window.triggerDnaTransfer = () => {
+        const input = document.getElementById('dnaFileInput');
+        if (input) input.click();
+    };
+
+    window.handleDnaStyleUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // We need an original image to apply the DNA to
+        const fileInput = document.getElementById('fileInput');
+        const targetImage = fileInput ? fileInput.files[0] : null;
+
+        if (!targetImage) {
+            alert("Upload your main photo first in the 'Media Asset' section!");
+            return;
+        }
+
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.display = 'flex';
+            const statusTxt = loader.querySelector('h3');
+            if (statusTxt) statusTxt.innerText = "Extracting Style DNA...";
+        }
+
+        const formData = new FormData();
+        formData.append('target', targetImage);
+        formData.append('reference', file);
+
+        try {
+            const res = await fetch('/api/process/dna', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const preview = document.getElementById('viewProcessed');
+                const slider = document.getElementById('sliderProcessed');
+                const url = `/data/processed/${data.filename}`;
+
+                if (preview) preview.src = url;
+                if (slider) slider.src = url;
+
+                window.currentImage = data.filename;
+
+                // Switch to result view
+                if (document.getElementById('editView')) document.getElementById('editView').style.display = 'none';
+                if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'block';
+                if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'block';
+
+                alert("🧬 Neural Link Established: Style DNA Injected!");
+            } else {
+                alert("DNA Extraction Failed: " + data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Neural engine timeout during DNA sync.");
+        } finally {
+            if (loader) loader.style.display = 'none';
         }
     };
 
@@ -1942,6 +2015,152 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+
+    // --- 🌍 AI MAGIC BACKGROUNDS (Teleportation) ---
+    window.applyMagicBg = async (bgType) => {
+        if (!window.currentImage) {
+            alert("Upload and process an image first!");
+            return;
+        }
+
+        // Active state UI management
+        document.querySelectorAll('.bg-option').forEach(opt => {
+            opt.style.borderColor = '#e2e8f0';
+            opt.classList.remove('active');
+        });
+        const activeOpt = document.getElementById(`bg-${bgType}`);
+        if (activeOpt) {
+            activeOpt.style.borderColor = 'var(--primary)';
+            activeOpt.classList.add('active');
+        }
+
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.display = 'flex';
+            const statusTxt = loader.querySelector('h3');
+            if (statusTxt) statusTxt.innerText = "Recalculating Realities...";
+        }
+
+        try {
+            const res = await fetch('/api/post-process/background', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: window.currentImage, bg_type: bgType })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const preview = document.getElementById('viewProcessed');
+                const slider = document.getElementById('sliderProcessed');
+                const url = `/data/processed/${data.filename}`;
+
+                if (preview) preview.src = url;
+                if (slider) slider.src = url;
+
+                window.currentImage = data.filename;
+            } else {
+                alert("Matrix Glitch: " + data.message);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            if (loader) loader.style.display = 'none';
+        }
+    };
+
+    // --- 🎬 TOON-MO (Animated Cartoons) ---
+    window.toggleToonMo = async () => {
+        const toggle = document.getElementById('toonMoToggle');
+        if (!window.currentImage) {
+            toggle.checked = false;
+            alert("Process an image first!");
+            return;
+        }
+
+        if (!toggle.checked) return;
+
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.style.display = 'flex';
+            const statusTxt = loader.querySelector('h3');
+            if (statusTxt) statusTxt.innerText = "Adding Neural Pulse...";
+        }
+
+        try {
+            const res = await fetch('/api/post-process/animate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: window.currentImage })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const preview = document.getElementById('viewProcessed');
+                const url = `/data/processed/${data.filename}`;
+                if (preview) preview.src = url;
+
+                window.currentImage = data.filename;
+                alert("✨ Animation Active! Ready for high-tech export.");
+            } else {
+                toggle.checked = false;
+                alert("Neural Sync Failed: " + data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            toggle.checked = false;
+        } finally {
+            if (loader) loader.style.display = 'none';
+        }
+    };
+
+    // --- 💎 WEB3 NFT MINTING ---
+    window.mintNFT = async () => {
+        const user = JSON.parse(localStorage.getItem('toonify_user'));
+        if (!user) { openAuth(); return; }
+
+        if (!window.currentImage) {
+            alert("Synthesis Required: Create artwork before minting.");
+            return;
+        }
+
+        const btn = document.querySelector('.btn-nft');
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-gem fa-spin"></i> Blockchain Handshake...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/web3/mint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: window.currentImage })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                // Check if SweetAlert is available
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Genesis Block Created! 💎',
+                        html: `Asset officially minted on Polygon PoS Network.<br><br><b>TX:</b> <small>${data.tx_hash}</small>`,
+                        icon: 'success',
+                        confirmButtonText: 'View on OpenSea',
+                        showCancelButton: true,
+                        cancelButtonText: 'Dismiss'
+                    }).then((result) => {
+                        if (result.isConfirmed) window.open(data.opensea_url, '_blank');
+                    });
+                } else {
+                    alert("✅ Success! Asset officially minted on the Blockchain.\n\nTransaction: " + data.tx_hash);
+                    window.open(data.opensea_url, '_blank');
+                }
+            }
+        } catch (err) {
+            alert("Protocol Failure: Unable to reach the Neural Blockchain Cluster.");
+        } finally {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        }
+    };
     // --- SCROLL REVEAL ANIMATION ---
     const revealElements = document.querySelectorAll('.feat-card, .gallery-card, .price-card, .section-title, .hero-content, .hero-visual');
 

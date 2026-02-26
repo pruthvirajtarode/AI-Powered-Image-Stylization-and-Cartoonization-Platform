@@ -319,7 +319,7 @@
                 if (data.success) {
                     const stats = data.stats;
                     document.getElementById('statTotal').innerText = stats.total_processed;
-                    document.getElementById('statToday').innerText = user.role === 'user' ? (5 - stats.total_processed) : '∞';
+                    document.getElementById('statToday').innerText = (user.role === 'admin' || user.plan === 'pro' || user.plan === 'elite') ? '∞' : Math.max(0, 5 - stats.usage_24h);
                     document.getElementById('favStyle').innerText = stats.favorite_style || 'None';
                     document.getElementById('statSpent').innerText = `₹${stats.total_spent}`;
 

@@ -374,15 +374,20 @@ class ImageProcessor:
         quantized = centers[labels.flatten()]
         return quantized.reshape(image.shape)
     
-    def process_image(self, image: np.ndarray, style: str) -> Tuple[np.ndarray, float]:
+    def process_image(self, image: np.ndarray, style: str, is_premium: bool = False) -> Tuple[np.ndarray, float]:
         """
         Process image with selected style
         Returns: (processed_image, processing_time)
         """
         start_time = time.time()
         
-        # Resize if too large
-        image = self.resize_image(image)
+        # Resize based on plan
+        if is_premium:
+            # 4K / Ultra-HD Processing for Premium Users
+            image = self.resize_image(image, max_width=3840, max_height=2160)
+        else:
+            # Standard 720p for Free Users
+            image = self.resize_image(image, max_width=1280, max_height=720)
         
         # Apply selected style
         if style == "cartoon":
@@ -483,6 +488,142 @@ class ImageProcessor:
             print(f"Error saving image: {e}")
             return False
     
+    def remove_background_mask(self, image: np.ndarray) -> np.ndarray:
+        """
+        Fast foreground segmentation using thresholding and contours as a fallback for GrabCut.
+        """
+        try:
+            mask = np.zeros(image.shape[:2], np.uint8)
+            bgdModel = np.zeros((1, 65), np.float64)
+            fgdModel = np.zeros((1, 65), np.float64)
+            h, w = image.shape[:2]
+            rect = (int(w*0.1), int(h*0.1), int(w*0.8), int(h*0.8))
+            cv2.grabCut(image, mask, rect, bgdModel, fgdModel, 3, cv2.GC_INIT_WITH_RECT)
+            mask2 = np.where((mask==2)|(mask==0), 0, 1).astype('uint8')
+            mask2 = cv2.GaussianBlur(mask2, (7, 7), 0)
+            return mask2
+        except:
+            # Fallback to center-weighted mask if GrabCut fails
+            h, w = image.shape[:2]
+            mask = np.zeros((h, w), np.uint8)
+            cv2.circle(mask, (w//2, h//2), int(min(h, w)*0.4), 1, -1)
+            return cv2.GaussianBlur(mask, (51, 51), 0)
+
+    def teleport_background(self, image: np.ndarray, bg_type: str) -> np.ndarray:
+        """
+        Teleport user to a new world.
+        """
+        bg_map = {
+            "tokyo": "frontend/static/images/backgrounds/tokyo.png",
+            "cyberpunk": "frontend/static/images/backgrounds/cyberpunk.png",
+            "forest": "frontend/static/images/backgrounds/forest.png"
+        }
+        
+        bg_path = bg_map.get(bg_type)
+        if not bg_path: return image
+        
+        # Load background
+        import os
+        if not os.path.exists(bg_path): return image
+        bg = cv2.imread(bg_path)
+        if bg is None: return image
+        
+        h, w = image.shape[:2]
+        bg = cv2.resize(bg, (w, h))
+        
+        # Segment
+        mask = self.remove_background_mask(image)
+        mask_3d = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR).astype(float)
+        
+        # Blend
+        fg = image.astype(float)
+        bg = bg.astype(float)
+        
+        result = (fg * mask_3d + bg * (1.0 - mask_3d)).astype(np.uint8)
+        return result
+
+    def create_toon_mo(self, image: np.ndarray) -> bytes:
+        """
+        Create a 2-second "breathing" animation (GIF)
+        """
+        from PIL import Image as PILImage
+        frames = []
+        h, w = image.shape[:2]
+        
+        # Convert BGR to RGB for PIL
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        base_pil = PILImage.fromarray(image_rgb)
+        
+        # Generate 15 frames for a smooth pulse
+        for i in range(15):
+            # Scale follows a sine wave for "breathing" effect
+            # Amplitude is 3% zoom
+            scale = 1.0 + 0.03 * np.sin(i * np.pi / 7.5)
+            nw, nh = int(w * scale), int(h * scale)
+            
+            # Resize and crop to original dimensions
+            frame = base_pil.resize((nw, nh), PILImage.LANCZOS)
+            left = (nw - w) // 2
+            top = (nh - h) // 2
+            frame = frame.crop((left, top, left + w, top + h))
+            
+            # Add a subtle brightness pulse
+            from PIL import ImageEnhance
+            enhancer = ImageEnhance.Brightness(frame)
+            frame = enhancer.enhance(1.0 + 0.05 * np.sin(i * np.pi / 7.5))
+            
+            frames.append(frame)
+            
+        byte_io = io.BytesIO()
+        # Save as optimized GIF
+        frames[0].save(
+            byte_io, 
+            format='GIF', 
+            save_all=True, 
+            append_images=frames[1:], 
+            duration=80, 
+            loop=0,
+            optimize=True
+        )
+        return byte_io.getvalue()
+
+    def apply_style_dna(self, target: np.ndarray, reference: np.ndarray) -> np.ndarray:
+        """
+        AI Style DNA Transfer: Extracts the color profile and 'vibe' from a reference 
+        image and injects it into the target image using Lab color space shifting.
+        """
+        # Convert both to LAB space
+        target_lab = cv2.cvtColor(target, cv2.COLOR_BGR2LAB).astype("float32")
+        ref_lab = cv2.cvtColor(reference, cv2.COLOR_BGR2LAB).astype("float32")
+        
+        # Split channels
+        (l_t, a_t, b_t) = cv2.split(target_lab)
+        (l_r, a_r, b_r) = cv2.split(ref_lab)
+        
+        # Calculate stats
+        (l_t_mean, l_t_std) = (l_t.mean(), l_t.std())
+        (a_t_mean, a_t_std) = (a_t.mean(), a_t.std())
+        (b_t_mean, b_t_std) = (b_t.mean(), b_t.std())
+        
+        (l_r_mean, l_r_std) = (l_r.mean(), l_r.std())
+        (a_r_mean, a_r_std) = (a_r.mean(), a_r.std())
+        (b_r_mean, b_r_std) = (b_r.mean(), b_r.std())
+        
+        # Shift and scale channels (Reference DNA injection)
+        l_t = (((l_t - l_t_mean) / (l_t_std + 1e-5)) * l_r_std) + l_r_mean
+        a_t = (((a_t - a_t_mean) / (a_t_std + 1e-5)) * a_r_std) + a_r_mean
+        b_t = (((b_t - b_t_mean) / (b_t_std + 1e-5)) * b_r_std) + b_r_mean
+        
+        # Clip and merge
+        l_t = np.clip(l_t, 0, 255)
+        a_t = np.clip(a_t, 0, 255)
+        b_t = np.clip(b_t, 0, 255)
+        
+        transfer = cv2.merge([l_t, a_t, b_t])
+        transfer = cv2.cvtColor(transfer.astype("uint8"), cv2.COLOR_LAB2BGR)
+        
+        return transfer
+
     @staticmethod
     def get_image_bytes(image: np.ndarray, format: str = 'JPEG', 
                        quality: int = 95) -> bytes:
