@@ -962,56 +962,55 @@
                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
                 <canvas id="cameraCanvas" style="display: none;"></canvas>
             </div>
-        </div>
 
-        <!-- Snapchat Lens Carousel -->
-        <div class="lens-carousel-container" style="margin-bottom: 25px;">
-            <p
-                style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 12px; text-align: center;">
-                Choose Your Snapchat Lens</p>
-            <div class="lens-carousel" id="lensCarousel">
-                <div class="lens-item active" data-lens="none">
-                    <div class="lens-icon"><i class="fas fa-ban"></i></div>
-                    <span>None</span>
-                </div>
-                <div class="lens-item" data-lens="dog">
-                    <div class="lens-icon">🐶</div>
-                    <span>Doggy</span>
-                </div>
-                <div class="lens-item" data-lens="sunglasses">
-                    <div class="lens-icon">😎</div>
-                    <span>Cool</span>
-                </div>
-                <div class="lens-item" data-lens="heart_crown">
-                    <div class="lens-icon">👑</div>
-                    <span>Royalty</span>
-                </div>
-                <div class="lens-item" data-lens="sparkles">
-                    <div class="lens-icon">✨</div>
-                    <span>Magic</span>
-                </div>
-                <div class="lens-item" data-lens="beauty">
-                    <div class="lens-icon">💄</div>
-                    <span>Glow</span>
+            <!-- Snapchat Lens Carousel -->
+            <div class="lens-carousel-container" style="margin-bottom: 25px;">
+                <p
+                    style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 12px; text-align: center;">
+                    Choose Your Snapchat Lens</p>
+                <div class="lens-carousel" id="lensCarousel">
+                    <div class="lens-item active" data-lens="none">
+                        <div class="lens-icon"><i class="fas fa-ban"></i></div>
+                        <span>None</span>
+                    </div>
+                    <div class="lens-item" data-lens="dog">
+                        <div class="lens-icon">🐶</div>
+                        <span>Doggy</span>
+                    </div>
+                    <div class="lens-item" data-lens="sunglasses">
+                        <div class="lens-icon">😎</div>
+                        <span>Cool</span>
+                    </div>
+                    <div class="lens-item" data-lens="heart_crown">
+                        <div class="lens-icon">👑</div>
+                        <span>Royalty</span>
+                    </div>
+                    <div class="lens-item" data-lens="sparkles">
+                        <div class="lens-icon">✨</div>
+                        <span>Magic</span>
+                    </div>
+                    <div class="lens-item" data-lens="beauty">
+                        <div class="lens-icon">💄</div>
+                        <span>Glow</span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-            <button id="captureCameraBtn" class="btn-convert" style="border-radius: 12px; padding: 16px;">
-                <i class="fas fa-camera"></i> Capture Photo
-            </button>
-            <button id="switchCameraBtn" class="btn-auth"
-                style="border-radius: 12px; padding: 16px; background: var(--slate); color: white;">
-                <i class="fas fa-repeat"></i> Switch Camera
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <button id="captureCameraBtn" class="btn-convert" style="border-radius: 12px; padding: 16px;">
+                    <i class="fas fa-camera"></i> Capture Photo
+                </button>
+                <button id="switchCameraBtn" class="btn-auth"
+                    style="border-radius: 12px; padding: 16px; background: var(--slate); color: white;">
+                    <i class="fas fa-repeat"></i> Switch Camera
+                </button>
+            </div>
+
+            <button onclick="closeCameraModal()" class="btn-auth"
+                style="width: 100%; border-radius: 12px; padding: 14px; background: transparent; color: var(--slate); border: 1px solid #e2e8f0;">
+                Cancel
             </button>
         </div>
-
-        <button onclick="closeCameraModal()" class="btn-auth"
-            style="width: 100%; border-radius: 12px; padding: 14px; background: transparent; color: var(--slate); border: 1px solid #e2e8f0;">
-            Cancel
-        </button>
-    </div>
     </div>
 
     <!-- WhatsApp Share Modal -->

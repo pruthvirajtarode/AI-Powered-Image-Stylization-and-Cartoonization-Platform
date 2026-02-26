@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedStyle = 'cartoon';
     let batchQueue = [];
     let selectedBatchItemId = null;
+    window.originalPreviewMap = {}; // Global map for original previews
 
 
     const fileInput = document.getElementById('fileInput');
@@ -396,11 +397,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (input instanceof FileList) {
             filesArray = Array.from(input);
         } else if (input instanceof File || input instanceof Blob) {
-            filesArray = [input];
-            // If it's a blob from camera, give it a name
-            if (input instanceof Blob && !input.name) {
-                input.name = `capture_${Date.now()}.jpg`;
-            }
+            const file = input instanceof File ? input : new File([input], `capture_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            filesArray = [file];
         } else if (Array.isArray(input)) {
             filesArray = input;
         }
@@ -416,6 +414,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     style: selectedStyle,
                     id: Math.random().toString(36).substr(2, 9)
                 };
+
+                // Store in global map for easy retrieval by filename
+                window.originalPreviewMap[file.name] = e.target.result;
+
                 batchQueue.push(item);
 
                 // If it's the first image, select it automatically
@@ -1006,7 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         batchResultsView.style.display = 'block';
                         batchResultsCount.innerText = `${completedBatch.length} Images`;
 
-                        batchResultsGrid.innerHTML = completedBatch.map(res => {
+                        const resultCards = completedBatch.map((res, index) => {
                             if (!res.success) return `
                                 <div class="batch-result-card" style="background:#fff1f2; border: 1px solid #fecaca; padding:15px; border-radius:16px; text-align:center;">
                                     <i class="fas fa-exclamation-triangle" style="color:#ef4444; font-size:1.5rem;"></i>
@@ -1014,11 +1016,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                             `;
 
-                            const previewItem = previewsCopy.find(p => p.file.name === res.original_filename);
+                            // Find the original preview
+                            const previewItem = previewsCopy.find(p => p.file.name === res.original_filename) || previewsCopy[index];
                             const originalSrc = previewItem ? previewItem.preview : '';
 
+                            // Re-ensure it's in the map if it somehow isn't
+                            if (res.original_filename && originalSrc) {
+                                window.originalPreviewMap[res.original_filename] = originalSrc;
+                            }
+
                             return `
-                                <div class="batch-result-card" style="background:white; border: 1px solid #e2e8f0; border-radius:16px; overflow:hidden; transition: 0.3s; cursor:pointer;" onclick="viewBatchSingle('${res.image_filename}', '${originalSrc.replace(/'/g, "\\'")}')">
+                                <div class="batch-result-card" style="background:white; border: 1px solid #e2e8f0; border-radius:16px; overflow:hidden; transition: 0.3s; cursor:pointer;" onclick="viewBatchSingle('${res.image_filename}', '${res.original_filename}')">
                                     <div style="position:relative; aspect-ratio: 1; overflow:hidden;">
                                         <img src="${res.processed_url}?thumb=1" style="width:100%; height:100%; object-fit:cover;" loading="lazy">
                                         <div style="position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(0,0,0,0.6)); padding:10px;">
@@ -1031,14 +1039,18 @@ document.addEventListener('DOMContentLoaded', () => {
                                     </div>
                                 </div>
                             `;
-                        }).join('');
+                        });
+                        batchResultsGrid.innerHTML = resultCards.join('');
                     }
 
                     // Define helper for viewing single image from batch
-                    window.viewBatchSingle = (filename, originalSrc) => {
+                    window.viewBatchSingle = (filename, originalName) => {
                         window.currentImage = filename;
                         const timestamp = Date.now();
                         const path = `/data/processed/${filename}?t=${timestamp}`;
+
+                        // Retrieve original preview from global map
+                        const originalSrc = window.originalPreviewMap[originalName] || '';
 
                         // Hide batch grid, show single view
                         document.querySelector('.main-stage').classList.add('main-stage--active');
