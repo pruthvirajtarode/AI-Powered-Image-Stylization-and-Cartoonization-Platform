@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cropBox = document.getElementById('cropBox');
     const cropOverlay = document.getElementById('cropOverlay');
     const canvasImageWrapper = document.getElementById('canvasImageWrapper');
-    
+
     let cropBoxState = {
         isActive: false,
         cropData: null,
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rect = canvasImageWrapper.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                
+
                 cropBox.style.left = x + 'px';
                 cropBox.style.top = y + 'px';
                 cropBox.style.width = '150px';
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cropBoxState.dragStartY = e.clientY;
             }
         };
-        
+
         cropBox.onmousedown = (e) => {
             if (e.target.classList.contains('crop-box-handle')) {
                 cropBoxState.activeHandle = e.target.className.split(' ')[1];
@@ -122,15 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.onmousemove = (e) => {
         if (!cropBoxState.isDragging || !cropBox) return;
-        
+
         const deltaX = e.clientX - cropBoxState.dragStartX;
         const deltaY = e.clientY - cropBoxState.dragStartY;
-        
+
         if (cropBoxState.activeHandle) {
             // Resize operation
             const newWidth = Math.max(50, parseInt(cropBox.style.width || '150') + deltaX);
             const newHeight = Math.max(50, parseInt(cropBox.style.height || '150') + deltaY);
-            
+
             if (cropBoxState.activeHandle.includes('e')) {
                 cropBox.style.width = newWidth + 'px';
             }
@@ -172,24 +172,24 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Please draw a crop box first');
             return;
         }
-        
+
         const canvasRect = canvasImageWrapper.getBoundingClientRect();
         const cropRect = cropBox.getBoundingClientRect();
-        
+
         // Calculate crop coordinates relative to the image
         const img = new Image();
         img.src = canvasImage.src;
         img.onload = () => {
             const scaleX = img.width / canvasRect.width;
             const scaleY = img.height / canvasRect.height;
-            
+
             const cropData = {
                 x: (cropRect.left - canvasRect.left) * scaleX,
                 y: (cropRect.top - canvasRect.top) * scaleY,
                 width: cropRect.width * scaleX,
                 height: cropRect.height * scaleY
             };
-            
+
             // Store crop data for this batch item
             const selectedItem = batchQueue.find(i => i.id === selectedBatchItemId);
             if (selectedItem) {
@@ -211,20 +211,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = Math.round(cropData.width);
                     canvas.height = Math.round(cropData.height);
-                    
+
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(
                         img,
-                        Math.round(cropData.x), 
-                        Math.round(cropData.y), 
-                        Math.round(cropData.width), 
+                        Math.round(cropData.x),
+                        Math.round(cropData.y),
+                        Math.round(cropData.width),
                         Math.round(cropData.height),
-                        0, 
-                        0, 
-                        Math.round(cropData.width), 
+                        0,
+                        0,
+                        Math.round(cropData.width),
                         Math.round(cropData.height)
                     );
-                    
+
                     // Convert canvas to blob
                     canvas.toBlob((blob) => {
                         // Create a new File object from the blob
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle Download from Batch Results
     window.handleBatchDownload = async (event, filename) => {
         event.stopPropagation();
-        
+
         const user = JSON.parse(localStorage.getItem('toonify_user'));
         if (!user) {
             openAuth();
@@ -254,13 +254,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const isPro = user.role === 'admin' || user.role === 'pro_member';
-        
+
         if (!isPro) {
             // Non-pro users MUST pay
             try {
                 const checkRes = await fetch(`/api/user/check-payment?filename=${filename}`);
                 const checkData = await checkRes.json();
-                
+
                 if (!checkData.has_paid) {
                     // User hasn't paid - open payment modal
                     window.currentImage = filename;
@@ -297,13 +297,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // ENFORCE PAYMENT: Check payment status before allowing download
             const isPro = user.role === 'admin' || user.role === 'pro_member';
-            
+
             if (!isPro) {
                 // Non-pro users MUST pay
                 try {
                     const checkRes = await fetch(`/api/user/check-payment?filename=${filename}`);
                     const checkData = await checkRes.json();
-                    
+
                     if (!checkData.has_paid) {
                         // User hasn't paid - open payment modal
                         openPayment(format, quality);
@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             selectedStyle = item.style;
-            
+
             // Show crop box view for this image
             if (canvasImage && cropBoxView) {
                 canvasImage.src = item.preview;
@@ -464,17 +464,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultView.style.display = 'none';
                 sliderView.style.display = 'none';
                 cropBoxView.style.display = 'flex';
-                
+
                 // Reset crop box state and create default crop box
                 cropBoxState.isActive = false;
                 cropBoxState.cropData = null;
-                
+
                 // Wait for image to load then create default crop box
                 canvasImage.onload = () => {
                     if (cropBox && canvasImageWrapper) {
                         const wrapperRect = canvasImageWrapper.getBoundingClientRect();
                         const padding = 40; // Pixels from edge
-                        
+
                         cropBox.style.left = padding + 'px';
                         cropBox.style.top = padding + 'px';
                         cropBox.style.width = (wrapperRect.width - padding * 2) + 'px';
@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         cropBoxState.isActive = true;
                     }
                 };
-                
+
                 // Trigger load if already cached
                 if (canvasImage.complete) {
                     canvasImage.onload();
@@ -581,6 +581,139 @@ document.addEventListener('DOMContentLoaded', () => {
         stopCamera();
     };
 
+    // --- SNAPCHAT LENS ENGINE ---
+    let currentLens = 'none';
+    let faceMesh = null;
+    let cameraPipe = null;
+    const arCanvas = document.getElementById('arCanvas');
+    const arCtx = arCanvas ? arCanvas.getContext('2d') : null;
+
+    function initFaceMesh() {
+        if (faceMesh) return;
+
+        faceMesh = new FaceMesh({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+        });
+
+        faceMesh.setOptions({
+            maxNumFaces: 1,
+            refineLandmarks: true,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        faceMesh.onResults(onFaceResults);
+    }
+
+    function onFaceResults(results) {
+        if (!arCtx || !arCanvas) return;
+
+        arCtx.save();
+        arCtx.clearRect(0, 0, arCanvas.width, arCanvas.height);
+
+        // Mirror the AR canvas if using front camera
+        if (facingMode === 'user') {
+            arCtx.translate(arCanvas.width, 0);
+            arCtx.scale(-1, 1);
+        }
+
+        if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+            const landmarks = results.multiFaceLandmarks[0];
+            renderLens(landmarks);
+        }
+        arCtx.restore();
+    }
+
+    function renderLens(landmarks) {
+        if (currentLens === 'none') return;
+
+        const width = arCanvas.width;
+        const height = arCanvas.height;
+
+        // Helper to get pixel coordinates
+        const getPt = (idx) => ({ x: landmarks[idx].x * width, y: landmarks[idx].y * height });
+
+        // Common landmarks
+        const forehead = getPt(10);
+        const noseTip = getPt(4);
+        const leftEye = getPt(33);
+        const rightEye = getPt(263);
+        const chin = getPt(152);
+
+        // Calculate face scale and rotation
+        const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
+        const faceScale = eyeDist / 100;
+        const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+
+        arCtx.save();
+
+        if (currentLens === 'dog') {
+            // Draw Dog Ears (Using Emoji/Shapes as custom assets failed)
+            arCtx.font = `${120 * faceScale}px serif`;
+            arCtx.textAlign = 'center';
+            arCtx.textBaseline = 'middle';
+
+            // Ears
+            arCtx.save();
+            arCtx.translate(forehead.x, forehead.y - 40 * faceScale);
+            arCtx.rotate(angle);
+            arCtx.fillText('🐶', 0, 0);
+            arCtx.restore();
+
+            // Nose
+            arCtx.font = `${60 * faceScale}px serif`;
+            arCtx.fillText('🐽', noseTip.x, noseTip.y + 10 * faceScale);
+        }
+        else if (currentLens === 'sunglasses') {
+            arCtx.font = `${150 * faceScale}px serif`;
+            arCtx.textAlign = 'center';
+            arCtx.textBaseline = 'middle';
+            arCtx.save();
+            arCtx.translate((leftEye.x + rightEye.x) / 2, (leftEye.y + rightEye.y) / 2);
+            arCtx.rotate(angle);
+            arCtx.fillText('😎', 0, 0);
+            arCtx.restore();
+        }
+        else if (currentLens === 'heart_crown') {
+            arCtx.font = `${100 * faceScale}px serif`;
+            arCtx.textAlign = 'center';
+            arCtx.save();
+            arCtx.translate(forehead.x, forehead.y - 60 * faceScale);
+            arCtx.rotate(angle);
+            arCtx.fillText('✨👑✨', 0, 0);
+            arCtx.restore();
+        }
+        else if (currentLens === 'sparkles') {
+            const time = Date.now() / 500;
+            arCtx.font = `${40 * faceScale}px serif`;
+            for (let i = 0; i < 5; i++) {
+                const ox = Math.sin(time + i) * 100 * faceScale;
+                const oy = Math.cos(time + i) * 100 * faceScale;
+                arCtx.fillText('✨', forehead.x + ox, forehead.y + oy);
+            }
+        }
+        else if (currentLens === 'beauty') {
+            // Soft Bloom / Glow Effect
+            arCtx.globalAlpha = 0.2;
+            arCtx.fillStyle = '#ffb6c1';
+            arCtx.beginPath();
+            arCtx.arc(noseTip.x, noseTip.y, 250 * faceScale, 0, Math.PI * 2);
+            arCtx.fill();
+        }
+
+        arCtx.restore();
+    }
+
+    // Initialize Lens Carousel
+    document.querySelectorAll('.lens-item').forEach(item => {
+        item.onclick = function () {
+            document.querySelectorAll('.lens-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            currentLens = this.dataset.lens;
+            console.log(`🎬 Lens Switched: ${currentLens}`);
+        };
+    });
+
     async function startCamera() {
         try {
             // Stop any existing stream first
@@ -599,7 +732,26 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cameraVideo) {
                 cameraVideo.srcObject = cameraStream;
                 cameraVideo.style.display = 'block';
-                cameraVideo.play(); // Ensure video plays
+                cameraVideo.onloadedmetadata = () => {
+                    cameraVideo.play();
+
+                    // Sync AR Canvas size
+                    if (arCanvas) {
+                        arCanvas.width = cameraVideo.videoWidth;
+                        arCanvas.height = cameraVideo.videoHeight;
+                    }
+
+                    // Start MediaPipe Pipe
+                    initFaceMesh();
+                    cameraPipe = new Camera(cameraVideo, {
+                        onFrame: async () => {
+                            await faceMesh.send({ image: cameraVideo });
+                        },
+                        width: cameraVideo.videoWidth,
+                        height: cameraVideo.videoHeight
+                    });
+                    cameraPipe.start();
+                };
             }
             const permissionDenied = document.getElementById('cameraPermissionDenied');
             if (permissionDenied) {
@@ -620,9 +772,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function stopCamera() {
+        if (cameraPipe) {
+            cameraPipe.stop();
+            cameraPipe = null;
+        }
         if (cameraStream) {
             cameraStream.getTracks().forEach(track => track.stop());
             cameraStream = null;
+        }
+        if (arCtx) {
+            arCtx.clearRect(0, 0, arCanvas.width, arCanvas.height);
         }
     }
 
@@ -647,12 +806,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Flip the canvas if using front camera for more natural appearance
+                // Draw Video Frame
                 if (facingMode === 'user') {
                     context.scale(-1, 1);
                     context.drawImage(cameraVideo, -cameraCanvas.width, 0);
                 } else {
                     context.drawImage(cameraVideo, 0, 0);
+                }
+
+                // Draw AR Overlay
+                if (currentLens !== 'none') {
+                    // Reset transform before drawing overlay as arCanvas already handles its own mirroring logic during draw
+                    context.setTransform(1, 0, 0, 1, 0, 0);
+                    context.drawImage(arCanvas, 0, 0);
                 }
 
                 cameraCanvas.toBlob((blob) => {
@@ -788,16 +954,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Process each item, applying crop if needed
                 for (const item of batchQueue) {
                     let imageToSend = item.file;
-                    
+
                     // If item has crop data, crop the image before sending
                     if (item.cropData) {
                         imageToSend = await window.cropImageFile(item.file, item.cropData);
                     }
-                    
+
                     formData.append('images', imageToSend);
                     styles.push(item.style);
                 }
-                
+
                 formData.append('styles', styles.join(','));
 
                 const response = await fetch('/api/process/batch', {

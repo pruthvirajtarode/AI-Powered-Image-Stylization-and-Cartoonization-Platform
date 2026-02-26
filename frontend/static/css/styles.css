@@ -782,18 +782,21 @@ h6 {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 36px;          /* tall enough to click easily */
+    height: 36px;
+    /* tall enough to click easily */
     background: transparent;
     outline: none;
     cursor: pointer;
     padding: 0;
     margin: 0;
 }
+
 .adjust-slider::-webkit-slider-runnable-track {
     height: 6px;
     border-radius: 3px;
     background: #e2e8f0;
 }
+
 .adjust-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 20px;
@@ -801,16 +804,22 @@ h6 {
     border-radius: 50%;
     background: var(--primary);
     cursor: pointer;
-    margin-top: -7px;     /* centre thumb on track: (20-6)/2 */
-    box-shadow: 0 2px 6px rgba(255,100,60,0.35);
+    margin-top: -7px;
+    /* centre thumb on track: (20-6)/2 */
+    box-shadow: 0 2px 6px rgba(255, 100, 60, 0.35);
     transition: transform 0.15s;
 }
-.adjust-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+.adjust-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
 .adjust-slider::-moz-range-track {
     height: 6px;
     border-radius: 3px;
     background: #e2e8f0;
 }
+
 .adjust-slider::-moz-range-thumb {
     width: 20px;
     height: 20px;
@@ -818,7 +827,7 @@ h6 {
     background: var(--primary);
     cursor: pointer;
     border: none;
-    box-shadow: 0 2px 6px rgba(255,100,60,0.35);
+    box-shadow: 0 2px 6px rgba(255, 100, 60, 0.35);
 }
 
 .placeholder-view {
@@ -1724,15 +1733,57 @@ h6 {
     cursor: grabbing;
 }
 
-.crop-handle-nw { top: -6px; left: -6px; cursor: nwse-resize; }
-.crop-handle-ne { top: -6px; right: -6px; cursor: nesw-resize; }
-.crop-handle-sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
-.crop-handle-se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+.crop-handle-nw {
+    top: -6px;
+    left: -6px;
+    cursor: nwse-resize;
+}
 
-.crop-handle-n { top: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
-.crop-handle-s { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
-.crop-handle-w { top: 50%; left: -6px; transform: translateY(-50%); cursor: ew-resize; }
-.crop-handle-e { top: 50%; right: -6px; transform: translateY(-50%); cursor: ew-resize; }
+.crop-handle-ne {
+    top: -6px;
+    right: -6px;
+    cursor: nesw-resize;
+}
+
+.crop-handle-sw {
+    bottom: -6px;
+    left: -6px;
+    cursor: nesw-resize;
+}
+
+.crop-handle-se {
+    bottom: -6px;
+    right: -6px;
+    cursor: nwse-resize;
+}
+
+.crop-handle-n {
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.crop-handle-s {
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.crop-handle-w {
+    top: 50%;
+    left: -6px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.crop-handle-e {
+    top: 50%;
+    right: -6px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
 
 .crop-box-controls {
     display: flex;
@@ -1782,6 +1833,7 @@ h6 {
    ============================================= */
 
 @media (max-width: 1024px) {
+
     /* Sidebar becomes horizontal scrollable strip on tablets */
     .app-container {
         grid-template-columns: 1fr;
@@ -1801,10 +1853,12 @@ h6 {
 }
 
 @media (max-width: 768px) {
+
     /* ---- Navbar ---- */
     .auth-section {
         display: none !important;
     }
+
     .menu-toggle {
         display: flex !important;
         align-items: center;
@@ -1882,13 +1936,13 @@ h6 {
     }
 
     /* ---- Stats panel grid: 1 column on mobile ---- */
-    #statsPanelBody > div:first-child {
+    #statsPanelBody>div:first-child {
         grid-template-columns: 1fr !important;
         gap: 14px;
     }
 
     /* ---- Download area: stack selects vertically ---- */
-    #downloadArea > div:first-child {
+    #downloadArea>div:first-child {
         flex-direction: column;
     }
 
@@ -1919,6 +1973,7 @@ h6 {
 }
 
 @media (max-width: 480px) {
+
     /* ---- Navbar logo ---- */
     .logo-text {
         font-size: 1.4rem !important;
@@ -2020,4 +2075,106 @@ h6 {
     .social-icons {
         justify-content: center;
     }
+}
+
+/* Snapchat Lens Carousel Styles */
+.lens-carousel-container {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.lens-carousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding: 10px 5px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.lens-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.lens-item {
+    flex: 0 0 75px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.lens-icon {
+    width: 65px;
+    height: 65px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+    border: 3px solid transparent;
+    transition: 0.3s;
+}
+
+.lens-item span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    transition: 0.3s;
+}
+
+.lens-item.active .lens-icon {
+    border-color: var(--primary);
+    transform: scale(1.1) translateY(-5px);
+    box-shadow: 0 12px 25px rgba(255, 126, 95, 0.3);
+}
+
+.lens-item.active span {
+    color: var(--primary);
+}
+
+.lens-item:hover .lens-icon {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Glassmorphism Enhancements */
+.navbar {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(20px) !important;
+}
+
+.app-sidebar {
+    background: rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.price-card {
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.feat-card {
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* Toonify Luxury Typography */
+body {
+    letter-spacing: -0.015em;
+    font-family: 'Outfit', sans-serif;
+}
+
+h1,
+h2,
+h3 {
+    letter-spacing: -0.03em;
 }
