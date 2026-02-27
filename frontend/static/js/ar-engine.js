@@ -1,7 +1,7 @@
 /**
  * ╔══════════════════════════════════════════════════════╗
- * ║  Toonify AR Engine v2.2                             ║
- * ║  Face Mesh + SelfieSegmentation + background swap   ║
+ * ║  Toonify AR Engine v2.3                             ║
+ * ║  Fixed: segmenter init guard · better fallback UX   ║
  * ╚══════════════════════════════════════════════════════╝
  */
 
@@ -13,21 +13,21 @@ class AREngine {
 
         this.isRunning = false;
         this.faceMesh = null;
-        this.segmenter = null;     // SelfieSegmentation
-        this.segMask = null;     // latest segmentation mask canvas
-        this._tmpCanvas = null;     // temp canvas for compositing
+        this.segmenter = null;
+        this.segMask = null;
+        this._tmpCanvas = null;
         this._tmpCtx = null;
+        this._segLoading = false;   // prevents duplicate init calls
+        this._segFailed = false;   // stops retrying after hard fail
         this.animFrame = null;
         this.smoothedFaces = [];
         this.activeLens = 'none';
         this.smoothAlpha = 0.45;
 
-        // FPS
         this.fps = 0;
         this._fpsCount = 0;
         this._fpsTimer = performance.now();
 
-        // Recording
         this.isRecording = false;
         this.mediaRecorder = null;
         this.recordedChunks = [];
@@ -54,29 +54,32 @@ class AREngine {
         await this.faceMesh.initialize();
     }
 
-    /* ── Init SelfieSegmentation ────────────────────── */
+    /* ── Init SelfieSegmentation (lazy, guarded) ────── */
     async initSegmenter() {
-        if (this.segmenter) return;
+        if (this.segmenter || this._segLoading || this._segFailed) return;
+        this._segLoading = true;
         try {
             this.segmenter = new SelfieSegmentation({
                 locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${f}`
             });
-            this.segmenter.setOptions({ modelSelection: 1 }); // 1 = landscape
+            this.segmenter.setOptions({ modelSelection: 1 });
             this.segmenter.onResults(this._onSegResults);
             await this.segmenter.initialize();
-
-            // Temp canvas for person-only compositing
+            const W = this.video.videoWidth || 640;
+            const H = this.video.videoHeight || 480;
             this._tmpCanvas = document.createElement('canvas');
-            this._tmpCanvas.width = this.video.videoWidth || 640;
-            this._tmpCanvas.height = this.video.videoHeight || 480;
+            this._tmpCanvas.width = W; this._tmpCanvas.height = H;
             this._tmpCtx = this._tmpCanvas.getContext('2d');
+            this._segLoading = false;
         } catch (e) {
-            console.warn('SelfieSegmentation unavailable:', e);
+            console.warn('[AREngine] SelfieSegmentation failed:', e);
             this.segmenter = null;
+            this._segLoading = false;
+            this._segFailed = true;   // do not retry
         }
     }
 
-    /* ── FaceMesh callback ──────────────────────────── */
+    /* ── FaceMesh results ───────────────────────────── */
     _onFaceResults(results) {
         const rawFaces = results.multiFaceLandmarks || [];
         const W = this.canvas.width || 640;
@@ -98,64 +101,43 @@ class AREngine {
             });
 
             const sp = i => sm[i];
-
-            const leftTemple = sp(234);
-            const rightTemple = sp(454);
-            const forehead = sp(10);
-            const chin = sp(152);
-            const noseTip = sp(4);
-            const center = sp(168);
             const leftEyeCorner = sp(33);
             const rightEyeCorner = sp(263);
-            const leftEye = sm.length > 468 ? sp(468) : sp(133);
-            const rightEye = sm.length > 473 ? sp(473) : sp(362);
-            const mouthLeft = sp(61);
-            const mouthRight = sp(291);
-            const upperLip = sp(13);
-            const lowerLip = sp(14);
+            const leftTemple = sp(234);
+            const rightTemple = sp(454);
 
             const eyeDist = Math.hypot(leftEyeCorner.x - rightEyeCorner.x, leftEyeCorner.y - rightEyeCorner.y);
             const faceScale = Math.max(eyeDist / 140, 0.25);
             const templeSpan = Math.hypot(leftTemple.x - rightTemple.x, leftTemple.y - rightTemple.y);
+            const roll = Math.atan2(rightEyeCorner.y - leftEyeCorner.y, rightEyeCorner.x - leftEyeCorner.x);
 
-            const roll = Math.atan2(
-                rightEyeCorner.y - leftEyeCorner.y,
-                rightEyeCorner.x - leftEyeCorner.x
-            );
-
+            const mouthLeft = sp(61); const mouthRight = sp(291);
+            const upperLip = sp(13); const lowerLip = sp(14);
             const mouthH = Math.hypot(upperLip.x - lowerLip.x, upperLip.y - lowerLip.y);
             const mouthW = Math.hypot(mouthLeft.x - mouthRight.x, mouthLeft.y - mouthRight.y);
             const mouthOpen = (mouthH / Math.max(mouthW, 1)) > 0.25;
 
-            const leftBlink = this._ear(sm, 159, 145, 33, 133) < 0.18;
-            const rightBlink = this._ear(sm, 386, 374, 362, 263) < 0.18;
+            const leftEye = sm.length > 468 ? sp(468) : sp(133);
+            const rightEye = sm.length > 473 ? sp(473) : sp(362);
 
             return {
-                raw: sm,
-                faceScale, roll, eyeDist, templeSpan,
-                center, forehead, chin, noseTip,
-                leftTemple, rightTemple,
-                leftEyeCorner, rightEyeCorner,
-                leftEye, rightEye,
-                mouthOpen,
-                mouthCenter: {
-                    x: (mouthLeft.x + mouthRight.x) / 2,
-                    y: (upperLip.y + lowerLip.y) / 2,
-                },
-                leftBlink, rightBlink,
+                raw: sm, faceScale, roll, eyeDist, templeSpan,
+                center: sp(168), forehead: sp(10), chin: sp(152), noseTip: sp(4),
+                leftTemple, rightTemple, leftEyeCorner, rightEyeCorner,
+                leftEye, rightEye, mouthOpen,
+                mouthCenter: { x: (mouthLeft.x + mouthRight.x) / 2, y: (upperLip.y + lowerLip.y) / 2 },
+                leftBlink: this._ear(sm, 159, 145, 33, 133) < 0.18,
+                rightBlink: this._ear(sm, 386, 374, 362, 263) < 0.18,
             };
         });
     }
 
-    /* ── SelfieSegmentation callback ────────────────── */
-    _onSegResults(results) {
-        this.segMask = results.segmentationMask; // HTMLCanvasElement mask
-    }
+    /* ── Segmentation results ───────────────────────── */
+    _onSegResults(r) { this.segMask = r.segmentationMask; }
 
     _ear(sm, t, b, l, r) {
-        const v = Math.hypot(sm[t].x - sm[b].x, sm[t].y - sm[b].y);
-        const h = Math.hypot(sm[l].x - sm[r].x, sm[l].y - sm[r].y);
-        return v / Math.max(h, 1);
+        return Math.hypot(sm[t].x - sm[b].x, sm[t].y - sm[b].y) /
+            Math.max(Math.hypot(sm[l].x - sm[r].x, sm[l].y - sm[r].y), 1);
     }
 
     /* ── Main render loop ───────────────────────────── */
@@ -165,21 +147,18 @@ class AREngine {
         const W = this.video.videoWidth || 640;
         const H = this.video.videoHeight || 480;
 
-        // Auto-resize
         if (W > 0 && this.canvas.width !== W) {
-            this.canvas.width = W;
-            this.canvas.height = H;
+            this.canvas.width = W; this.canvas.height = H;
             if (this._tmpCanvas) { this._tmpCanvas.width = W; this._tmpCanvas.height = H; }
         }
 
         const isBgLens = this.activeLens && this.activeLens.startsWith('bg_');
 
-        // Push frame to active model
         if (this.video.readyState >= 2) {
             if (!isBgLens && this.faceMesh) {
                 try { await this.faceMesh.send({ image: this.video }); } catch (_) { }
             }
-            if (isBgLens) {
+            if (isBgLens && !this._segLoading && !this._segFailed) {
                 if (!this.segmenter) await this.initSegmenter();
                 if (this.segmenter) {
                     try { await this.segmenter.send({ image: this.video }); } catch (_) { }
@@ -187,46 +166,55 @@ class AREngine {
             }
         }
 
-        // ── Render ──
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         if (isBgLens && window.ARLenses) {
-            // 1. Draw animated background scene
-            window.ARLenses.renderBg(this.activeLens, this.ctx, this.canvas.width, this.canvas.height);
-
-            // 2. Composite person OVER background using segmentation mask
             if (this.segMask && this._tmpCanvas) {
-                // Ensure temp canvas is correctly sized
+                /* ── Full background replacement (segmentation ready) ── */
+                window.ARLenses.renderBg(this.activeLens, this.ctx, this.canvas.width, this.canvas.height);
+
                 if (this._tmpCanvas.width !== this.canvas.width) {
                     this._tmpCanvas.width = this.canvas.width;
                     this._tmpCanvas.height = this.canvas.height;
                 }
-                // Draw video frame on temp canvas (raw, unmirrored — CSS scaleX(-1) handles mirror)
                 this._tmpCtx.clearRect(0, 0, this._tmpCanvas.width, this._tmpCanvas.height);
+                // Draw raw video (unmirrored) — CSS scaleX(-1) handles the flip
                 this._tmpCtx.drawImage(this.video, 0, 0, this._tmpCanvas.width, this._tmpCanvas.height);
-
-                // Apply segmentation mask — destination-in keeps only where mask is bright (person pixels)
+                // Mask out background → only person pixels remain
                 this._tmpCtx.save();
                 this._tmpCtx.globalCompositeOperation = 'destination-in';
                 this._tmpCtx.drawImage(this.segMask, 0, 0, this._tmpCanvas.width, this._tmpCanvas.height);
                 this._tmpCtx.restore();
-
-                // Draw masked person over background
+                // Composite person over background
                 this.ctx.drawImage(this._tmpCanvas, 0, 0);
+
             } else {
-                // Segmenter not yet ready → show raw video so user can see themselves
+                /* ── Fallback: blend background at low opacity over live video ── */
+                // Show the real video so person is always visible
                 this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
-                // Overlay loading message
+
+                // Blend the background artistically on top
                 this.ctx.save();
-                this.ctx.fillStyle = 'rgba(0,0,0,0.45)';
-                this.ctx.fillRect(0, this.canvas.height / 2 - 20, this.canvas.width, 40);
-                this.ctx.fillStyle = 'white'; this.ctx.font = '14px sans-serif'; this.ctx.textAlign = 'center';
-                this.ctx.fillText('⏳ Loading background model…', this.canvas.width / 2, this.canvas.height / 2 + 5);
+                this.ctx.globalAlpha = this._segLoading ? 0.30 : 0.45;
+                this.ctx.globalCompositeOperation = 'screen'; // light blend
+                window.ARLenses.renderBg(this.activeLens, this.ctx, this.canvas.width, this.canvas.height);
                 this.ctx.restore();
+
+                // Show subtle loading badge (top-right corner, not invasive)
+                if (this._segLoading) {
+                    this.ctx.save();
+                    this.ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                    this.ctx.beginPath();
+                    this.ctx.roundRect ? this.ctx.roundRect(this.canvas.width - 220, 8, 212, 28, 8)
+                        : this.ctx.rect(this.canvas.width - 220, 8, 212, 28);
+                    this.ctx.fill();
+                    this.ctx.fillStyle = 'white'; this.ctx.font = '12px sans-serif'; this.ctx.textAlign = 'center';
+                    this.ctx.fillText('⏳ Loading AI background...', this.canvas.width - 114, 27);
+                    this.ctx.restore();
+                }
             }
 
         } else if (!isBgLens && this.activeLens !== 'none' && window.ARLenses) {
-            // Face lens mode — canvas is transparent, video shows through
             this.smoothedFaces.forEach(face => {
                 window.ARLenses.render(this.activeLens, face, this.canvas, this.ctx);
             });
@@ -237,17 +225,16 @@ class AREngine {
         const now = performance.now();
         if (now - this._fpsTimer >= 1000) {
             this.fps = this._fpsCount; this._fpsCount = 0; this._fpsTimer = now;
-            const faceN = this.smoothedFaces.length;
+            const n = this.smoothedFaces.length;
             const fpsEl = document.getElementById('arFpsCounter');
             const faceEl = document.getElementById('arFaceCount');
             if (fpsEl) fpsEl.textContent = `${this.fps} FPS`;
-            if (faceEl) faceEl.textContent = `${faceN} face${faceN !== 1 ? 's' : ''}`;
+            if (faceEl) faceEl.textContent = `${n} face${n !== 1 ? 's' : ''}`;
         }
 
         this.animFrame = requestAnimationFrame(this._loop);
     }
 
-    /* ── Public API ─────────────────────────────────── */
     async start() {
         await this.initFaceMesh();
         this.isRunning = true;
@@ -265,32 +252,27 @@ class AREngine {
 
     setLens(id) {
         this.activeLens = id;
-        this.segMask = null; // reset mask on lens change
+        this.segMask = null;
         if (window.ARLenses) window.ARLenses.reset();
     }
 
     /* ── Capture ────────────────────────────────────── */
     captureFrame(facingMode, callback) {
         const oc = document.createElement('canvas');
-        oc.width = this.video.videoWidth; oc.height = this.video.videoHeight;
+        oc.width = this.video.videoWidth;
+        oc.height = this.video.videoHeight;
         const oc2 = oc.getContext('2d');
         const isBg = this.activeLens && this.activeLens.startsWith('bg_');
 
-        if (isBg) {
-            // Capture what's on the AR canvas (background + masked person), then mirror it
-            if (facingMode === 'user') {
-                oc2.save(); oc2.scale(-1, 1); oc2.drawImage(this.canvas, -oc.width, 0); oc2.restore();
-            } else {
-                oc2.drawImage(this.canvas, 0, 0);
-            }
-        } else if (facingMode === 'user') {
+        if (isBg || facingMode !== 'user') {
+            oc2.save(); oc2.scale(-1, 1);
+            oc2.drawImage(this.canvas, -oc.width, 0);
+            oc2.restore();
+        } else {
             oc2.save(); oc2.scale(-1, 1);
             oc2.drawImage(this.video, -oc.width, 0);
             if (this.activeLens !== 'none') oc2.drawImage(this.canvas, -oc.width, 0);
             oc2.restore();
-        } else {
-            oc2.drawImage(this.video, 0, 0);
-            if (this.activeLens !== 'none') oc2.drawImage(this.canvas, 0, 0);
         }
         oc.toBlob(callback, 'image/jpeg', 0.95);
     }
@@ -304,22 +286,9 @@ class AREngine {
 
         const draw = () => {
             if (!this.isRecording) return;
-            const isBg = this.activeLens && this.activeLens.startsWith('bg_');
-            if (isBg) {
-                if (facingMode === 'user') {
-                    rctx.save(); rctx.scale(-1, 1); rctx.drawImage(this.canvas, -rc.width, 0); rctx.restore();
-                } else {
-                    rctx.drawImage(this.canvas, 0, 0);
-                }
-            } else if (facingMode === 'user') {
-                rctx.save(); rctx.scale(-1, 1);
-                rctx.drawImage(this.video, -rc.width, 0);
-                if (this.activeLens !== 'none') rctx.drawImage(this.canvas, -rc.width, 0);
-                rctx.restore();
-            } else {
-                rctx.drawImage(this.video, 0, 0);
-                if (this.activeLens !== 'none') rctx.drawImage(this.canvas, 0, 0);
-            }
+            rctx.save(); rctx.scale(-1, 1);
+            rctx.drawImage(this.canvas, -rc.width, 0);
+            rctx.restore();
             this._recordAF = requestAnimationFrame(draw);
         };
 
