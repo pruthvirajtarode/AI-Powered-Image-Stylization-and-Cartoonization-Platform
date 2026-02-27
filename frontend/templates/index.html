@@ -16,7 +16,7 @@
     <meta property="og:image" content="/static/images/social-preview.png">
     <meta name="twitter:card" content="summary_large_image">
 
-    <link rel="stylesheet" href="/static/css/styles.css?v=303">
+    <link rel="stylesheet" href="/static/css/styles.css?v=400">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link
@@ -1057,6 +1057,8 @@
                     playsinline></video>
                 <canvas id="arCanvas"
                     style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+                <!-- Hidden offscreen canvas for capture -->
+                <canvas id="cameraCanvas" style="display:none;"></canvas>
                 <!-- Capture flash -->
                 <div id="cameraFlash"
                     style="position:absolute;inset:0;background:white;opacity:0;pointer-events:none;border-radius:12px;transition:opacity 0.15s;">
@@ -1067,6 +1069,7 @@
                     <span id="activeLensLabel">None</span>
                 </div>
             </div>
+
 
             <!-- Lens Carousel -->
             <div class="lens-carousel-container">
@@ -1237,9 +1240,9 @@
     </footer>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="/static/js/ar-engine.js?v=200"></script>
-    <script src="/static/js/lenses.js?v=200"></script>
-    <script src="/static/js/app.js?v=304"></script>
+    <script src="/static/js/ar-engine.js?v=210"></script>
+    <script src="/static/js/lenses.js?v=210"></script>
+    <script src="/static/js/app.js?v=400"></script>
 
     <script>
         // Go to Top Button Functionality
