@@ -947,7 +947,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (batchQueue.length === 0) return;
 
             const batchQueue_at_start = [...batchQueue];
-            loader.style.display = 'flex';
+
+            if (loader) {
+                loader.style.display = 'flex';
+                const statusTxt = loader.querySelector('h3');
+                if (statusTxt) statusTxt.innerText = "Neural Artist at Work...";
+            }
 
             const formData = new FormData();
             const styles = [];
