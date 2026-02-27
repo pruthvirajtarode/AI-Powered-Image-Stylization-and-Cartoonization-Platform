@@ -570,20 +570,20 @@ window.ARLenses = {
         astronaut: renderAstronaut,
     },
 
+    // Called by AREngine for FACE lenses (canvas is transparent overlay on video)
     render(id, face, canvas, ctx) {
         _t += 0.016;
-
-        // Background lenses: draw full-canvas background first
-        if (_bgMap[id]) {
-            _bgMap[id](ctx, canvas.width, canvas.height);
-            // Then draw face dot to indicate working (no segmentation)
-            return;
-        }
-
-        // Face lenses
         const fn = this._faceMap[id];
         if (fn) { ctx.save(); fn(face, canvas, ctx); ctx.restore(); }
         _ps.tick(ctx);
+    },
+
+    // Called by AREngine for BACKGROUND lenses
+    // AREngine will draw the bg first, then composite the masked person on top
+    renderBg(id, ctx, W, H) {
+        _t += 0.016;
+        const fn = _bgMap[id];
+        if (fn) { ctx.save(); fn(ctx, W, H); ctx.restore(); }
     },
 
     reset() { _t = 0; _ps.clear(); }
