@@ -697,6 +697,7 @@ def secure_download():
     quality = int(request.args.get('quality', 95))
     
     # Access via Token (Task 17: Temporary Link)
+    is_pro = False
     if token:
         try:
             data = download_serializer.loads(token, max_age=3600) # 1 hour validity
@@ -707,7 +708,7 @@ def secure_download():
             return "Invalid or expired download link", 403
     elif 'user' in session:
         user_id = session['user']['id']
-        is_premium = session['user'].get('role') == 'admin' or session['user'].get('plan') in ['pro', 'elite']
+        is_pro = session['user'].get('role') == 'admin' or session['user'].get('plan') in ['pro', 'elite']
     else:
         return "Authentication required", 401
 

@@ -329,45 +329,11 @@ class Authentication:
         return True, user_data, "Login successful!"
     
     @staticmethod
-    def init_session_state():
-        """Initialize session state for authentication"""
-        if 'authenticated' not in st.session_state:
-            st.session_state.authenticated = False
-        if 'user' not in st.session_state:
-            st.session_state.user = None
-        if 'current_page' not in st.session_state:
-            st.session_state.current_page = 'login'
-    
-    @staticmethod
-    def logout():
-        """Log out the current user"""
-        st.session_state.authenticated = False
-        st.session_state.user = None
-        st.session_state.current_page = 'login'
-        if 'processed_image' in st.session_state:
-            del st.session_state.processed_image
-        if 'original_image' in st.session_state:
-            del st.session_state.original_image
-    
-    @staticmethod
-    def is_authenticated() -> bool:
-        """Check if user is authenticated"""
-        return st.session_state.get('authenticated', False)
-    
-    @staticmethod
-    def get_current_user() -> Optional[dict]:
-        """Get current logged-in user"""
-        return st.session_state.get('user', None)
-    
-    @staticmethod
-    def require_auth(func):
-        """Decorator to require authentication for a function"""
-        def wrapper(*args, **kwargs):
-            if not Authentication.is_authenticated():
-                st.warning("⚠️ Please log in to access this feature")
-                st.stop()
-            return func(*args, **kwargs)
-        return wrapper
+    def logout_flask():
+        """Helper to clear session for Flask"""
+        from flask import session
+        session.pop('user', None)
+        return True
 
 
 # Create global auth instance

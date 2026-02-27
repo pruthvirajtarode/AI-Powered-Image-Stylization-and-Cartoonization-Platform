@@ -91,24 +91,40 @@ class ImageProcessor:
     def apply_classic_cartoon(self, image: np.ndarray) -> np.ndarray:
         """
         Apply high-fidelity cartoon effect with sharp edges
+        Resolution-aware scaling for consistent results
         """
-        # Step 1: Smoothing while preserving edges (Using fast Recursive Filter)
+        h, w = image.shape[:2]
+        # Base scale factor (standardized to 1280px width)
+        scale_factor = w / 1280.0
+        
+        # Step 1: Smoothing while preserving edges
         smooth = cv2.edgePreservingFilter(image, flags=1, sigma_s=60, sigma_r=0.4)
         
-        # Step 2: Edge detection 
+        # Step 2: Edge detection (Resolution-Aware)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray = cv2.medianBlur(gray, 5)
+        
+        # Scale blockSize for higher resolutions (must be odd)
+        block_size = int(9 * scale_factor)
+        if block_size % 2 == 0: block_size += 1
+        block_size = max(3, block_size)
+        
         edges = cv2.adaptiveThreshold(
             gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-            cv2.THRESH_BINARY, blockSize=9, C=2
+            cv2.THRESH_BINARY, blockSize=block_size, C=2
         )
         
-        # Step 3: Color quantization
-        quantized = self._quantize_colors(smooth, num_colors=10)
+        # Step 3: Color quantization (Reduced colors for stronger cartoon feel)
+        quantized = self._quantize_colors(smooth, num_colors=8)
         
         # Step 4: Merge edges
         edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
         cartoon = cv2.bitwise_and(quantized, edges_colored)
+        
+        # Step 5: Boost saturation for that "Pixar" look
+        hsv = cv2.cvtColor(cartoon, cv2.COLOR_BGR2HSV)
+        hsv[:, :, 1] = np.clip(hsv[:, :, 1] * 1.2, 0, 255)
+        cartoon = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
         
         return cartoon
     
@@ -246,36 +262,46 @@ class ImageProcessor:
     def apply_anime(self, image: np.ndarray) -> np.ndarray:
         """
         NEO-ANIME ENGINE (Gemini Style):
-        - High-contrast character focus
-        - Vibrant "Cyber-Anime" color palettes
-        - Soft-light Bloom
+        Resolution-aware scaling for sharp character lines
         """
-        # Step 1: Smoothing (Switching to fast Recursive Filter)
+        h, w = image.shape[:2]
+        scale_factor = w / 1280.0
+        
+        # Step 1: Smoothing
         smooth = cv2.edgePreservingFilter(image, flags=1, sigma_s=60, sigma_r=0.45)
         
         # Step 2: Advanced Color Quantization
         quantized = self._quantize_colors(smooth, num_colors=12)
         
-        # Step 3: Ink Line Extraction (Preserving highlights)
+        # Step 3: Ink Line Extraction (Resolution-Aware)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray = cv2.medianBlur(gray, 5)
-        # We use a narrower blockSize to avoid eating up light hair/skin
+        
+        # Scale blockSize
+        block_size = int(7 * scale_factor)
+        if block_size % 2 == 0: block_size += 1
+        block_size = max(3, block_size)
+        
         mask = cv2.adaptiveThreshold(
             gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-            cv2.THRESH_BINARY, blockSize=7, C=4
+            cv2.THRESH_BINARY, blockSize=block_size, C=4
         )
         
         # Merge
         mask_colored = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
         anime = cv2.bitwise_and(quantized, mask_colored)
         
-        # Step 4: Add "Gemini" Glow / Bloom
-        glow = cv2.GaussianBlur(anime, (15, 15), 0)
+        # Step 4: Add Glow / Bloom (Resolution-Aware blur)
+        blur_size = int(15 * scale_factor)
+        if blur_size % 2 == 0: blur_size += 1
+        blur_size = max(3, blur_size)
+        
+        glow = cv2.GaussianBlur(anime, (blur_size, blur_size), 0)
         anime = cv2.addWeighted(anime, 0.8, glow, 0.4, 0)
         
         # Step 5: Final Grade
         hsv = cv2.cvtColor(anime, cv2.COLOR_BGR2HSV)
-        hsv[:, :, 1] = np.clip(hsv[:, :, 1] * 1.6, 0, 255) # Intense colors
+        hsv[:, :, 1] = np.clip(hsv[:, :, 1] * 1.6, 0, 255) 
         result = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
         
         return result
@@ -318,11 +344,12 @@ class ImageProcessor:
     def apply_comic_book(self, image: np.ndarray) -> np.ndarray:
         """
         Premium Comic Book Engine:
-        - Halftone screen patterns
-        - Clean, bold ink outlines
-        - Posterized vibrant colors
+        Resolution-aware halftone and inking
         """
-        # Step 1: Noise reduction for clean edges
+        h, w = image.shape[:2]
+        scale_factor = w / 1280.0
+
+        # Step 1: Noise reduction
         img_blur = cv2.medianBlur(image, 5)
         quantized = self._quantize_colors(img_blur, num_colors=8)
         
@@ -332,12 +359,14 @@ class ImageProcessor:
         edges = cv2.Canny(gray, 50, 150)
         edges = cv2.dilate(edges, np.ones((2, 2), np.uint8), iterations=1)
         
-        # Step 3: Halftone Overlay (Creative Dots)
-        h, w = image.shape[:2]
+        # Step 3: Halftone Overlay (Resolution-Aware Dots)
         halftone = np.zeros((h, w), dtype=np.uint8)
-        for i in range(0, h, 6):
-            for j in range(0, w, 6):
-                cv2.circle(halftone, (j, i), 2, 255, -1)
+        dot_spacing = max(4, int(6 * scale_factor))
+        dot_radius = max(1, int(2 * scale_factor))
+        
+        for i in range(0, h, dot_spacing):
+            for j in range(0, w, dot_spacing):
+                cv2.circle(halftone, (j, i), dot_radius, 255, -1)
         
         # Step 4: Color Grading
         hsv = cv2.cvtColor(quantized, cv2.COLOR_BGR2HSV)
@@ -363,9 +392,9 @@ class ImageProcessor:
         pixels = image.reshape((-1, 3))
         pixels = np.float32(pixels)
         
-        # Use a very small number of iterations (5 is enough for cartoons)
-        # and a larger epsilon to stop early.
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 5, 1.0)
+        # Use a reasonable number of iterations for cartoons
+        # 10 is a good balance between speed and quality
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
         flags = cv2.KMEANS_RANDOM_CENTERS
         
         _, labels, centers = cv2.kmeans(pixels, num_colors, None, criteria, 1, flags)

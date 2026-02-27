@@ -1145,7 +1145,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         banner.style.display = 'flex';
                     }
 
-                    alert(`✅ Batch Complete! ${completedBatch.filter(r => r.success).length} images processed successfully.`);
+                    console.log(`✅ Batch Complete! ${completedBatch.filter(r => r.success).length} images processed successfully.`);
                 } else {
                     alert("Neural Logic Error: " + data.message);
                 }
@@ -2059,7 +2059,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 window.currentImage = data.filename;
             } else {
-                alert("Matrix Glitch: " + data.message);
+                console.warn("Matrix Glitch: " + data.message);
             }
         } catch (err) {
             console.error(err);
