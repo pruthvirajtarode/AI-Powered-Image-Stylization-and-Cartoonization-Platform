@@ -2377,3 +2377,155 @@ h3 {
 .btn-nft:hover::after {
     left: 100%;
 }
+
+/* ═══════════════════════════════════════════
+   AR CAMERA MODAL v2
+═══════════════════════════════════════════ */
+.cam-modal-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 24px;
+    max-width: 580px;
+    width: 94%;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+    animation: camSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes camSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.cam-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.cam-viewport {
+    position: relative;
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    aspect-ratio: 16/9;
+}
+
+.cam-viewport video,
+.cam-viewport canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Lens carousel scroll */
+.lens-carousel-container {
+    margin-bottom: 18px;
+}
+
+.lens-carousel {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+}
+
+.lens-carousel::-webkit-scrollbar {
+    height: 4px;
+}
+
+.lens-carousel::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 2px;
+}
+
+.lens-item {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-width: 68px;
+    background: #f8fafc;
+}
+
+.lens-item:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 18px rgba(255, 100, 60, 0.18);
+}
+
+.lens-item.active {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, #fff5f0, #fff);
+    box-shadow: 0 4px 14px rgba(255, 100, 60, 0.22);
+    transform: translateY(-4px);
+}
+
+.lens-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lens-item span {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.lens-item.active span {
+    color: var(--primary);
+}
+
+/* Record button */
+#recordBtn {
+    transition: all 0.2s;
+}
+
+#recordBtn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+#recordBtn.recording {
+    background: linear-gradient(135deg, #7f1d1d, #ef4444) !important;
+    animation: recordPulse 1s ease-in-out infinite;
+}
+
+@keyframes recordPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+}

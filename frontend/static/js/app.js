@@ -552,320 +552,126 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- CAMERA CAPTURE FUNCTIONALITY ---
+    // ═══════════════════════════════════════════════════
+    //  CAMERA v2  —  AR Engine powered (ar-engine.js)
+    // ═══════════════════════════════════════════════════
+
     let cameraStream = null;
-    let facingMode = 'user'; // 'user' for front camera, 'environment' for back camera
+    let facingMode = 'user';
+    let arEngine = null;
 
     const cameraBtn = document.getElementById('cameraBtn');
     const cameraModal = document.getElementById('cameraModal');
     const cameraVideo = document.getElementById('cameraStream');
-    const cameraCanvas = document.getElementById('cameraCanvas');
+    const cameraCanvas = document.getElementById('cameraCanvas'); // hidden offscreen
     const captureCameraBtn = document.getElementById('captureCameraBtn');
     const switchCameraBtn = document.getElementById('switchCameraBtn');
+    const recordBtn = document.getElementById('recordBtn');
+    const arCanvas = document.getElementById('arCanvas');
 
+    // Current active lens (kept in sync with engine)
+    let currentLens = 'none';
+
+    /* ── Open / close ─────────────────────────────────── */
     window.openCameraModal = () => {
         const user = JSON.parse(localStorage.getItem('toonify_user'));
-        if (!user) {
-            openAuth();
-            return;
-        }
-
+        if (!user) { openAuth(); return; }
         if (cameraModal) {
             cameraModal.style.display = 'flex';
-            setTimeout(startCamera, 300); // Give modal time to render
+            cameraModal.classList.add('is-open');
+            setTimeout(startCamera, 200);
         }
     };
 
     window.closeCameraModal = () => {
         if (cameraModal) {
+            cameraModal.classList.remove('is-open');
             cameraModal.style.display = 'none';
         }
         stopCamera();
     };
 
-    // --- SNAPCHAT LENS ENGINE ---
-    let currentLens = 'none';
-    let faceMesh = null;
-    let cameraPipe = null;
-    const arCanvas = document.getElementById('arCanvas');
-    const arCtx = arCanvas ? arCanvas.getContext('2d') : null;
+    /* ── Start camera + AR Engine ─────────────────────── */
+    async function startCamera() {
+        try {
+            stopCamera();
 
-    function initFaceMesh() {
-        if (faceMesh) return;
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+            });
 
-        faceMesh = new FaceMesh({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-        });
+            if (!cameraVideo) return;
+            cameraVideo.srcObject = cameraStream;
+            cameraVideo.style.display = 'block';
 
-        faceMesh.setOptions({
-            maxNumFaces: 1,
-            refineLandmarks: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
+            await new Promise(res => { cameraVideo.onloadedmetadata = res; });
+            cameraVideo.play();
 
-        faceMesh.onResults(onFaceResults);
-    }
-
-    function onFaceResults(results) {
-        if (!arCtx || !arCanvas) return;
-
-        // No JS mirroring here — CSS scaleX(-1) on arCanvas handles the flip
-        // identically to how the video element is mirrored, so landmarks
-        // naturally align with the visible (mirrored) video frame.
-        arCtx.clearRect(0, 0, arCanvas.width, arCanvas.height);
-
-        if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-            const landmarks = results.multiFaceLandmarks[0];
-            renderLens(landmarks);
-        }
-    }
-
-    function renderLens(landmarks) {
-        if (currentLens === 'none') return;
-
-        const width = arCanvas.width;
-        const height = arCanvas.height;
-
-        // Helper to get pixel coordinates
-        const getPt = (idx) => ({ x: landmarks[idx].x * width, y: landmarks[idx].y * height });
-
-        // Stable landmarks for positioning
-        const eyeCenter = getPt(168);   // Midpoint between eyes
-        const forehead = getPt(10);     // Top of forehead
-        const noseTip = getPt(4);      // Tip of nose
-        const leftEyeOuter = getPt(33);  // Person's left (viewer's right)
-        const rightEyeOuter = getPt(263); // Person's right (viewer's left)
-        const mouthCenter = getPt(13);  // Upper lip center
-
-        // Calculate face scale and rotation
-        // In the raw (unmirrored) landmark space, person's left eye (33) has
-        // a HIGHER x than right eye (263). When CSS mirrors both video and
-        // arCanvas via scaleX(-1), the drawing coordinate space is also
-        // mirrored, so we negate the angle to get the correct tilt direction.
-        const dx = rightEyeOuter.x - leftEyeOuter.x; // right - left in raw space
-        const dy = rightEyeOuter.y - leftEyeOuter.y;
-        const eyeDist = Math.hypot(dx, dy);
-        const faceScale = eyeDist / 120;
-        const angle = Math.atan2(dy, dx); // correct tilt after CSS mirror
-
-        arCtx.save();
-
-        if (currentLens === 'dog') {
-            // Dog Ears (using dog face emoji slightly higher)
-            const earSize = 160 * faceScale;
-            arCtx.font = `${earSize}px serif`;
-            arCtx.textAlign = 'center';
-            arCtx.textBaseline = 'middle';
-            arCtx.save();
-            arCtx.translate(forehead.x, forehead.y - 40 * faceScale);
-            arCtx.rotate(angle);
-            arCtx.fillText('🐶', 0, 0);
-            arCtx.restore();
-
-            // Dog Nose
-            arCtx.font = `${80 * faceScale}px serif`;
-            arCtx.fillText('👃', noseTip.x, noseTip.y + 5 * faceScale);
-        }
-        else if (currentLens === 'sunglasses') {
-            const sunglassSize = 160 * faceScale;
-            arCtx.font = `${sunglassSize}px serif`;
-            arCtx.textAlign = 'center';
-            arCtx.textBaseline = 'middle';
-            arCtx.save();
-            // Using 🕶️ (glasses) instead of 😎 (face) so we don't hide the user
-            arCtx.translate(eyeCenter.x, eyeCenter.y + 15 * faceScale);
-            arCtx.rotate(angle);
-            arCtx.fillText('🕶️', 0, 0);
-            arCtx.restore();
-        }
-        else if (currentLens === 'heart_crown') {
-            arCtx.font = `${100 * faceScale}px serif`;
-            arCtx.textAlign = 'center';
-            arCtx.save();
-            arCtx.translate(forehead.x, forehead.y - 60 * faceScale);
-            arCtx.rotate(angle);
-            arCtx.fillText('👑', 0, 0);
-            arCtx.font = `${40 * faceScale}px serif`;
-            arCtx.fillText('💖✨💖', 0, -50 * faceScale);
-            arCtx.restore();
-        }
-        else if (currentLens === 'sparkles') {
-            const time = Date.now() / 400;
-            arCtx.font = `${50 * faceScale}px serif`;
-            for (let i = 0; i < 6; i++) {
-                const step = (time + i * (Math.PI / 3));
-                const ox = Math.sin(step) * 120 * faceScale;
-                const oy = Math.cos(step) * 120 * faceScale;
-                arCtx.fillText('✨', eyeCenter.x + ox, eyeCenter.y + oy);
+            // Mirror selfie video + arCanvas by CSS (no JS transform confusion)
+            const mirror = facingMode === 'user' ? 'scaleX(-1)' : 'none';
+            cameraVideo.style.transform = mirror;
+            if (arCanvas) {
+                arCanvas.style.transform = mirror;
+                arCanvas.width = cameraVideo.videoWidth;
+                arCanvas.height = cameraVideo.videoHeight;
             }
-        }
-        else if (currentLens === 'beauty') {
-            // Soft Glow Effect
-            const grad = arCtx.createRadialGradient(noseTip.x, noseTip.y, 0, noseTip.x, noseTip.y, 300 * faceScale);
-            grad.addColorStop(0, 'rgba(255, 182, 193, 0.3)');
-            grad.addColorStop(1, 'rgba(255, 182, 193, 0)');
-            arCtx.fillStyle = grad;
-            arCtx.beginPath();
-            arCtx.arc(noseTip.x, noseTip.y, 300 * faceScale, 0, Math.PI * 2);
-            arCtx.fill();
 
-            // Subtle Stars
-            arCtx.font = `${35 * faceScale}px serif`;
-            arCtx.globalAlpha = 0.7;
-            arCtx.fillText('✨', leftEyeOuter.x - 20 * faceScale, leftEyeOuter.y - 40 * faceScale);
-            arCtx.fillText('✨', rightEyeOuter.x + 20 * faceScale, rightEyeOuter.y - 40 * faceScale);
-        }
+            // Build or reuse AREngine
+            if (!arEngine) arEngine = new AREngine(cameraVideo, arCanvas);
+            else { arEngine.video = cameraVideo; arEngine.canvas = arCanvas; arEngine.ctx = arCanvas.getContext('2d'); }
 
-        arCtx.restore();
+            arEngine.setLens(currentLens);
+            await arEngine.start();
+
+            console.log('✅ AR Camera started');
+        } catch (err) {
+            console.error('❌ Camera error:', err);
+            alert('Camera access denied. Enable camera permissions and try again.');
+        }
     }
 
-    // Initialize Lens Carousel
+    /* ── Stop camera + AR Engine ──────────────────────── */
+    function stopCamera() {
+        if (arEngine) { arEngine.stop(); }
+        if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+    }
+
+    /* ── Lens carousel ─────────────────────────────────── */
     document.querySelectorAll('.lens-item').forEach(item => {
         item.onclick = function () {
             document.querySelectorAll('.lens-item').forEach(i => i.classList.remove('active'));
             this.classList.add('active');
             currentLens = this.dataset.lens;
-            console.log(`🎬 Lens Switched: ${currentLens}`);
+            if (arEngine) arEngine.setLens(currentLens);
+            console.log(`🎬 Lens: ${currentLens}`);
+
+            // Preview label
+            const lbl = document.getElementById('activeLensLabel');
+            if (lbl) lbl.textContent = this.querySelector('span')?.textContent || '';
         };
     });
 
-    async function startCamera() {
-        try {
-            // Stop any existing stream first
-            stopCamera();
-
-            const constraints = {
-                video: {
-                    facingMode: facingMode,
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                },
-                audio: false
-            };
-
-            cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-            if (cameraVideo) {
-                cameraVideo.srcObject = cameraStream;
-                cameraVideo.style.display = 'block';
-                cameraVideo.onloadedmetadata = () => {
-                    cameraVideo.play();
-
-                    // Mirror video UI for selfie comfort — apply SAME CSS
-                    // transform to arCanvas so both layers are flipped together.
-                    const mirrorStyle = facingMode === 'user' ? 'scaleX(-1)' : 'none';
-                    cameraVideo.style.transform = mirrorStyle;
-
-                    // Sync AR Canvas size & mirror CSS (no JS transform needed)
-                    if (arCanvas) {
-                        arCanvas.width = cameraVideo.videoWidth;
-                        arCanvas.height = cameraVideo.videoHeight;
-                        arCanvas.style.transform = mirrorStyle;
-                    }
-
-                    // Start MediaPipe Pipe
-                    initFaceMesh();
-                    cameraPipe = new Camera(cameraVideo, {
-                        onFrame: async () => {
-                            await faceMesh.send({ image: cameraVideo });
-                        },
-                        width: cameraVideo.videoWidth,
-                        height: cameraVideo.videoHeight
-                    });
-                    cameraPipe.start();
-                };
-            }
-            const permissionDenied = document.getElementById('cameraPermissionDenied');
-            if (permissionDenied) {
-                permissionDenied.style.display = 'none';
-            }
-            console.log('✅ Camera started successfully');
-        } catch (error) {
-            console.error('❌ Camera access denied:', error);
-            const permissionDenied = document.getElementById('cameraPermissionDenied');
-            if (permissionDenied) {
-                permissionDenied.style.display = 'flex';
-            }
-            if (cameraVideo) {
-                cameraVideo.style.display = 'none';
-            }
-            alert('Camera access denied. Please enable camera permissions in your browser settings.');
-        }
-    }
-
-    function stopCamera() {
-        if (cameraPipe) {
-            cameraPipe.stop();
-            cameraPipe = null;
-        }
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(track => track.stop());
-            cameraStream = null;
-        }
-        if (arCtx) {
-            arCtx.clearRect(0, 0, arCanvas.width, arCanvas.height);
-        }
-    }
-
-    if (cameraBtn) {
-        cameraBtn.onclick = openCameraModal;
-    }
-
+    /* ── Capture photo ─────────────────────────────────── */
     if (captureCameraBtn) {
         captureCameraBtn.onclick = () => {
-            if (!cameraVideo || !cameraCanvas) {
-                alert('Camera not initialized');
-                return;
-            }
+            if (!cameraVideo || !arEngine) { alert('Camera not ready.'); return; }
+            if (cameraVideo.videoWidth === 0) { alert('Video not ready. Try again.'); return; }
 
-            try {
-                const context = cameraCanvas.getContext('2d');
-                cameraCanvas.width = cameraVideo.videoWidth;
-                cameraCanvas.height = cameraVideo.videoHeight;
+            // Flash animation
+            const flash = document.getElementById('cameraFlash');
+            if (flash) { flash.style.opacity = '1'; setTimeout(() => flash.style.opacity = '0', 300); }
 
-                if (cameraCanvas.width === 0 || cameraCanvas.height === 0) {
-                    alert('Camera stream not ready. Please try again.');
-                    return;
-                }
-
-                // Both video and arCanvas are CSS-mirrored (scaleX(-1)).
-                // For capture, we apply the JS mirror once here so the saved
-                // image matches exactly what the user sees on screen.
-                if (facingMode === 'user') {
-                    context.save();
-                    context.scale(-1, 1);
-                    context.drawImage(cameraVideo, -cameraCanvas.width, 0);
-                    // arCanvas is also CSS-mirrored, so draw it mirror-flipped too
-                    if (currentLens !== 'none') {
-                        context.drawImage(arCanvas, -cameraCanvas.width, 0);
-                    }
-                    context.restore();
-                } else {
-                    context.drawImage(cameraVideo, 0, 0);
-                    if (currentLens !== 'none') {
-                        context.drawImage(arCanvas, 0, 0);
-                    }
-                }
-
-                cameraCanvas.toBlob((blob) => {
-                    if (!blob) {
-                        alert('Failed to capture image');
-                        return;
-                    }
-
-                    handleFile(blob);
-
-                    // Close modal after capture
-                    closeCameraModal();
-                    alert('📸 Photo captured! Added to batch queue.');
-                }, 'image/jpeg', 0.95);
-            } catch (error) {
-                console.error('Error capturing image:', error);
-                alert('Failed to capture image. Please try again.');
-            }
+            arEngine.captureFrame(facingMode, (blob) => {
+                if (!blob) { alert('Capture failed'); return; }
+                handleFile(blob);
+                closeCameraModal();
+                alert('📸 Photo captured! Added to batch queue.');
+            });
         };
     }
 
+    /* ── Switch camera ─────────────────────────────────── */
     if (switchCameraBtn) {
         switchCameraBtn.onclick = () => {
             facingMode = facingMode === 'user' ? 'environment' : 'user';
@@ -873,6 +679,31 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(startCamera, 200);
         };
     }
+
+    /* ── Record video ──────────────────────────────────── */
+    if (recordBtn) {
+        recordBtn.onclick = async () => {
+            if (!arEngine) return;
+            if (!arEngine.isRecording) {
+                arEngine.startRecording(facingMode);
+                recordBtn.classList.add('recording');
+                recordBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Recording';
+            } else {
+                recordBtn.classList.remove('recording');
+                recordBtn.innerHTML = '<i class="fas fa-video"></i> Record';
+                const blob = await arEngine.stopRecording();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `toonify-ar-${Date.now()}.webm`; a.click();
+            }
+        };
+    }
+
+    /* ── Camera button ─────────────────────────────────── */
+    if (cameraBtn) cameraBtn.onclick = openCameraModal;
+
+
+
 
     // --- WHATSAPP INTEGRATION ---
     const whatsappBtn = document.getElementById('whatsappBtn');

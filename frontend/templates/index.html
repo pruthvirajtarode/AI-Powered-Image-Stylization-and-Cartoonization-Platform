@@ -1033,73 +1033,103 @@
 
     <!-- Camera Capture Modal -->
     <div id="cameraModal" class="loader-overlay" style="display: none; z-index: 9999;">
-        <div class="app-container"
-            style="max-width: 600px; min-height: auto; grid-template-columns: 1fr; padding: 20px; position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; font-size: 1.8rem; color: #1e293b;"><i class="fas fa-camera"></i> Live Camera
-                    Capture</h2>
+        <div class="cam-modal-card">
+
+            <!-- Header -->
+            <div class="cam-modal-header">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <h2 style="margin:0;font-size:1.5rem;color:#1e293b;"><i class="fas fa-camera"></i> AR Camera</h2>
+                    <span id="arFpsCounter"
+                        style="font-size:0.72rem;background:#0f172a;color:#22d3ee;padding:2px 8px;border-radius:20px;font-family:monospace;">--
+                        FPS</span>
+                    <span id="arFaceCount"
+                        style="font-size:0.72rem;background:#0f172a;color:#a78bfa;padding:2px 8px;border-radius:20px;font-family:monospace;">0
+                        faces</span>
+                </div>
                 <button onclick="closeCameraModal()"
-                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">
-                    <i class="fas fa-times"></i>
-                </button>
+                    style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;"><i
+                        class="fas fa-times"></i></button>
             </div>
 
-            <div
-                style="position: relative; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 20px;">
-                <video id="cameraStream" style="width: 100%; display: block; background: #000;" playsinline></video>
+            <!-- Video + AR Canvas -->
+            <div class="cam-viewport">
+                <video id="cameraStream" style="width:100%;display:block;background:#000;border-radius:12px;"
+                    playsinline></video>
                 <canvas id="arCanvas"
-                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
-                <canvas id="cameraCanvas" style="display: none;"></canvas>
+                    style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+                <!-- Capture flash -->
+                <div id="cameraFlash"
+                    style="position:absolute;inset:0;background:white;opacity:0;pointer-events:none;border-radius:12px;transition:opacity 0.15s;">
+                </div>
+                <!-- Active lens badge -->
+                <div
+                    style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:white;font-size:0.78rem;padding:3px 14px;border-radius:20px;backdrop-filter:blur(6px);">
+                    <span id="activeLensLabel">None</span>
+                </div>
             </div>
 
-            <!-- Snapchat Lens Carousel -->
-            <div class="lens-carousel-container" style="margin-bottom: 25px;">
+            <!-- Lens Carousel -->
+            <div class="lens-carousel-container">
                 <p
-                    style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 12px; text-align: center;">
-                    Choose Your Snapchat Lens</p>
+                    style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:10px;text-align:center;letter-spacing:0.06em;">
+                    Choose AR Lens</p>
                 <div class="lens-carousel" id="lensCarousel">
                     <div class="lens-item active" data-lens="none">
-                        <div class="lens-icon"><i class="fas fa-ban"></i></div>
-                        <span>None</span>
+                        <div class="lens-icon"><i class="fas fa-ban"></i></div><span>None</span>
                     </div>
                     <div class="lens-item" data-lens="dog">
-                        <div class="lens-icon">🐶</div>
-                        <span>Doggy</span>
+                        <div class="lens-icon">🐶</div><span>Dog</span>
+                    </div>
+                    <div class="lens-item" data-lens="cat">
+                        <div class="lens-icon">🐱</div><span>Cat</span>
                     </div>
                     <div class="lens-item" data-lens="sunglasses">
-                        <div class="lens-icon">🕶️</div>
-                        <span>Cool</span>
+                        <div class="lens-icon">🕶️</div><span>Cool</span>
                     </div>
                     <div class="lens-item" data-lens="heart_crown">
-                        <div class="lens-icon">👑</div>
-                        <span>Royalty</span>
+                        <div class="lens-icon">👑</div><span>Crown</span>
                     </div>
                     <div class="lens-item" data-lens="sparkles">
-                        <div class="lens-icon">✨</div>
-                        <span>Magic</span>
+                        <div class="lens-icon">✨</div><span>Magic</span>
                     </div>
                     <div class="lens-item" data-lens="beauty">
-                        <div class="lens-icon">💄</div>
-                        <span>Glow</span>
+                        <div class="lens-icon">💄</div><span>Glow</span>
+                    </div>
+                    <div class="lens-item" data-lens="rainbow">
+                        <div class="lens-icon">🌈</div><span>Rainbow</span>
+                    </div>
+                    <div class="lens-item" data-lens="cyborg">
+                        <div class="lens-icon">🤖</div><span>Cyborg</span>
+                    </div>
+                    <div class="lens-item" data-lens="fire">
+                        <div class="lens-icon">🔥</div><span>Fire</span>
+                    </div>
+                    <div class="lens-item" data-lens="astronaut">
+                        <div class="lens-icon">🚀</div><span>Space</span>
                     </div>
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <button id="captureCameraBtn" class="btn-convert" style="border-radius: 12px; padding: 16px;">
-                    <i class="fas fa-camera"></i> Capture Photo
+            <!-- Action Buttons -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                <button id="captureCameraBtn" class="btn-convert"
+                    style="border-radius:12px;padding:15px;font-size:1rem;">
+                    <i class="fas fa-camera"></i> Capture
                 </button>
                 <button id="switchCameraBtn" class="btn-auth"
-                    style="border-radius: 12px; padding: 16px; background: var(--slate); color: white;">
-                    <i class="fas fa-repeat"></i> Switch Camera
+                    style="border-radius:12px;padding:15px;background:var(--slate);color:white;">
+                    <i class="fas fa-repeat"></i> Flip
                 </button>
             </div>
-
-            <button onclick="closeCameraModal()" class="btn-auth"
-                style="width: 100%; border-radius: 12px; padding: 14px; background: transparent; color: var(--slate); border: 1px solid #e2e8f0;">
-                Cancel
+            <button id="recordBtn"
+                style="width:100%;border-radius:12px;padding:13px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;font-weight:700;cursor:pointer;margin-bottom:10px;font-size:0.95rem;transition:0.2s;">
+                <i class="fas fa-video"></i> Record Video
             </button>
+            <button onclick="closeCameraModal()" class="btn-auth"
+                style="width:100%;border-radius:12px;padding:13px;background:transparent;color:var(--slate);border:1px solid #e2e8f0;">Cancel</button>
         </div>
+    </div>
+    </div>
     </div>
 
     <!-- WhatsApp Share Modal -->
@@ -1207,7 +1237,9 @@
     </footer>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="/static/js/app.js?v=303"></script>
+    <script src="/static/js/ar-engine.js?v=200"></script>
+    <script src="/static/js/lenses.js?v=200"></script>
+    <script src="/static/js/app.js?v=304"></script>
 
     <script>
         // Go to Top Button Functionality
