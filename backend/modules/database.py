@@ -118,7 +118,7 @@ class Database:
                 pw = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 cursor.execute(f"""
                     INSERT INTO users (username, email, password_hash, full_name, role, is_verified)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
                 """, ("admin", "admin@toonify.ai", pw, "System Admin", "admin", True if self.is_postgres else 1))
                 conn.commit()
         except Exception as e:

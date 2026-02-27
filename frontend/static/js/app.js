@@ -639,71 +639,84 @@ document.addEventListener('DOMContentLoaded', () => {
         const eyeCenter = getPt(168);   // Midpoint between eyes
         const forehead = getPt(10);     // Top of forehead
         const noseTip = getPt(4);      // Tip of nose
-        const leftEyeOuter = getPt(33);
-        const rightEyeOuter = getPt(263);
+        const leftEyeOuter = getPt(33);  // Person's left (viewer's right)
+        const rightEyeOuter = getPt(263); // Person's right (viewer's left)
         const mouthCenter = getPt(13);  // Upper lip center
 
         // Calculate face scale and rotation
-        const eyeDist = Math.hypot(rightEyeOuter.x - leftEyeOuter.x, rightEyeOuter.y - leftEyeOuter.y);
-        const faceScale = eyeDist / 100;
-        const angle = Math.atan2(rightEyeOuter.y - leftEyeOuter.y, rightEyeOuter.x - leftEyeOuter.x);
+        // Use left - right to get a positive X vector relative to the face
+        const dx = leftEyeOuter.x - rightEyeOuter.x;
+        const dy = leftEyeOuter.y - rightEyeOuter.y;
+        const eyeDist = Math.hypot(dx, dy);
+        const faceScale = eyeDist / 120; // Adjusted normalization
+        const angle = Math.atan2(dy, dx);
 
         arCtx.save();
 
         if (currentLens === 'dog') {
-            // Dog Ears
-            const earSize = 140 * faceScale;
+            // Dog Ears (using dog face emoji slightly higher)
+            const earSize = 160 * faceScale;
             arCtx.font = `${earSize}px serif`;
             arCtx.textAlign = 'center';
             arCtx.textBaseline = 'middle';
             arCtx.save();
-            // Higher offset for ears
-            arCtx.translate(forehead.x, forehead.y - 20 * faceScale);
+            arCtx.translate(forehead.x, forehead.y - 40 * faceScale);
             arCtx.rotate(angle);
             arCtx.fillText('🐶', 0, 0);
             arCtx.restore();
 
             // Dog Nose
-            arCtx.font = `${70 * faceScale}px serif`;
-            arCtx.fillText('🐽', noseTip.x, noseTip.y + 10 * faceScale);
+            arCtx.font = `${80 * faceScale}px serif`;
+            arCtx.fillText('👃', noseTip.x, noseTip.y + 5 * faceScale);
         }
         else if (currentLens === 'sunglasses') {
-            const sunglassSize = 180 * faceScale;
+            const sunglassSize = 160 * faceScale;
             arCtx.font = `${sunglassSize}px serif`;
             arCtx.textAlign = 'center';
             arCtx.textBaseline = 'middle';
             arCtx.save();
-            // Center on eyes with a slight vertical drop for the 😎 emoji's glasses positioning
-            arCtx.translate(eyeCenter.x, eyeCenter.y + 10 * faceScale);
+            // Using 🕶️ (glasses) instead of 😎 (face) so we don't hide the user
+            arCtx.translate(eyeCenter.x, eyeCenter.y + 15 * faceScale);
             arCtx.rotate(angle);
-            arCtx.fillText('😎', 0, 0);
+            arCtx.fillText('🕶️', 0, 0);
             arCtx.restore();
         }
         else if (currentLens === 'heart_crown') {
-            arCtx.font = `${90 * faceScale}px serif`;
+            arCtx.font = `${100 * faceScale}px serif`;
             arCtx.textAlign = 'center';
             arCtx.save();
-            arCtx.translate(forehead.x, forehead.y - 45 * faceScale);
+            arCtx.translate(forehead.x, forehead.y - 60 * faceScale);
             arCtx.rotate(angle);
-            arCtx.fillText('✨👑✨', 0, 0);
+            arCtx.fillText('👑', 0, 0);
+            arCtx.font = `${40 * faceScale}px serif`;
+            arCtx.fillText('💖✨💖', 0, -50 * faceScale);
             arCtx.restore();
         }
         else if (currentLens === 'sparkles') {
-            const time = Date.now() / 500;
-            arCtx.font = `${40 * faceScale}px serif`;
-            for (let i = 0; i < 5; i++) {
-                const ox = Math.sin(time + i) * 100 * faceScale;
-                const oy = Math.cos(time + i) * 100 * faceScale;
-                arCtx.fillText('✨', forehead.x + ox, forehead.y + oy);
+            const time = Date.now() / 400;
+            arCtx.font = `${50 * faceScale}px serif`;
+            for (let i = 0; i < 6; i++) {
+                const step = (time + i * (Math.PI / 3));
+                const ox = Math.sin(step) * 120 * faceScale;
+                const oy = Math.cos(step) * 120 * faceScale;
+                arCtx.fillText('✨', eyeCenter.x + ox, eyeCenter.y + oy);
             }
         }
         else if (currentLens === 'beauty') {
-            // Soft Bloom / Glow Effect
-            arCtx.globalAlpha = 0.2;
-            arCtx.fillStyle = '#ffb6c1';
+            // Soft Glow Effect
+            const grad = arCtx.createRadialGradient(noseTip.x, noseTip.y, 0, noseTip.x, noseTip.y, 300 * faceScale);
+            grad.addColorStop(0, 'rgba(255, 182, 193, 0.3)');
+            grad.addColorStop(1, 'rgba(255, 182, 193, 0)');
+            arCtx.fillStyle = grad;
             arCtx.beginPath();
-            arCtx.arc(noseTip.x, noseTip.y, 250 * faceScale, 0, Math.PI * 2);
+            arCtx.arc(noseTip.x, noseTip.y, 300 * faceScale, 0, Math.PI * 2);
             arCtx.fill();
+
+            // Subtle Stars
+            arCtx.font = `${35 * faceScale}px serif`;
+            arCtx.globalAlpha = 0.7;
+            arCtx.fillText('✨', leftEyeOuter.x - 20 * faceScale, leftEyeOuter.y - 40 * faceScale);
+            arCtx.fillText('✨', rightEyeOuter.x + 20 * faceScale, rightEyeOuter.y - 40 * faceScale);
         }
 
         arCtx.restore();

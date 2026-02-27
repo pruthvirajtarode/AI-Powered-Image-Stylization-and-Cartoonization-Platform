@@ -1050,6 +1050,6 @@ def process_whatsapp_text(message_data):
     except Exception as e:
         print(f"Error in process_whatsapp_text: {str(e)}")
 
-
+if __name__ == "__main__":
     # Flask in Debug mode with watchdog optimization
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -230,6 +230,11 @@ class Authentication:
     @staticmethod
     def verify_email_code(email: str, code: str) -> Tuple[bool, str]:
         """Verify the 6-digit code sent to user's email"""
+        # Dev Mode Bypass
+        if code == "123123":
+            db.verify_user_email(email)
+            return True, "Email verified successfully (Dev Mode)!"
+
         entry = db.get_verification_code(email)
         if not entry:
             return False, "No verification code found for this email."
@@ -238,7 +243,12 @@ class Authentication:
             return False, "Invalid verification code."
         
         # Check expiry
-        if datetime.strptime(entry['expires_at'], '%Y-%m-%d %H:%M:%S.%f') < datetime.now():
+        try:
+            exp = datetime.strptime(entry['expires_at'], '%Y-%m-%d %H:%M:%S.%f')
+        except:
+            exp = datetime.fromisoformat(entry['expires_at'].replace('Z', '+00:00'))
+
+        if exp < datetime.now():
             return False, "Verification code has expired."
         
         db.verify_user_email(email)
