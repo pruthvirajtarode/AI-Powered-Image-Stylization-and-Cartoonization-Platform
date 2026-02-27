@@ -635,52 +635,55 @@ document.addEventListener('DOMContentLoaded', () => {
         // Helper to get pixel coordinates
         const getPt = (idx) => ({ x: landmarks[idx].x * width, y: landmarks[idx].y * height });
 
-        // Common landmarks
-        const forehead = getPt(10);
-        const noseTip = getPt(4);
-        const leftEye = getPt(33);
-        const rightEye = getPt(263);
-        const chin = getPt(152);
+        // Stable landmarks for positioning
+        const eyeCenter = getPt(168);   // Midpoint between eyes
+        const forehead = getPt(10);     // Top of forehead
+        const noseTip = getPt(4);      // Tip of nose
+        const leftEyeOuter = getPt(33);
+        const rightEyeOuter = getPt(263);
+        const mouthCenter = getPt(13);  // Upper lip center
 
         // Calculate face scale and rotation
-        const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
+        const eyeDist = Math.hypot(rightEyeOuter.x - leftEyeOuter.x, rightEyeOuter.y - leftEyeOuter.y);
         const faceScale = eyeDist / 100;
-        const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+        const angle = Math.atan2(rightEyeOuter.y - leftEyeOuter.y, rightEyeOuter.x - leftEyeOuter.x);
 
         arCtx.save();
 
         if (currentLens === 'dog') {
-            // Draw Dog Ears (Using Emoji/Shapes as custom assets failed)
-            arCtx.font = `${120 * faceScale}px serif`;
+            // Dog Ears
+            const earSize = 140 * faceScale;
+            arCtx.font = `${earSize}px serif`;
             arCtx.textAlign = 'center';
             arCtx.textBaseline = 'middle';
-
-            // Ears
             arCtx.save();
-            arCtx.translate(forehead.x, forehead.y - 40 * faceScale);
+            // Higher offset for ears
+            arCtx.translate(forehead.x, forehead.y - 20 * faceScale);
             arCtx.rotate(angle);
             arCtx.fillText('🐶', 0, 0);
             arCtx.restore();
 
-            // Nose
-            arCtx.font = `${60 * faceScale}px serif`;
+            // Dog Nose
+            arCtx.font = `${70 * faceScale}px serif`;
             arCtx.fillText('🐽', noseTip.x, noseTip.y + 10 * faceScale);
         }
         else if (currentLens === 'sunglasses') {
-            arCtx.font = `${150 * faceScale}px serif`;
+            const sunglassSize = 180 * faceScale;
+            arCtx.font = `${sunglassSize}px serif`;
             arCtx.textAlign = 'center';
             arCtx.textBaseline = 'middle';
             arCtx.save();
-            arCtx.translate((leftEye.x + rightEye.x) / 2, (leftEye.y + rightEye.y) / 2);
+            // Center on eyes with a slight vertical drop for the 😎 emoji's glasses positioning
+            arCtx.translate(eyeCenter.x, eyeCenter.y + 10 * faceScale);
             arCtx.rotate(angle);
             arCtx.fillText('😎', 0, 0);
             arCtx.restore();
         }
         else if (currentLens === 'heart_crown') {
-            arCtx.font = `${100 * faceScale}px serif`;
+            arCtx.font = `${90 * faceScale}px serif`;
             arCtx.textAlign = 'center';
             arCtx.save();
-            arCtx.translate(forehead.x, forehead.y - 60 * faceScale);
+            arCtx.translate(forehead.x, forehead.y - 45 * faceScale);
             arCtx.rotate(angle);
             arCtx.fillText('✨👑✨', 0, 0);
             arCtx.restore();
@@ -736,6 +739,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 cameraVideo.style.display = 'block';
                 cameraVideo.onloadedmetadata = () => {
                     cameraVideo.play();
+
+                    // Mirror video UI for selfie comfort
+                    cameraVideo.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'none';
 
                     // Sync AR Canvas size
                     if (arCanvas) {
