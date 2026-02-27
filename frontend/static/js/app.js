@@ -610,20 +610,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function onFaceResults(results) {
         if (!arCtx || !arCanvas) return;
 
-        arCtx.save();
+        // No JS mirroring here — CSS scaleX(-1) on arCanvas handles the flip
+        // identically to how the video element is mirrored, so landmarks
+        // naturally align with the visible (mirrored) video frame.
         arCtx.clearRect(0, 0, arCanvas.width, arCanvas.height);
-
-        // Mirror the AR canvas if using front camera
-        if (facingMode === 'user') {
-            arCtx.translate(arCanvas.width, 0);
-            arCtx.scale(-1, 1);
-        }
 
         if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
             const landmarks = results.multiFaceLandmarks[0];
             renderLens(landmarks);
         }
-        arCtx.restore();
     }
 
     function renderLens(landmarks) {
@@ -644,12 +639,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const mouthCenter = getPt(13);  // Upper lip center
 
         // Calculate face scale and rotation
-        // Use left - right to get a positive X vector relative to the face
-        const dx = leftEyeOuter.x - rightEyeOuter.x;
-        const dy = leftEyeOuter.y - rightEyeOuter.y;
+        // In the raw (unmirrored) landmark space, person's left eye (33) has
+        // a HIGHER x than right eye (263). When CSS mirrors both video and
+        // arCanvas via scaleX(-1), the drawing coordinate space is also
+        // mirrored, so we negate the angle to get the correct tilt direction.
+        const dx = rightEyeOuter.x - leftEyeOuter.x; // right - left in raw space
+        const dy = rightEyeOuter.y - leftEyeOuter.y;
         const eyeDist = Math.hypot(dx, dy);
-        const faceScale = eyeDist / 120; // Adjusted normalization
-        const angle = Math.atan2(dy, dx);
+        const faceScale = eyeDist / 120;
+        const angle = Math.atan2(dy, dx); // correct tilt after CSS mirror
 
         arCtx.save();
 
@@ -753,13 +751,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 cameraVideo.onloadedmetadata = () => {
                     cameraVideo.play();
 
-                    // Mirror video UI for selfie comfort
-                    cameraVideo.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'none';
+                    // Mirror video UI for selfie comfort — apply SAME CSS
+                    // transform to arCanvas so both layers are flipped together.
+                    const mirrorStyle = facingMode === 'user' ? 'scaleX(-1)' : 'none';
+                    cameraVideo.style.transform = mirrorStyle;
 
-                    // Sync AR Canvas size
+                    // Sync AR Canvas size & mirror CSS (no JS transform needed)
                     if (arCanvas) {
                         arCanvas.width = cameraVideo.videoWidth;
                         arCanvas.height = cameraVideo.videoHeight;
+                        arCanvas.style.transform = mirrorStyle;
                     }
 
                     // Start MediaPipe Pipe
@@ -827,19 +828,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Draw Video Frame
+                // Both video and arCanvas are CSS-mirrored (scaleX(-1)).
+                // For capture, we apply the JS mirror once here so the saved
+                // image matches exactly what the user sees on screen.
                 if (facingMode === 'user') {
+                    context.save();
                     context.scale(-1, 1);
                     context.drawImage(cameraVideo, -cameraCanvas.width, 0);
+                    // arCanvas is also CSS-mirrored, so draw it mirror-flipped too
+                    if (currentLens !== 'none') {
+                        context.drawImage(arCanvas, -cameraCanvas.width, 0);
+                    }
+                    context.restore();
                 } else {
                     context.drawImage(cameraVideo, 0, 0);
-                }
-
-                // Draw AR Overlay
-                if (currentLens !== 'none') {
-                    // Reset transform before drawing overlay as arCanvas already handles its own mirroring logic during draw
-                    context.setTransform(1, 0, 0, 1, 0, 0);
-                    context.drawImage(arCanvas, 0, 0);
+                    if (currentLens !== 'none') {
+                        context.drawImage(arCanvas, 0, 0);
+                    }
                 }
 
                 cameraCanvas.toBlob((blob) => {
