@@ -519,23 +519,35 @@ class ImageProcessor:
     
     def remove_background_mask(self, image: np.ndarray) -> np.ndarray:
         """
-        Fast foreground segmentation using thresholding and contours as a fallback for GrabCut.
+        Advanced foreground segmentation using GrabCut with feathered edge blending.
         """
         try:
             mask = np.zeros(image.shape[:2], np.uint8)
             bgdModel = np.zeros((1, 65), np.float64)
             fgdModel = np.zeros((1, 65), np.float64)
             h, w = image.shape[:2]
-            rect = (int(w*0.1), int(h*0.1), int(w*0.8), int(h*0.8))
-            cv2.grabCut(image, mask, rect, bgdModel, fgdModel, 3, cv2.GC_INIT_WITH_RECT)
-            mask2 = np.where((mask==2)|(mask==0), 0, 1).astype('uint8')
-            mask2 = cv2.GaussianBlur(mask2, (7, 7), 0)
-            return mask2
-        except:
-            # Fallback to center-weighted mask if GrabCut fails
+            
+            # Use a slightly more conservative rect for primary subject
+            rect = (int(w*0.05), int(h*0.05), int(w*0.9), int(h*0.9))
+            cv2.grabCut(image, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
+            
+            # Create a more nuanced mask (0=bg, 1=fg, 2=likely bg, 3=likely fg)
+            # We want both Definitely FG (1) and Likely FG (3)
+            mask2 = np.where((mask==1) | (mask==3), 255, 0).astype('uint8')
+            
+            # Feathering: Create a smooth transition boundary
+            # Expansion helps capture strands of hair/clothing
+            mask2 = cv2.dilate(mask2, np.ones((3,3), np.uint8), iterations=1)
+            # Heavy blur for alpha-blending feel
+            mask2 = cv2.GaussianBlur(mask2, (21, 21), 0)
+            
+            # Normalize to 0-1 for blending
+            return (mask2 / 255.0).astype(np.float32)
+        except Exception as e:
+            print(f"Masking Error: {e}")
             h, w = image.shape[:2]
-            mask = np.zeros((h, w), np.uint8)
-            cv2.circle(mask, (w//2, h//2), int(min(h, w)*0.4), 1, -1)
+            mask = np.zeros((h, w), np.float32)
+            cv2.circle(mask, (w//2, h//2), int(min(h, w)*0.4), 1.0, -1)
             return cv2.GaussianBlur(mask, (51, 51), 0)
 
     def teleport_background(self, image: np.ndarray, bg_type: str) -> np.ndarray:
@@ -551,8 +563,6 @@ class ImageProcessor:
         bg_path = bg_map.get(bg_type)
         if not bg_path: return image
         
-        # Load background
-        import os
         if not os.path.exists(bg_path): return image
         bg = cv2.imread(bg_path)
         if bg is None: return image
@@ -560,16 +570,16 @@ class ImageProcessor:
         h, w = image.shape[:2]
         bg = cv2.resize(bg, (w, h))
         
-        # Segment
-        mask = self.remove_background_mask(image)
-        mask_3d = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR).astype(float)
+        # Segment and Blend with float precision
+        mask_alpha = self.remove_background_mask(image)
+        mask_3d = cv2.merge([mask_alpha, mask_alpha, mask_alpha])
         
-        # Blend
-        fg = image.astype(float)
-        bg = bg.astype(float)
+        fg = image.astype(np.float32) / 255.0
+        bg_float = bg.astype(np.float32) / 255.0
         
-        result = (fg * mask_3d + bg * (1.0 - mask_3d)).astype(np.uint8)
-        return result
+        # Linear Interpolation Blending
+        result = (fg * mask_3d + bg_float * (1.0 - mask_3d)) * 255.0
+        return result.astype(np.uint8)
 
     def create_toon_mo(self, image: np.ndarray) -> bytes:
         """
@@ -620,7 +630,12 @@ class ImageProcessor:
         """
         AI Style DNA Transfer: Extracts the color profile and 'vibe' from a reference 
         image and injects it into the target image using Lab color space shifting.
+        Enhanced for more dramatic visual impact.
         """
+        # Resize reference to match target for stable stats calculation
+        h, w = target.shape[:2]
+        reference = cv2.resize(reference, (w, h))
+
         # Convert both to LAB space
         target_lab = cv2.cvtColor(target, cv2.COLOR_BGR2LAB).astype("float32")
         ref_lab = cv2.cvtColor(reference, cv2.COLOR_BGR2LAB).astype("float32")
@@ -639,9 +654,10 @@ class ImageProcessor:
         (b_r_mean, b_r_std) = (b_r.mean(), b_r.std())
         
         # Shift and scale channels (Reference DNA injection)
+        # We use a 1.2x boost on color channels for more POP
         l_t = (((l_t - l_t_mean) / (l_t_std + 1e-5)) * l_r_std) + l_r_mean
-        a_t = (((a_t - a_t_mean) / (a_t_std + 1e-5)) * a_r_std) + a_r_mean
-        b_t = (((b_t - b_t_mean) / (b_t_std + 1e-5)) * b_r_std) + b_r_mean
+        a_t = (((a_t - a_t_mean) / (a_t_std + 1e-5)) * (a_r_std * 1.5)) + a_r_mean
+        b_t = (((b_t - b_t_mean) / (b_t_std + 1e-5)) * (b_r_std * 1.5)) + b_r_mean
         
         # Clip and merge
         l_t = np.clip(l_t, 0, 255)
@@ -651,6 +667,13 @@ class ImageProcessor:
         transfer = cv2.merge([l_t, a_t, b_t])
         transfer = cv2.cvtColor(transfer.astype("uint8"), cv2.COLOR_LAB2BGR)
         
+        # Final Contrast Enhancement for the 'Wow' factor
+        lab = cv2.cvtColor(transfer, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+        l = clahe.apply(l)
+        transfer = cv2.cvtColor(cv2.merge([l, a, b]), cv2.COLOR_LAB2BGR)
+
         return transfer
 
     @staticmethod

@@ -941,7 +941,8 @@ def mint_nft():
         "success": True, 
         "message": "Asset officially minted on Polygon PoS!",
         "tx_hash": tx_hash,
-        "opensea_url": f"https://opensea.io/assets/matic/{tx_hash}"
+        # Point to a valid polygonscan search or a generic opensea page for the demo
+        "opensea_url": f"https://opensea.io/category/matic" 
     })
 
 @app.route('/api/process/dna', methods=['POST'])
