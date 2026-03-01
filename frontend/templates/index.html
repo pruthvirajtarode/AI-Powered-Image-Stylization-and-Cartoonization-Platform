@@ -327,6 +327,36 @@
                     // Add active class to clicked
                     document.getElementById('thumb-' + styleId).classList.add('active-thumb');
                 }
+
+                // Auto-rotation logic
+                const heroStyles = [
+                    { id: 'pixar', src: '/static/images/hero_boy_pixar_1772354102626.png' },
+                    { id: 'anime', src: '/static/images/hero_boy_anime_1772354129553.png' },
+                    { id: 'comic', src: '/static/images/hero_boy_comic_1772354167736.png' }
+                ];
+                let currentStyleIndex = 0;
+                let autoRotateInterval;
+
+                function startAutoRotate() {
+                    autoRotateInterval = setInterval(() => {
+                        currentStyleIndex = (currentStyleIndex + 1) % heroStyles.length;
+                        changeHeroStyle(heroStyles[currentStyleIndex].id, heroStyles[currentStyleIndex].src);
+                    }, 1500); // changes every 1.5 seconds
+                }
+
+                function stopAutoRotate() {
+                    clearInterval(autoRotateInterval);
+                }
+
+                // Start immediately
+                startAutoRotate();
+
+                // Pause on hover
+                const interactiveContainer = document.querySelector('.hero-interactive-container');
+                if (interactiveContainer) {
+                    interactiveContainer.addEventListener('mouseenter', stopAutoRotate);
+                    interactiveContainer.addEventListener('mouseleave', startAutoRotate);
+                }
             </script>
         </div>
     </header>
