@@ -119,26 +119,213 @@
             </div>
         </div>
         <div class="hero-visual">
-            <div
-                style="position: relative; width: 100%; max-width: 650px; margin: 0 auto; animation: float 8s ease-in-out infinite;">
-                <!-- Decorative Glow Background -->
-                <div
-                    style="position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; background: linear-gradient(135deg, rgba(255, 126, 95, 0.4), rgba(254, 180, 123, 0.4)); filter: blur(30px); border-radius: 40px; z-index: 0;">
-                </div>
+            <style>
+                .hero-interactive-container {
+                    position: relative;
+                    width: 100%;
+                    max-width: 480px;
+                    margin: 0 auto;
+                    animation: float 8s ease-in-out infinite;
+                }
 
-                <!-- Collage Grid Container -->
-                <div
-                    style="position: relative; z-index: 1; background: white; padding: 15px; border-radius: 30px; box-shadow: 0 30px 60px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.8);">
-                    <img src="/static/images/hero_collage.png" alt="AI Style Showcase Grid"
-                        style="width: 100%; border-radius: 20px; display: block;">
+                .hero-bg-glow {
+                    position: absolute;
+                    top: 0;
+                    left: -20px;
+                    right: -20px;
+                    bottom: 0;
+                    background: linear-gradient(135deg, rgba(255, 126, 95, 0.4), rgba(254, 180, 123, 0.4));
+                    filter: blur(40px);
+                    border-radius: 40px;
+                    z-index: 0;
+                }
 
-                    <!-- AI Badge Overlay -->
-                    <div
-                        style="position: absolute; top: -20px; right: -20px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 10px 25px; border-radius: 30px; font-weight: 800; font-family: 'Baloo 2'; font-size: 1rem; box-shadow: 0 10px 20px rgba(255,100,60,0.3); z-index: 10; border: 3px solid white;">
-                        <i class="fas fa-magic"></i> AI Models
+                .hero-main-card {
+                    position: relative;
+                    z-index: 1;
+                    background: white;
+                    padding: 12px;
+                    border-radius: 28px;
+                    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
+                    border: 1px solid rgba(255, 255, 255, 0.9);
+                }
+
+                .hero-main-img {
+                    width: 100%;
+                    border-radius: 18px;
+                    display: block;
+                    aspect-ratio: 1/1;
+                    object-fit: cover;
+                }
+
+                .hero-original-card {
+                    position: absolute;
+                    top: 60px;
+                    left: -80px;
+                    width: 130px;
+                    background: white;
+                    padding: 8px;
+                    border-radius: 18px;
+                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+                    z-index: 10;
+                    border: 1px solid #e2e8f0;
+                    text-align: center;
+                }
+
+                .hero-original-card img {
+                    width: 100%;
+                    border-radius: 12px;
+                    display: block;
+                    aspect-ratio: 1/1;
+                    object-fit: cover;
+                }
+
+                .hero-original-card span {
+                    display: block;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    color: #64748b;
+                    margin-top: 6px;
+                }
+
+                .hero-arrow-svg {
+                    position: absolute;
+                    right: -40px;
+                    top: 40%;
+                    width: 50px;
+                    height: auto;
+                    z-index: -1;
+                    filter: drop-shadow(2px 4px 6px rgba(255, 100, 60, 0.3));
+                }
+
+                .hero-thumbs-row {
+                    display: flex;
+                    justify-content: center;
+                    gap: 15px;
+                    margin-top: 20px;
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .hero-thumb-wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .hero-thumb {
+                    width: 65px;
+                    height: 65px;
+                    border-radius: 14px;
+                    cursor: pointer;
+                    border: 3px solid transparent;
+                    transition: 0.3s;
+                    object-fit: cover;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+                }
+
+                .hero-thumb:hover {
+                    transform: translateY(-5px);
+                }
+
+                .hero-thumb.active-thumb {
+                    border-color: var(--primary);
+                    transform: scale(1.1) translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(255, 100, 60, 0.3);
+                }
+
+                .hero-thumb-label {
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    color: #64748b;
+                    transition: 0.3s;
+                }
+
+                .active-thumb+.hero-thumb-label {
+                    color: var(--primary);
+                }
+
+                @media (max-width: 768px) {
+                    .hero-original-card {
+                        left: -20px;
+                        top: -30px;
+                        width: 90px;
+                    }
+
+                    .hero-arrow-svg {
+                        display: none;
+                    }
+
+                    .hero-thumb {
+                        width: 50px;
+                        height: 50px;
+                    }
+                }
+            </style>
+
+            <div class="hero-interactive-container">
+                <div class="hero-bg-glow"></div>
+
+                <div class="hero-main-card">
+                    <!-- Main Result Image -->
+                    <img src="/static/images/hero_pixar_1772353027026.png" id="heroMainImg" class="hero-main-img"
+                        alt="Generative Result">
+
+                    <!-- Floating Original Image Box with Arrow -->
+                    <div class="hero-original-card">
+                        <img src="/static/images/hero_original_1772353000427.png" alt="Original Photo">
+                        <span>Original</span>
+
+                        <!-- Curved SVG Arrow pointing to main box -->
+                        <svg class="hero-arrow-svg" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 5 C 40 5, 80 30, 95 70" stroke="#ff7e5f" stroke-width="6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M75 60 L 95 70 L 90 50" stroke="#ff7e5f" stroke-width="6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </div>
+
+                    <!-- Interactive Thumbnails -->
+                    <div class="hero-thumbs-row">
+                        <div class="hero-thumb-wrapper"
+                            onclick="changeHeroStyle('pixar', '/static/images/hero_pixar_1772353027026.png')">
+                            <img src="/static/images/hero_pixar_1772353027026.png" id="thumb-pixar"
+                                class="hero-thumb active-thumb">
+                            <span class="hero-thumb-label">3D Pixar</span>
+                        </div>
+                        <div class="hero-thumb-wrapper"
+                            onclick="changeHeroStyle('anime', '/static/images/hero_anime_1772353051545.png')">
+                            <img src="/static/images/hero_anime_1772353051545.png" id="thumb-anime" class="hero-thumb">
+                            <span class="hero-thumb-label">Anime</span>
+                        </div>
+                        <div class="hero-thumb-wrapper"
+                            onclick="changeHeroStyle('comic', '/static/images/hero_comic_1772353085870.png')">
+                            <img src="/static/images/hero_comic_1772353085870.png" id="thumb-comic" class="hero-thumb">
+                            <span class="hero-thumb-label">Comic Book</span>
+                        </div>
                     </div>
                 </div>
+
+                <div
+                    style="position: absolute; top: -15px; right: -15px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 8px 20px; border-radius: 30px; font-weight: 800; font-family: 'Baloo 2'; font-size: 0.9rem; box-shadow: 0 10px 20px rgba(255,100,60,0.3); z-index: 10; border: 3px solid white;">
+                    <i class="fas fa-hand-pointer"></i> Try It
+                </div>
             </div>
+
+            <script>
+                function changeHeroStyle(styleId, imgSrc) {
+                    // Update main image
+                    document.getElementById('heroMainImg').src = imgSrc;
+
+                    // Remove active class from all
+                    const thumbs = document.querySelectorAll('.hero-thumb');
+                    thumbs.forEach(t => t.classList.remove('active-thumb'));
+
+                    // Add active class to clicked
+                    document.getElementById('thumb-' + styleId).classList.add('active-thumb');
+                }
+            </script>
         </div>
     </header>
 
