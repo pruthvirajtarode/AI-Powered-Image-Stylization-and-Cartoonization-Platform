@@ -1422,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "currency": "INR",
                 "name": "Toonify AI",
                 "description": isUpgrade ? "Creator Pro Subscription" : "HD Image Export",
-                "image": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&q=80&w=100&h=100",
+                "image": "/static/images/hero_pixar_1772353027026.png",
                 "order_id": data.order.id,
                 "handler": async function (response) {
                     // 3. Verify Payment on Server
@@ -1654,7 +1654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 profileContainer.style.display = 'block';
 
                 profileBtn.innerHTML = `
-                    <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=100&h=100" class="profile-avatar" alt="User ${data.user.username}">
+                    <img src="/static/images/hero_boy_pixar_1772354102626.png" class="profile-avatar" alt="User ${data.user.username}">
                     <span style="font-family: 'Inter';">${data.user.username}</span>
                     <i class="fas fa-chevron-down" style="font-size: 0.7rem; color: #94a3b8; margin-left: auto;"></i>
                 `;
