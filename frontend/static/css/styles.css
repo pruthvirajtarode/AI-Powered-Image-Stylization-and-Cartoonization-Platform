@@ -3323,6 +3323,335 @@ body { animation: pageFadeIn 0.5s ease forwards; }
 .quick-nav-section h2,
 .quick-nav-section p {
     -webkit-text-fill-color: initial !important;
+}
+
+/* =======================================================
+   ★ COMPREHENSIVE UI OVERHAUL — v900
+   Clean, properly scoped rules. No more -webkit-text-fill-color leaking.
+   ======================================================= */
+
+/* ── RESET global section-title gradient-text to light sections only ──
+   The original rule applies to everything. Narrow it to specific sections. */
+.hero .section-title h2,
+#features .section-title h2,
+#app .section-title h2 {
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ── HARD RESET for dark sections: restore white text, kill gradient clip ── */
+#educational .section-title h2,
+#gallery .section-title h2,
+#pricing .section-title h2 {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: white !important;
+    color: white !important;
+    display: inline-block;
+}
+
+#educational .section-title h2 span,
+#gallery .section-title h2 span,
+#pricing .section-title h2 span {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* ── Section title paragraph in dark sections ── */
+#educational .section-title p,
+#gallery .section-title p,
+#pricing .section-title p {
+    color: rgba(255, 255, 255, 0.5) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ── App/Neural Editor section styling ── */
+#app {
+    background: linear-gradient(160deg, #f8faff 0%, #fdf4f0 50%, #f4f8ff 100%);
+    position: relative;
+}
+
+#app .section-title h2 {
+    -webkit-text-fill-color: transparent;
+}
+
+/* ── APP section heading consistent style ── */
+.app-section-title h2,
+#app h2.section-heading {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ── Features section glassmorphism card hover refinements ── */
+.feat-card h3 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.4rem;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.feat-card p {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.feat-card:hover .feat-card h3 { color: #0f172a; }
+
+/* ── Price cards hover lift ── */
+.price-card:hover {
+    transform: translateY(-10px) !important;
+    box-shadow: 0 30px 70px rgba(255, 126, 95, 0.25) !important;
+}
+
+/* ── Quick nav CTA button polish ──*/
+.quick-nav-btn {
+    border-radius: 14px !important;
+    font-weight: 700 !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* ── Global heading font consistency ── */
+h1, h2, h3 {
+    font-family: 'Baloo 2', 'Inter', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+p, li, label, span {
+    font-family: 'Inter', 'Outfit', sans-serif;
+}
+
+/* ── Navbar logo text ── */
+.logo-text {
+    font-family: 'Baloo 2', sans-serif !important;
+}
+
+/* ── Nav links typography ── */
+.nav-links a {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.93rem;
+    letter-spacing: 0.01em;
+    color: #334155;
+    text-decoration: none;
+}
+
+.nav-links a:hover {
+    color: var(--primary) !important;
+}
+
+/* ── Hero announcement badge ── */
+.hero-announcement-badge {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.01em;
+}
+
+/* ── Hero h1 better ── */
+.hero h1 {
+    letter-spacing: -0.04em !important;
+}
+
+/* ── Hero sub-paragraph ── */
+.hero > .hero-content > p {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.15rem !important;
+    color: #475569;
+    line-height: 1.7;
+    -webkit-text-fill-color: initial;
+}
+
+/* ── Stats row text ── */
+.stat-pill strong {
+    font-family: 'Baloo 2', sans-serif;
+    color: #1e293b;
+    -webkit-text-fill-color: initial;
+}
+
+.stat-pill span {
+    color: #64748b;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    -webkit-text-fill-color: initial;
+}
+
+/* ── Educational section h3 sub-headings ── */
+#educational h3 {
+    font-family: 'Baloo 2', sans-serif;
+    -webkit-text-fill-color: white !important;
+    color: white !important;
+}
+
+#educational h3 span {
+    -webkit-text-fill-color: transparent !important;
+}
+
+#educational p, #educational li {
+    font-family: 'Inter', sans-serif;
+    -webkit-text-fill-color: rgba(255,255,255,0.7) !important;
+    color: rgba(255,255,255,0.7) !important;
+}
+
+#educational strong {
+    -webkit-text-fill-color: rgba(255,255,255,0.95) !important;
+    color: rgba(255,255,255,0.95) !important;
+}
+
+/* ── Gallery card label ── */
+.card-overlay span {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* ── Footer v900 ── */
+.saas-footer {
+    background: linear-gradient(160deg, #0a0f1e 0%, #0f172a 100%);
+    color: rgba(255,255,255,0.7);
+    padding: 80px 8% 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.saas-footer::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(255,126,95,0.08) 0%, transparent 45%),
+        radial-gradient(circle at 90% 80%, rgba(99,102,241,0.08) 0%, transparent 45%);
+    pointer-events: none;
+}
+
+.saas-footer .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 60px;
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 1;
+}
+
+@media (max-width: 900px) {
+    .saas-footer .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .saas-footer .footer-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.saas-footer .footer-brand .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.saas-footer .footer-brand .logo i {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.8rem;
+}
+
+.saas-footer .footer-brand p {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.7;
+    margin-bottom: 28px;
+    -webkit-text-fill-color: rgba(255,255,255,0.5);
+}
+
+.saas-footer .social-links {
+    display: flex;
+    gap: 12px;
+}
+
+.saas-footer .social-links a {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.6);
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.saas-footer .social-links a:hover {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    border-color: transparent;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255,126,95,0.35);
+}
+
+.saas-footer .footer-links h5 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 20px;
+    letter-spacing: 0.02em;
+    -webkit-text-fill-color: white;
+}
+
+.saas-footer .footer-links a {
+    display: block;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    transition: all 0.25s ease;
+    font-family: 'Inter', sans-serif;
+    -webkit-text-fill-color: rgba(255,255,255,0.5);
+}
+
+.saas-footer .footer-links a:hover {
+    color: #ff7e5f;
+    -webkit-text-fill-color: #ff7e5f;
+    transform: translateX(4px);
+}
+
+.saas-footer .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 30px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.saas-footer .footer-bottom p {
+    color: rgba(255,255,255,0.35);
+    font-size: 0.88rem;
+    -webkit-text-fill-color: rgba(255,255,255,0.35);
+}
+
+/* ── Hide old duplicate footer.footer ── */
+footer.footer {
+    display: none !important;
 }/ *   b g   l e n s   * / 
  
  . l e n s - b g   {   b o r d e r - c o l o r :   # a 7 8 b f a   ! i m p o r t a n t ;   b a c k g r o u n d :   l i n e a r - g r a d i e n t ( 1 3 5 d e g , # f 5 f 3 f f , # f f f )   ! i m p o r t a n t ;   } 
