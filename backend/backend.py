@@ -63,13 +63,13 @@ def tutorials():
 @app.route('/billing')
 def billing():
     if 'user' not in session:
-        return redirect('/')
+        return redirect('/?auth=login')
     return render_template('billing.html')
 
 @app.route('/profile')
 def profile():
     if 'user' not in session:
-        return redirect('/')
+        return redirect('/?auth=login')
     return render_template('profile.html')
 
 @app.route('/security')
@@ -91,7 +91,7 @@ def terms_of_service():
 @app.route('/dashboard')
 def dashboard():
     if 'user' not in session:
-        return redirect('/')
+        return redirect('/?auth=login')
     
     # Background Cleanup (Simple trigger)
     try:

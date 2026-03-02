@@ -2043,6 +2043,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if we should open auth modal on load
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('auth') === 'login') {
-        if (typeof openAuth === 'function') openAuth();
+        // Only auto-open if the user is NOT already logged in
+        const cachedUser = JSON.parse(localStorage.getItem('toonify_user'));
+        if (!cachedUser) {
+            if (typeof openAuth === 'function') openAuth();
+        }
+        // Clean the URL immediately so a refresh doesn't re-trigger the modal
+        window.history.replaceState({}, document.title, '/');
     }
 });
