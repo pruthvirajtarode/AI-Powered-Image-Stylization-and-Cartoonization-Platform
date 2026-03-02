@@ -16,7 +16,7 @@
     <meta property="og:image" content="/static/images/social-preview.png">
     <meta name="twitter:card" content="summary_large_image">
 
-    <link rel="stylesheet" href="/static/css/styles.css?v=400">
+    <link rel="stylesheet" href="/static/css/styles.css?v=500">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link
@@ -104,16 +104,33 @@
             style="position: fixed; bottom: 10%; left: 5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(37,211,102,0.03) 0%, transparent 70%); filter: blur(80px); z-index: -1; animation: float 12s infinite reverse;">
         </div>
         <div class="hero-content">
+            <!-- Announcement Badge -->
+            <div class="hero-announcement-badge">
+                <span class="badge-dot"></span>
+                🏆 Ranked <strong>#1 AI Art Platform</strong> of 2026
+            </div>
             <h1>Transform Your <span>Photos</span> into Art</h1>
             <p>The world's most advanced AI stylization engine for creators. Turn any portrait, landscape, or pet photo
                 into a professional cartoon masterpiece in seconds.</p>
-            <div class="hero-cta">
-                <a href="#app" class="btn-auth" style="padding: 1rem 3rem; font-size: 1.25rem;">Open AI Editor <i
-                        class="fas fa-arrow-right"></i></a>
+            <!-- Dual CTA Buttons -->
+            <div class="hero-cta-group">
+                <a href="#app" class="btn-cta-primary"><i class="fas fa-wand-magic-sparkles"></i> Open AI Editor</a>
+                <a href="/gallery" class="btn-cta-secondary"><i class="fas fa-images"></i> View Gallery</a>
             </div>
-            <div class="hero-stats">
-                <div class="stat-item"><strong>2M+</strong> Projects Created</div>
-                <div class="stat-item"><strong>99%</strong> Satisfaction</div>
+            <!-- Enhanced Stats with Stars -->
+            <div class="hero-stats-row">
+                <div class="stat-pill">
+                    <div class="stat-stars">★★★★★</div>
+                    <div class="stat-text"><strong>4.9/5</strong> <span>from 12K+ reviews</span></div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-pill">
+                    <strong>2M+</strong><span>Projects Created</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-pill">
+                    <strong>99%</strong><span>Satisfaction</span>
+                </div>
             </div>
         </div>
         <div class="hero-visual">
@@ -362,6 +379,45 @@
     <!-- Understanding Our Styles Section -->
     <section class="educational-section" id="educational"
         style="padding: 80px 5%; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
+    <!-- Social Proof Ticker -->
+    <div class="social-ticker-wrap" style="margin-bottom:60px;">
+        <div class="ticker-label"><i class="fas fa-fire"></i> Trusted by</div>
+        <div class="ticker-track">
+            <div class="ticker-content">
+                <span>🎨 Portrait Artists</span>
+                <span>•</span>
+                <span>📸 Photographers</span>
+                <span>•</span>
+                <span>🎮 Game Designers</span>
+                <span>•</span>
+                <span>🎬 Content Creators</span>
+                <span>•</span>
+                <span>📱 Social Media Influencers</span>
+                <span>•</span>
+                <span>🖼️ Digital Illustrators</span>
+                <span>•</span>
+                <span>✨ Creative Studios</span>
+                <span>•</span>
+                <span>🤖 AI Enthusiasts</span>
+                <span>•</span>
+                <span>🎨 Portrait Artists</span>
+                <span>•</span>
+                <span>📸 Photographers</span>
+                <span>•</span>
+                <span>🎮 Game Designers</span>
+                <span>•</span>
+                <span>🎬 Content Creators</span>
+                <span>•</span>
+                <span>📱 Social Media Influencers</span>
+                <span>•</span>
+                <span>🖼️ Digital Illustrators</span>
+                <span>•</span>
+                <span>✨ Creative Studios</span>
+                <span>•</span>
+                <span>🤖 AI Enthusiasts</span>
+            </div>
+        </div>
+    </div>
         <div class="section-title">
             <h2>Understanding Our <span>AI Styles</span></h2>
             <p>See exactly how our neural engine transforms your everyday photos into stunning artistry.</p>
@@ -1080,22 +1136,37 @@
 
             <!-- Left Branding Side -->
             <div class="auth-left"
-                style="flex: 1; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); display: flex; align-items: center; justify-content: center; padding: 40px; position: relative; border-right: 1px solid #e2e8f0;">
-                <div style="text-align: center;">
-                    <div style="position: relative; animation: float 6s ease-in-out infinite;">
+                style="flex: 1; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); display: flex; align-items: center; justify-content: center; padding: 40px; position: relative; border-right: 1px solid #e2e8f0; overflow: hidden;">
+                <!-- Background glow blobs -->
+                <div style="position:absolute;top:-80px;left:-80px;width:300px;height:300px;background:radial-gradient(circle,rgba(255,126,95,0.25) 0%,transparent 70%);border-radius:50%;filter:blur(40px);"></div>
+                <div style="position:absolute;bottom:-60px;right:-60px;width:250px;height:250px;background:radial-gradient(circle,rgba(99,102,241,0.3) 0%,transparent 70%);border-radius:50%;filter:blur(40px);"></div>
+                <div style="text-align: center; position:relative; z-index:1;">
+                    <!-- Image with floating overlay badges -->
+                    <div style="position: relative; animation: float 6s ease-in-out infinite; display:inline-block;">
                         <img src="/static/images/hero_pixar_1772353027026.png" alt="Auth Branding"
-                            style="width: 100%; max-width: 420px; border-radius: 20px;">
+                            style="width: 100%; max-width: 340px; border-radius: 24px; box-shadow: 0 30px 60px rgba(0,0,0,0.4); border: 3px solid rgba(255,255,255,0.1);">
+                        <!-- Floating badge top-left -->
+                        <div style="position:absolute;top:-14px;left:-14px;background:linear-gradient(135deg,#ff7e5f,#feb47b);color:white;padding:8px 16px;border-radius:30px;font-size:0.78rem;font-weight:800;box-shadow:0 8px 20px rgba(255,126,95,0.4);white-space:nowrap;">
+                            <i class="fas fa-bolt"></i> AI Powered
+                        </div>
+                        <!-- Floating badge bottom-right -->
+                        <div style="position:absolute;bottom:-14px;right:-14px;background:white;color:#1e293b;padding:8px 16px;border-radius:30px;font-size:0.78rem;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,0.2);white-space:nowrap;">
+                            ★★★★★ 4.9/5
+                        </div>
                     </div>
                     <h3
-                        style="margin-top: 40px; color: #1e293b; font-size: 2rem; font-family: 'Baloo 2'; font-weight: 800; letter-spacing: -0.5px;">
+                        style="margin-top: 50px; color: white; font-size: 1.9rem; font-family: 'Baloo 2'; font-weight: 800; letter-spacing: -0.5px;">
                         Unleash Your <span
                             style="background: linear-gradient(90deg, #ff7e5f, #feb47b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Creativity</span>
                     </h3>
-                    <p
-                        style="color: #64748b; margin-top: 15px; font-size: 1.15rem; line-height: 1.6; font-weight: 500;">
-                        Experience the power of <br><span style="color: #4f46e5; font-weight: 700;">Neural
-                            Stylization
-                            Engine</span></p>
+                    <p style="color: rgba(255,255,255,0.6); margin-top: 12px; font-size: 1rem; line-height: 1.6; font-weight: 500;">
+                        Experience the power of <br><span style="color: #a5b4fc; font-weight: 700;">Neural Stylization Engine</span></p>
+                    <!-- Feature pills -->
+                    <div style="display:flex;gap:10px;justify-content:center;margin-top:24px;flex-wrap:wrap;">
+                        <span style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);padding:6px 14px;border-radius:20px;font-size:0.77rem;font-weight:700;border:1px solid rgba(255,255,255,0.15);">🎨 9 Art Styles</span>
+                        <span style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);padding:6px 14px;border-radius:20px;font-size:0.77rem;font-weight:700;border:1px solid rgba(255,255,255,0.15);">⚡ Instant</span>
+                        <span style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);padding:6px 14px;border-radius:20px;font-size:0.77rem;font-weight:700;border:1px solid rgba(255,255,255,0.15);">🔒 Free Plan</span>
+                    </div>
                 </div>
             </div>
 
