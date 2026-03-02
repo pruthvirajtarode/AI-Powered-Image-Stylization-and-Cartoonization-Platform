@@ -2758,6 +2758,450 @@ h3 {
     .ticker-label { border-right: none; padding-right: 0; }
 }
 
+/* =======================================================
+   ★ MAJOR VISUAL UPGRADE — ATTRACTIVE UI POLISH v2
+   ======================================================= */
+
+/* ── 1. Body: animated mesh gradient background ── */
+body {
+    background: #fafbff;
+    background-image:
+        radial-gradient(ellipse at 10% 20%, rgba(255,126,95,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 10%, rgba(99,102,241,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 80%, rgba(254,180,123,0.05) 0%, transparent 55%);
+}
+
+/* ── 2. Navbar: glass + gradient bottom line + glow login btn ── */
+.navbar {
+    background: rgba(255,255,255,0.88) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255,126,95,0.12) !important;
+    box-shadow: 0 1px 30px rgba(0,0,0,0.06) !important;
+}
+
+#loginHeaderBtn {
+    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%) !important;
+    box-shadow: 0 4px 18px rgba(255,126,95,0.4) !important;
+    padding: 0.75rem 1.8rem !important;
+    border-radius: 12px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.01em !important;
+    transition: all 0.3s ease !important;
+}
+
+#loginHeaderBtn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 28px rgba(255,126,95,0.5) !important;
+}
+
+.nav-links a {
+    position: relative;
+    padding-bottom: 4px;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), #feb47b);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after { width: 100%; }
+
+/* ── 3. Hero Section: rich gradient mesh bg + gradient h1 ── */
+.hero {
+    background: linear-gradient(135deg, #fff8f6 0%, #faf5ff 40%, #f0f9ff 100%) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 15% 50%, rgba(255,126,95,0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(99,102,241,0.1) 0%, transparent 45%),
+        radial-gradient(circle at 50% 90%, rgba(254,180,123,0.08) 0%, transparent 45%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.hero-content { position: relative; z-index: 1; }
+.hero-visual  { position: relative; z-index: 1; }
+
+.hero h1 {
+    font-size: 5.2rem !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.05 !important;
+    letter-spacing: -3px !important;
+}
+
+.hero h1 span {
+    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 50%, #ff6a44 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+}
+
+.hero h1 span::after { display: none !important; }
+
+/* ── 4. CTA primary button: shimmer animation ── */
+@keyframes btnShimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+
+.btn-cta-primary {
+    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 40%, #ff6a44 80%, #feb47b 100%) !important;
+    background-size: 200% auto !important;
+    animation: btnShimmer 3s linear infinite !important;
+    font-size: 1.05rem !important;
+    letter-spacing: 0.02em !important;
+}
+
+/* ── 5. Section titles: gradient text ── */
+.section-title h2 {
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.section-title h2 span {
+    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ── 6. Gallery section: dark immersive background ── */
+.gallery-section-main {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) !important;
+    padding: 6rem 0 !important;
+}
+
+.gallery-section-main .section-title h2 {
+    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.gallery-section-main .section-title p {
+    color: rgba(255,255,255,0.55) !important;
+}
+
+.gallery-section-main .section-title h2::after {
+    background: linear-gradient(90deg, #ff7e5f, #feb47b) !important;
+}
+
+.gallery-slider-container::before {
+    background: linear-gradient(to right, #0f172a, transparent) !important;
+}
+
+.gallery-slider-container::after {
+    background: linear-gradient(to left, #0f172a, transparent) !important;
+}
+
+.gallery-card {
+    border-radius: 24px !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4) !important;
+    overflow: hidden;
+    transition: transform 0.4s ease, box-shadow 0.4s ease !important;
+}
+
+.gallery-card:hover {
+    transform: translateY(-10px) scale(1.02) !important;
+    box-shadow: 0 35px 80px rgba(255,126,95,0.3) !important;
+}
+
+.card-overlay {
+    background: linear-gradient(transparent, rgba(15,23,42,0.9)) !important;
+    padding: 2rem !important;
+}
+
+.card-overlay span {
+    font-size: 1.2rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* ── 7. Features section: glassmorphism cards ── */
+.features-section {
+    background: linear-gradient(135deg, #f8faff 0%, #fef3ee 50%, #f8faff 100%) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.features-section::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(255,126,95,0.07) 0%, transparent 50%),
+        radial-gradient(circle at 80% 30%, rgba(99,102,241,0.07) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.feat-card {
+    background: rgba(255,255,255,0.85) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255,255,255,0.9) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8) !important;
+    border-radius: 28px !important;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+.feat-card:hover {
+    transform: translateY(-16px) !important;
+    box-shadow: 0 30px 70px rgba(255,126,95,0.18), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+    border-color: rgba(255,126,95,0.3) !important;
+}
+
+.feat-icon-wrapper {
+    background: linear-gradient(135deg, rgba(255,126,95,0.15), rgba(254,180,123,0.15)) !important;
+    border: 1px solid rgba(255,126,95,0.2) !important;
+    width: 76px !important;
+    height: 76px !important;
+    border-radius: 22px !important;
+}
+
+.feat-card:hover .feat-icon-wrapper {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
+    border-color: transparent !important;
+}
+
+.feat-img {
+    border-radius: 50% !important;
+    box-shadow: 0 12px 40px rgba(255,126,95,0.2) !important;
+    border: 5px solid white !important;
+}
+
+.feat-badge {
+    background: linear-gradient(135deg, rgba(255,126,95,0.1), rgba(254,180,123,0.1)) !important;
+    color: #c2410c !important;
+    border: 1px solid rgba(255,126,95,0.2) !important;
+    font-weight: 800 !important;
+}
+
+.feat-card:hover .feat-badge {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+/* ── 8. Pricing section: glassmorphism + gradient popular card ── */
+.pricing {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
+    padding: 8rem 8% !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.pricing::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(255,126,95,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 30%, rgba(99,102,241,0.15) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.pricing .section-title h2 {
+    background: linear-gradient(135deg, #ffffff, #e2e8f0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.pricing .section-title p { color: rgba(255,255,255,0.55) !important; }
+
+.pricing .section-title h2::after {
+    background: linear-gradient(90deg, #ff7e5f, #feb47b) !important;
+}
+
+.price-card {
+    background: rgba(255,255,255,0.06) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: white !important;
+    border-radius: 28px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
+    transition: all 0.4s ease !important;
+}
+
+.price-card:hover {
+    transform: translateY(-12px) !important;
+    border-color: rgba(255,126,95,0.4) !important;
+    box-shadow: 0 30px 60px rgba(255,126,95,0.2) !important;
+}
+
+.price-card h4 { color: rgba(255,255,255,0.6) !important; }
+
+.price-card .amount {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 4.5rem !important;
+}
+
+.price-card li { color: rgba(255,255,255,0.8) !important; }
+
+.price-card li i { color: #34d399 !important; }
+
+.price-card.popular {
+    background: linear-gradient(135deg, rgba(255,126,95,0.2), rgba(254,180,123,0.15)) !important;
+    border: 2px solid rgba(255,126,95,0.5) !important;
+    box-shadow: 0 20px 60px rgba(255,126,95,0.25), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+.price-card.popular:hover {
+    box-shadow: 0 35px 80px rgba(255,126,95,0.35) !important;
+}
+
+.popular-badge {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
+    box-shadow: 0 4px 16px rgba(255,126,95,0.4) !important;
+    font-size: 11px !important;
+    letter-spacing: 1.5px !important;
+}
+
+/* Popular card buttons */
+.price-card .btn-auth {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
+    box-shadow: 0 6px 20px rgba(255,126,95,0.4) !important;
+    border-radius: 14px !important;
+    font-weight: 800 !important;
+    padding: 1rem !important;
+    transition: all 0.3s !important;
+    color: white !important;
+}
+
+.price-card .btn-auth:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 28px rgba(255,126,95,0.5) !important;
+}
+
+/* ── 9. App section: nicer gradient ── */
+.app-section {
+    background: linear-gradient(135deg, #f8faff 0%, #fef3ee 40%, #f0f9ff 100%) !important;
+}
+
+/* ── 10. Educational section: subtle mesh ── */
+.educational-section {
+    background: linear-gradient(135deg, #ffffff 0%, #faf5ff 50%, #fff8f6 100%) !important;
+    position: relative;
+}
+
+.educational-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 80% 0%, rgba(255,126,95,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 10% 100%, rgba(99,102,241,0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* ── 11. Announcement badge: more vibrant ── */
+.hero-announcement-badge {
+    background: linear-gradient(135deg, rgba(255,126,95,0.12), rgba(254,180,123,0.08)) !important;
+    border: 1.5px solid rgba(255,126,95,0.35) !important;
+    box-shadow: 0 4px 20px rgba(255,126,95,0.15) !important;
+}
+
+/* ── 12. Section generic: smooth reveal animation ── */
+.gallery-section-main,
+.features-section,
+.pricing,
+.educational-section,
+.app-section {
+    transition: background 0.5s ease;
+}
+
+/* ── 13. Quick nav section: gradient bg ── */
+section[style*="f8fafc"] {
+    background: linear-gradient(135deg, #fff8f6 0%, #f0f4ff 100%) !important;
+}
+
+/* ── 14. Hero stats row: glassmorphism pill ── */
+.hero-stats-row {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.9);
+    padding: 16px 24px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* ── 15. Scrollbar: branded ── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover { background: #ff6a44; }
+
+/* ── 16. Selection color ── */
+::selection {
+    background: rgba(255,126,95,0.2);
+    color: #c2410c;
+}
+
+/* ── 17. Social proof ticker: richer ── */
+.social-ticker-wrap {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,248,245,0.9)) !important;
+    border: 1px solid rgba(255,126,95,0.2) !important;
+    box-shadow: 0 4px 24px rgba(255,126,95,0.1) !important;
+    backdrop-filter: blur(12px) !important;
+}
+
+/* ── 18. Saas footer: richer dark ── */
+.saas-footer {
+    background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #1a0f2e 100%) !important;
+    border-top: 1px solid rgba(255,126,95,0.15) !important;
+}
+
+/* saas-footer social links hover */
+.social-links a:hover i {
+    color: #ff7e5f !important;
+}
+
+/* ── 19. Logo icon: gradient bg ── */
+.navbar .logo > div {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
+    box-shadow: 0 4px 14px rgba(255,126,95,0.35) !important;
+    border-radius: 12px !important;
+}
+
+/* ── 20. Smooth page load fade-in ── */
+@keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+body { animation: pageFadeIn 0.5s ease forwards; }
+
 #recordBtn:hover {
     opacity: 0.88;
     transform: translateY(-1px);
