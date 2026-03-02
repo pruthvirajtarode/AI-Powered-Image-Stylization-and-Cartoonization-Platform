@@ -3222,6 +3222,107 @@ body { animation: pageFadeIn 0.5s ease forwards; }
     50% {
         box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
     }
+}
+
+/* =======================================================
+   ★ DARK SECTION TEXT FIXES — v800
+   Force white/readable text inside dark-bg sections.
+   The global .section-title h2 sets -webkit-text-fill-color:
+   transparent which blocks inline color:white. These rules
+   override that specifically for dark sections.
+   ======================================================= */
+
+/* ── Educational section (dark navy bg) ── */
+#educational .section-title h2 {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: white !important;
+    color: white !important;
+}
+
+#educational .section-title h2 span {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+#educational .section-title p {
+    color: rgba(255, 255, 255, 0.55) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.55) !important;
+}
+
+#educational h3 {
+    -webkit-text-fill-color: white !important;
+    color: white !important;
+}
+
+#educational h3 span {
+    -webkit-text-fill-color: transparent !important;
+}
+
+#educational p {
+    color: rgba(255, 255, 255, 0.7) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+#educational strong {
+    color: rgba(255, 255, 255, 0.95) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+#educational ul li {
+    color: rgba(255, 255, 255, 0.75) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ── Gallery section (dark navy bg) ── */
+#gallery .section-title h2 {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: white !important;
+    color: white !important;
+}
+
+#gallery .section-title h2 span {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+#gallery .section-title p {
+    color: rgba(255, 255, 255, 0.5) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ── Pricing section (dark navy bg) ── */
+#pricing .section-title h2 {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: white !important;
+    color: white !important;
+}
+
+#pricing .section-title h2 span {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+#pricing .section-title p {
+    color: rgba(255, 255, 255, 0.5) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ── Quick nav section headings stay dark (light bg) ── */
+.quick-nav-section h2,
+.quick-nav-section p {
+    -webkit-text-fill-color: initial !important;
 }/ *   b g   l e n s   * / 
  
  . l e n s - b g   {   b o r d e r - c o l o r :   # a 7 8 b f a   ! i m p o r t a n t ;   b a c k g r o u n d :   l i n e a r - g r a d i e n t ( 1 3 5 d e g , # f 5 f 3 f f , # f f f )   ! i m p o r t a n t ;   } 
