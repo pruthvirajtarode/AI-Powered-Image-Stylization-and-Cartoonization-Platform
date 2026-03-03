@@ -1,7 +1,7 @@
 import os
 import time
 import uuid
-from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, send_file, make_response
+from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, send_file
 from flask_cors import CORS
 import cv2
 import numpy as np
@@ -50,11 +50,7 @@ def get_config():
 
 @app.route('/')
 def index():
-    response = make_response(render_template('index.html'))
-    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-    return response
+    return render_template('index.html')
 
 @app.route('/docs')
 def docs():
