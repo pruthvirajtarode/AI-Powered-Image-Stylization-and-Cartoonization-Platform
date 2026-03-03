@@ -1769,10 +1769,20 @@
     <script src="/static/js/app.js?v=421"></script>
 
     <script>
-        // Scroll-To-Top: wait for full page load + 600ms settle
-        // to avoid anchor/hash scroll triggering false "visible" state.
+        // Scroll-To-Top Button
+        // Problem: URL hash (#app, #features) causes page to jump on load,
+        // making scrollY > 200 immediately and showing the button.
+        // Fix: force-scroll to top after load, THEN register the listener.
         window.addEventListener('load', function () {
+            // Step 1: Immediately scroll to top to reset scroll position
+            window.scrollTo(0, 0);
+
+            // Step 2: Wait 800ms for any hash-anchor animation to complete,
+            // then scroll to top again and register our listener
             setTimeout(function () {
+                // Force scroll to top one more time after anchors settle
+                window.scrollTo(0, 0);
+
                 var btn = document.getElementById('scrollTopBtn');
                 if (!btn) return;
 
@@ -1787,14 +1797,18 @@
                     }
                 }
 
+                // Passive scroll listener for performance
                 window.addEventListener('scroll', update, { passive: true });
-                update(); // set correct state after settle
 
+                // Evaluate current position after scroll reset
+                update();
+
+                // Click: smooth scroll back to top
                 btn.addEventListener('click', function () {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
 
-            }, 600);
+            }, 800);
         });
     </script>
 </body>
