@@ -3296,102 +3296,8 @@ body {
     }
 }
 
-/* =======================================================
-   ★ DARK SECTION TEXT FIXES — v800
-   Force white/readable text inside dark-bg sections.
-   The global .section-title h2 sets -webkit-text-fill-color:
-   transparent which blocks inline color:white. These rules
-   override that specifically for dark sections.
-   ======================================================= */
+/* LEGACY DARK SECTION FIXES REMOVED - BACKGROUNDS ARE NOW LIGHT */
 
-/* ── Educational section (dark navy bg) ── */
-#educational .section-title h2 {
-    background: none !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    -webkit-text-fill-color: white !important;
-    color: white !important;
-}
-
-#educational .section-title h2 span {
-    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}
-
-#educational .section-title p {
-    color: rgba(255, 255, 255, 0.55) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.55) !important;
-}
-
-#educational h3 {
-    -webkit-text-fill-color: white !important;
-    color: white !important;
-}
-
-#educational h3 span {
-    -webkit-text-fill-color: transparent !important;
-}
-
-#educational p {
-    color: rgba(255, 255, 255, 0.7) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.7) !important;
-}
-
-#educational strong {
-    color: rgba(255, 255, 255, 0.95) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.95) !important;
-}
-
-#educational ul li {
-    color: rgba(255, 255, 255, 0.75) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
-}
-
-/* ── Gallery section (dark navy bg) ── */
-#gallery .section-title h2 {
-    background: none !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    -webkit-text-fill-color: white !important;
-    color: white !important;
-}
-
-#gallery .section-title h2 span {
-    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}
-
-#gallery .section-title p {
-    color: rgba(255, 255, 255, 0.5) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
-}
-
-/* ── Pricing section (dark navy bg) ── */
-#pricing .section-title h2 {
-    color: #1e293b;
-}
-
-#pricing .section-title h2 span {
-    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}
-
-#pricing .section-title p {
-    color: rgba(255, 255, 255, 0.5) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
-}
-
-/* ── Quick nav section headings stay dark (light bg) ── */
-.quick-nav-section h2,
-.quick-nav-section p {
-    -webkit-text-fill-color: initial !important;
-}
 
 /* =======================================================
    ★ COMPREHENSIVE UI OVERHAUL — v900
@@ -3409,34 +3315,8 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
-/* ── HARD RESET for dark sections: restore white text, kill gradient clip ── */
-#educational .section-title h2,
-#gallery .section-title h2,
-#pricing .section-title h2 {
-    background: none !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    -webkit-text-fill-color: white !important;
-    color: white !important;
-    display: inline-block;
-}
+/* SECTION OVERRIDES CLEANED UP */
 
-#educational .section-title h2 span,
-#gallery .section-title h2 span,
-#pricing .section-title h2 span {
-    background: linear-gradient(135deg, #ff7e5f, #feb47b) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}
-
-/* ── Section title paragraph in dark sections ── */
-#educational .section-title p,
-#gallery .section-title p,
-#pricing .section-title p {
-    color: rgba(255, 255, 255, 0.5) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.5) !important;
-}
 
 /* ── App/Neural Editor section styling ── */
 #app {
@@ -3492,7 +3372,7 @@ body {
 h1,
 h2,
 h3 {
-    font-family: 'Baloo 2', 'Inter', sans-serif;
+    font-family: 'Outfit', sans-serif !important;
     letter-spacing: -0.02em;
 }
 
@@ -3570,13 +3450,13 @@ span {
 #educational p,
 #educational li {
     font-family: 'Inter', sans-serif;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.7) !important;
-    color: rgba(255, 255, 255, 0.7) !important;
+    -webkit-text-fill-color: #475569 !important;
+    color: #475569 !important;
 }
 
 #educational strong {
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.95) !important;
-    color: rgba(255, 255, 255, 0.95) !important;
+    -webkit-text-fill-color: #1e293b !important;
+    color: #1e293b !important;
 }
 
 /* ── Gallery card label ── */
