@@ -1704,7 +1704,10 @@
     <!-- Scroll To Top Button -->
     <style>
         #goToTopBtn {
-            display: none;
+            /* Always rendered as flex for centering, but hidden via opacity+visibility */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: fixed;
             bottom: 32px;
             right: 32px;
@@ -1717,10 +1720,18 @@
             background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
             color: #fff;
             font-size: 1.2rem;
-            align-items: center;
-            justify-content: center;
             box-shadow: 0 6px 24px rgba(255, 100, 60, 0.38);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            /* Hidden by default — fade in/out via opacity & visibility */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s ease, visibility 0.35s ease,
+                transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        /* Class added by JS when user scrolls > 200px */
+        #goToTopBtn.visible {
+            opacity: 1;
+            visibility: visible;
             animation: pulse-glow 2.5s infinite;
         }
 
@@ -1746,6 +1757,17 @@
                 box-shadow: 0 6px 32px rgba(255, 100, 60, 0.62);
             }
         }
+
+        /* Mobile: nudge inward a touch */
+        @media (max-width: 480px) {
+            #goToTopBtn {
+                bottom: 20px;
+                right: 18px;
+                width: 48px;
+                height: 48px;
+                font-size: 1rem;
+            }
+        }
     </style>
     <button id="goToTopBtn" onclick="scrollToTop()" title="Back to top" aria-label="Scroll to top">
         <i class="fas fa-arrow-up"></i>
@@ -1757,46 +1779,38 @@
     <script src="/static/js/app.js?v=420"></script>
 
     <script>
-        // Go to Top Button Functionality
-        const goToTopBtn = document.getElementById('goToTopBtn');
+        // ── Scroll-To-Top Button ──────────────────────────────────────────────
+        (function () {
+            const btn = document.getElementById('goToTopBtn');
+            const SCROLL_THRESHOLD = 200; // px from top before button appears
 
-        // Show/Hide button based on scroll position
-        window.addEventListener('scroll', function () {
-            if (window.scrollY > 300) {
-                // Show button when scrolled down more than 300px
-                goToTopBtn.style.display = 'flex';
-            } else {
-                // Hide button when near top
-                goToTopBtn.style.display = 'none';
+            // Show / hide with fade via CSS class
+            function onScroll() {
+                if (window.scrollY > SCROLL_THRESHOLD) {
+                    btn.classList.add('visible');
+                } else {
+                    btn.classList.remove('visible');
+                }
             }
-        });
 
-        // Smooth scroll to top
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+            // Use passive listener for better scroll performance on mobile
+            window.addEventListener('scroll', onScroll, { passive: true });
+
+            // Run once on load in case the page is already scrolled
+            onScroll();
+
+            // Smooth scroll to top
+            window.scrollToTop = function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            // Click: brief press-down animation, then scroll
+            btn.addEventListener('click', function () {
+                this.style.transform = 'scale(0.88)';
+                setTimeout(() => { this.style.transform = ''; }, 150);
+                window.scrollToTop();
             });
-        }
-
-        // Add hover effects
-        goToTopBtn.addEventListener('mouseover', function () {
-            this.style.transform = 'scale(1.15)';
-            this.style.boxShadow = '0 8px 30px rgba(255, 100, 60, 0.4)';
-        });
-
-        goToTopBtn.addEventListener('mouseout', function () {
-            this.style.transform = 'scale(1)';
-            this.style.boxShadow = '0 5px 20px rgba(255, 100, 60, 0.3)';
-        });
-
-        // Click animation
-        goToTopBtn.addEventListener('click', function () {
-            this.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 100);
-        });
+        })();
     </script>
 </body>
 
