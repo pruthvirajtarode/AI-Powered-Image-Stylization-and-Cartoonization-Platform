@@ -3625,3 +3625,61 @@ footer.footer {
 .lens-bg.active span {
     color: #7c3aed !important;
 }
+
+/* =======================================================
+   ★ FINAL NUCLEAR VISIBILITY OVERRIDE ★
+   Guarantees dark text on light backgrounds regardless of legacy rules.
+   ======================================================= */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Outfit', sans-serif !important;
+}
+
+#educational,
+#strokes,
+#gallery,
+#pricing,
+.educational-section,
+.strokes-section,
+.gallery-section-main,
+.pricing {
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
+}
+
+#educational h2,
+#strokes h2,
+#gallery h2,
+#pricing h2,
+#educational h3,
+#strokes h3,
+#gallery h3,
+#pricing h3,
+.section-title h2 {
+    color: #1e293b !important;
+    -webkit-text-fill-color: #1e293b !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+}
+
+#educational p,
+#educational li,
+#strokes p,
+#strokes li,
+#gallery p,
+#gallery li {
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
+}
+
+#educational strong,
+#strokes strong,
+#gallery strong {
+    color: #1e293b !important;
+    -webkit-text-fill-color: #1e293b !important;
+}
