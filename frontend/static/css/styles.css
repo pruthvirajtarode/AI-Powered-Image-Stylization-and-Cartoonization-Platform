@@ -2942,10 +2942,7 @@ body {
 }
 
 .gallery-section-main .section-title h2 {
-    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #1e293b;
 }
 
 .gallery-section-main .section-title p {
@@ -3375,11 +3372,7 @@ body {
 
 /* ── Pricing section (dark navy bg) ── */
 #pricing .section-title h2 {
-    background: none !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    -webkit-text-fill-color: white !important;
-    color: white !important;
+    color: #1e293b;
 }
 
 #pricing .section-title h2 span {
@@ -3466,7 +3459,7 @@ body {
 
 /* ── Features section glassmorphism card hover refinements ── */
 .feat-card h3 {
-    font-family: 'Baloo 2', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 1.4rem;
     color: #1e293b;
     margin-bottom: 8px;
@@ -3512,7 +3505,7 @@ span {
 
 /* ── Navbar logo text ── */
 .logo-text {
-    font-family: 'Baloo 2', sans-serif !important;
+    font-family: 'Outfit', sans-serif;
 }
 
 /* ── Nav links typography ── */
@@ -3553,7 +3546,7 @@ span {
 
 /* ── Stats row text ── */
 .stat-pill strong {
-    font-family: 'Baloo 2', sans-serif;
+    font-family: 'Outfit', sans-serif;
     color: #1e293b;
     -webkit-text-fill-color: initial;
 }
@@ -3565,11 +3558,9 @@ span {
     -webkit-text-fill-color: initial;
 }
 
-/* ── Educational section h3 sub-headings ── */
 #educational h3 {
-    font-family: 'Baloo 2', sans-serif;
-    -webkit-text-fill-color: white !important;
-    color: white !important;
+    font-family: 'Outfit', sans-serif;
+    color: #1e293b;
 }
 
 #educational h3 span {
@@ -3590,7 +3581,7 @@ span {
 
 /* ── Gallery card label ── */
 .card-overlay span {
-    font-family: 'Baloo 2', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-weight: 700;
     font-size: 1.1rem;
 }
@@ -3643,7 +3634,7 @@ span {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-family: 'Baloo 2', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 1.6rem;
     font-weight: 800;
     color: white;
@@ -3695,7 +3686,7 @@ span {
 }
 
 .saas-footer .footer-links h5 {
-    font-family: 'Baloo 2', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 1rem;
     font-weight: 800;
     color: white;
