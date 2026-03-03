@@ -1704,59 +1704,51 @@
     <!-- Scroll To Top Button -->
     <style>
         #goToTopBtn {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
+            /* JS sets display:flex to show it — do NOT set display here */
             position: fixed !important;
-            bottom: 32px !important;
-            right: 32px !important;
-            z-index: 99999 !important;
-            width: 54px !important;
-            height: 54px !important;
-            border-radius: 50% !important;
-            border: none !important;
-            cursor: pointer !important;
-            background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%) !important;
-            color: #fff !important;
-            font-size: 1.4rem !important;
-            box-shadow: 0 6px 24px rgba(255, 100, 60, 0.45) !important;
-            /* Hidden on load — JS controls opacity & pointer-events */
-            opacity: 0 !important;
-            pointer-events: none !important;
-            transition: opacity 0.4s ease, transform 0.25s ease, box-shadow 0.25s ease !important;
-        }
-
-        #goToTopBtn.stt-visible {
-            opacity: 1 !important;
-            pointer-events: auto !important;
+            bottom: 32px;
+            right: 32px;
+            z-index: 99999;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+            color: #fff;
+            font-size: 1.3rem;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 24px rgba(255, 100, 60, 0.45);
+            /* Fade transition on opacity only */
+            transition: opacity 0.4s ease, transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         #goToTopBtn:hover {
-            transform: scale(1.12) translateY(-4px) !important;
-            box-shadow: 0 14px 38px rgba(255, 100, 60, 0.55) !important;
+            transform: scale(1.12) translateY(-4px);
+            box-shadow: 0 14px 38px rgba(255, 100, 60, 0.55);
         }
 
         #goToTopBtn:active {
-            transform: scale(0.92) !important;
+            transform: scale(0.9);
         }
 
         #goToTopBtn i {
-            line-height: 1;
-            display: block;
             pointer-events: none;
         }
 
         @media (max-width: 480px) {
             #goToTopBtn {
-                bottom: 20px !important;
-                right: 16px !important;
-                width: 46px !important;
-                height: 46px !important;
-                font-size: 1.1rem !important;
+                bottom: 20px;
+                right: 16px;
+                width: 46px;
+                height: 46px;
+                font-size: 1.1rem;
             }
         }
     </style>
-    <button id="goToTopBtn" title="Back to top" aria-label="Scroll to top">
+    <!-- display:none inline = highest possible specificity, impossible to override via stylesheet -->
+    <button id="goToTopBtn" title="Back to top" aria-label="Scroll to top" style="display:none; opacity:0;">
         <i class="fas fa-arrow-up"></i>
     </button>
 
@@ -1772,23 +1764,57 @@
             if (!btn) return;
 
             var THRESHOLD = 200;
+            var isVisible = false;
+            var fadingOut = false;
+
+            function showBtn() {
+                if (isVisible) return;
+                isVisible = true;
+                fadingOut = false;
+                // Step 1: make it flex (layout), opacity still 0
+                btn.style.display = 'flex';
+                btn.style.alignItems = 'center';
+                btn.style.justifyContent = 'center';
+                // Step 2: after next paint, fade in
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        btn.style.opacity = '1';
+                    });
+                });
+            }
+
+            function hideBtn() {
+                if (!isVisible) return;
+                isVisible = false;
+                fadingOut = true;
+                // Fade out
+                btn.style.opacity = '0';
+                // After transition ends, set display:none
+                btn.addEventListener('transitionend', function onEnd(e) {
+                    if (e.propertyName !== 'opacity') return;
+                    btn.removeEventListener('transitionend', onEnd);
+                    if (fadingOut) {
+                        btn.style.display = 'none';
+                    }
+                });
+            }
 
             function handleScroll() {
                 var scrolled = window.pageYOffset || document.documentElement.scrollTop || 0;
                 if (scrolled > THRESHOLD) {
-                    btn.classList.add('stt-visible');
+                    showBtn();
                 } else {
-                    btn.classList.remove('stt-visible');
+                    hideBtn();
                 }
             }
 
-            // Listen for scroll (passive for better mobile performance)
+            // Passive scroll listener (better mobile performance)
             window.addEventListener('scroll', handleScroll, { passive: true });
 
-            // Also run immediately in case user refreshed mid-page
+            // Run on load in case page is mid-scroll on refresh
             handleScroll();
 
-            // Click handler — smooth scroll to top
+            // Click: smooth scroll to top
             btn.addEventListener('click', function () {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
