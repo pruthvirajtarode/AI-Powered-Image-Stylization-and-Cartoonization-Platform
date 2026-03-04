@@ -1340,6 +1340,7 @@ h6 {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow-y: auto;
 }
 
 /* Scoped loader — contained inside .main-stage (position:relative) */

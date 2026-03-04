@@ -1096,7 +1096,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.openAuth = () => {
-        document.getElementById('authModal').style.display = 'flex';
+        const modal = document.getElementById('authModal');
+        modal.style.display = 'flex';
+        modal.scrollTop = 0;
         toggleAuth(null, 'login');
     };
 
