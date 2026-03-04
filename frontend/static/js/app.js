@@ -1083,7 +1083,10 @@ document.addEventListener('DOMContentLoaded', () => {
         imgs.forEach(img => { if (img) img.style.filter = ''; });
     };
 
-    window.closeAuth = () => { document.getElementById('authModal').style.display = 'none'; };
+    window.closeAuth = () => {
+        document.getElementById('authModal').style.display = 'none';
+        document.body.style.overflow = '';
+    };
     window.toggleAuth = (e, target) => {
         if (e && e.preventDefault) e.preventDefault();
         const login = document.getElementById('loginForm');
@@ -1099,6 +1102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const modal = document.getElementById('authModal');
         modal.style.display = 'flex';
         modal.scrollTop = 0;
+        document.body.style.overflow = 'hidden';
         toggleAuth(null, 'login');
     };
 
