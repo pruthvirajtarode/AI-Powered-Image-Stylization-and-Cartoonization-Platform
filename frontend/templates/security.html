@@ -209,12 +209,18 @@
     <script>
         (function () {
             var btn = document.getElementById('scrollTopBtn');
-            window.addEventListener('scroll', function () {
-                btn.style.display = window.scrollY > 200 ? 'flex' : 'none';
-            }, { passive: true });
-            btn.addEventListener('click', function () {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
+            if (!btn) return;
+            var nav = document.querySelector('nav') || document.querySelector('header');
+            if (nav && 'IntersectionObserver' in window) {
+                new IntersectionObserver(function (e) {
+                    btn.style.display = e[0].isIntersecting ? 'none' : 'flex';
+                }, { threshold: 0 }).observe(nav);
+            } else {
+                window.addEventListener('scroll', function () {
+                    btn.style.display = (window.scrollY || document.documentElement.scrollTop) > 200 ? 'flex' : 'none';
+                }, { passive: true });
+            }
+            btn.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); };
         })();
     </script>
 </body>
