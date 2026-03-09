@@ -102,6 +102,20 @@
         style="padding: 60px 5%; text-align: center; border-top: 1px solid #e2e8f0; background: #0f172a; color: white;">
         <p>&copy; 2026 Toonify Creative Inc. | Professional Neural Stylization</p>
     </footer>
+
+    <!-- Scroll To Top Button -->
+    <button id="scrollTopBtn" aria-label="Scroll to top">&#8593;</button>
+    <script>
+        (function () {
+            var btn = document.getElementById('scrollTopBtn');
+            window.addEventListener('scroll', function () {
+                btn.style.display = window.scrollY > 200 ? 'flex' : 'none';
+            }, { passive: true });
+            btn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+    </script>
 </body>
 
 </html>

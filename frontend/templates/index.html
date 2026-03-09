@@ -1703,66 +1703,8 @@
     </footer>
 
 
-    <!-- ============================================================
-         SCROLL-TO-TOP BUTTON
-         Hidden by default via inline style (highest CSS specificity).
-         JS controls show/hide after page fully settles.
-    ============================================================ -->
-    <style>
-        #scrollTopBtn {
-            position: fixed;
-            bottom: 32px;
-            right: 32px;
-            z-index: 99999;
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ff7e5f, #feb47b);
-            color: #fff;
-            font-size: 1.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 22px rgba(255, 100, 60, 0.45);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease, transform 0.2s ease;
-        }
-
-        #scrollTopBtn.stt-show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        #scrollTopBtn:hover {
-            transform: scale(1.12) translateY(-3px);
-        }
-
-        #scrollTopBtn:active {
-            transform: scale(0.9);
-        }
-
-        #scrollTopBtn i {
-            pointer-events: none;
-        }
-
-        @media (max-width: 480px) {
-            #scrollTopBtn {
-                bottom: 18px;
-                right: 14px;
-                width: 44px;
-                height: 44px;
-                font-size: 1rem;
-            }
-        }
-    </style>
-
-    <!-- Scroll To Top Button: fresh id, hidden by CSS opacity:0 -->
-    <button id="scrollTopBtn" aria-label="Scroll to top" title="Back to top">
-        <i class="fas fa-arrow-up"></i>
-    </button>
+    <!-- Scroll To Top Button -->
+    <button id="scrollTopBtn" aria-label="Scroll to top">&#8593;</button>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="/static/js/ar-engine.js?v=241"></script>
@@ -1770,47 +1712,15 @@
     <script src="/static/js/app.js?v=422"></script>
 
     <script>
-        // Scroll-To-Top Button
-        // Problem: URL hash (#app, #features) causes page to jump on load,
-        // making scrollY > 200 immediately and showing the button.
-        // Fix: force-scroll to top after load, THEN register the listener.
-        window.addEventListener('load', function () {
-            // Step 1: Immediately scroll to top to reset scroll position
-            window.scrollTo(0, 0);
-
-            // Step 2: Wait 800ms for any hash-anchor animation to complete,
-            // then scroll to top again and register our listener
-            setTimeout(function () {
-                // Force scroll to top one more time after anchors settle
-                window.scrollTo(0, 0);
-
-                var btn = document.getElementById('scrollTopBtn');
-                if (!btn) return;
-
-                var SHOW_AT = 200;
-
-                function update() {
-                    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
-                    if (y > SHOW_AT) {
-                        btn.classList.add('stt-show');
-                    } else {
-                        btn.classList.remove('stt-show');
-                    }
-                }
-
-                // Passive scroll listener for performance
-                window.addEventListener('scroll', update, { passive: true });
-
-                // Evaluate current position after scroll reset
-                update();
-
-                // Click: smooth scroll back to top
-                btn.addEventListener('click', function () {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
-
-            }, 800);
-        });
+        (function () {
+            var btn = document.getElementById('scrollTopBtn');
+            window.addEventListener('scroll', function () {
+                btn.style.display = window.scrollY > 200 ? 'flex' : 'none';
+            }, { passive: true });
+            btn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
     </script>
 </body>
 

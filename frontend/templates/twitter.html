@@ -233,6 +233,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Scroll To Top Button -->
+    <button id="scrollTopBtn" aria-label="Scroll to top">&#8593;</button>
+    <script>
+        (function () {
+            var btn = document.getElementById('scrollTopBtn');
+            window.addEventListener('scroll', function () {
+                btn.style.display = window.scrollY > 200 ? 'flex' : 'none';
+            }, { passive: true });
+            btn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+    </script>
 </body>
 
 </html>

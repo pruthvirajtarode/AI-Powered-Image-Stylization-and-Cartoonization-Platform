@@ -264,6 +264,20 @@
                 Now</a>
             <p style="margin-top: 40px; opacity: 0.5;">&copy; 2026 Toonify AI | Professional Neural Stylization</p>
         </footer>
+
+    <!-- Scroll To Top Button -->
+    <button id="scrollTopBtn" aria-label="Scroll to top">&#8593;</button>
+    <script>
+        (function () {
+            var btn = document.getElementById('scrollTopBtn');
+            window.addEventListener('scroll', function () {
+                btn.style.display = window.scrollY > 200 ? 'flex' : 'none';
+            }, { passive: true });
+            btn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+    </script>
 </body>
 
 </html>

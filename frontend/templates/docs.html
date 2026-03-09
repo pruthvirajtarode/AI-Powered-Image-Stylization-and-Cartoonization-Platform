@@ -196,6 +196,20 @@
         <p style="color: #64748b;">&copy; 2026 Toonify Help Center | Still need help? <a href="#"
                 style="color: var(--primary); font-weight: 700; text-decoration: none;">Contact Support</a></p>
     </footer>
+
+    <!-- Scroll To Top Button -->
+    <button id="scrollTopBtn" aria-label="Scroll to top">&#8593;</button>
+    <script>
+        (function () {
+            var btn = document.getElementById('scrollTopBtn');
+            window.addEventListener('scroll', function () {
+                btn.style.display = window.scrollY > 200 ? 'flex' : 'none';
+            }, { passive: true });
+            btn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+    </script>
 </body>
 
 </html>
