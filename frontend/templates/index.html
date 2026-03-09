@@ -1707,14 +1707,18 @@
     <button id="scrollTopBtn" aria-label="Scroll to top" style="display:none;position:fixed;bottom:30px;right:30px;z-index:9999;background:#ff7a45;color:white;border:none;border-radius:50%;width:50px;height:50px;font-size:22px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,0.3);transition:all 0.3s ease;">&#8593;</button>
 
     <script>
-        // Scroll-to-top: runs before other scripts so JS errors elsewhere don't block this
+        // Scroll-to-top: robust listener covering all scroll containers
         (function () {
             var btn = document.getElementById('scrollTopBtn');
             if (!btn) return;
-            window.onscroll = function () {
-                var y = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+            function checkScroll() {
+                var y = window.scrollY || window.pageYOffset ||
+                    document.documentElement.scrollTop ||
+                    document.body.scrollTop || 0;
                 btn.style.display = y > 200 ? 'flex' : 'none';
-            };
+            }
+            window.addEventListener('scroll', checkScroll, { passive: true });
+            document.addEventListener('scroll', checkScroll, { passive: true });
             btn.onclick = function () {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
