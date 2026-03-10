@@ -28,4 +28,4 @@ RUN mkdir -p backend/data/processed_images
 EXPOSE 5000
 
 # Optimization: Use 1 worker for Free Tier to save RAM
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "300", "--chdir", "/app/backend", "backend:app"]
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --chdir /app/backend backend:app

@@ -22,6 +22,4 @@ google-auth-httplib2==0.2.0
 razorpay==1.3.0
 
 # Utilities
-pandas==2.1.4
-openpyxl==3.1.2
-twilio==9.0.0
+# pandas, openpyxl, twilio removed - not used in backend, caused OOM on free tier
