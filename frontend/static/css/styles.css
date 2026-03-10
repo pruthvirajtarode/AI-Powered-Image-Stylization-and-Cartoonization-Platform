@@ -2219,7 +2219,8 @@ h3 {
     background: #0f172a;
     color: #94a3b8;
     padding: 100px 5% 40px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 3px solid var(--primary);
+    box-shadow: 0 -4px 40px rgba(0,0,0,0.18);
 }
 
 .footer-grid {
