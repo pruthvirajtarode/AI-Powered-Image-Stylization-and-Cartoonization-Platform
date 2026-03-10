@@ -138,275 +138,239 @@
         </div>
         <div class="hero-visual">
             <style>
-                /* ── Hero Before/After Showcase ── */
-                .hero-showcase {
+                .hero-interactive-container {
                     position: relative;
                     width: 100%;
-                    max-width: 460px;
+                    max-width: 480px;
                     margin: 0 auto;
                     animation: float 8s ease-in-out infinite;
                 }
-                .hero-showcase-glow {
+
+                .hero-bg-glow {
                     position: absolute;
-                    inset: -30px;
-                    background: radial-gradient(ellipse at center, rgba(255,126,95,0.35) 0%, rgba(254,180,123,0.18) 55%, transparent 75%);
-                    filter: blur(38px);
-                    border-radius: 50%;
+                    top: 0;
+                    left: -20px;
+                    right: -20px;
+                    bottom: 0;
+                    background: linear-gradient(135deg, rgba(255, 126, 95, 0.4), rgba(254, 180, 123, 0.4));
+                    filter: blur(40px);
+                    border-radius: 40px;
                     z-index: 0;
                 }
-                .hero-card-wrap {
+
+                .hero-main-card {
                     position: relative;
                     z-index: 1;
                     background: white;
+                    padding: 12px;
                     border-radius: 28px;
-                    padding: 14px;
-                    box-shadow: 0 30px 70px rgba(0,0,0,0.13), 0 2px 8px rgba(255,126,95,0.1);
-                    border: 1px solid rgba(255,255,255,0.95);
+                    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
+                    border: 1px solid rgba(255, 255, 255, 0.9);
                 }
-                /* Compare panel */
-                .hero-compare-box {
-                    position: relative;
+
+                .hero-main-img {
                     width: 100%;
                     border-radius: 18px;
-                    overflow: hidden;
-                    aspect-ratio: 4 / 3;
-                    background: #f1f5f9;
-                    user-select: none;
-                    cursor: ew-resize;
-                }
-                .hero-compare-box img {
-                    position: absolute;
-                    inset: 0;
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
                     display: block;
-                    pointer-events: none;
+                    aspect-ratio: 1/1;
+                    object-fit: cover;
                 }
-                .compare-styled-layer { z-index: 0; }
-                .compare-original-layer {
-                    z-index: 1;
-                    clip-path: inset(0 50% 0 0);
-                }
-                .compare-divider {
+
+                .hero-original-card {
                     position: absolute;
-                    left: 50%;
-                    top: 0; bottom: 0;
-                    width: 3px;
+                    top: 60px;
+                    left: -80px;
+                    width: 130px;
                     background: white;
-                    z-index: 3;
-                    transform: translateX(-50%);
-                    box-shadow: 0 0 10px rgba(0,0,0,0.25);
-                }
-                .compare-handle-btn {
-                    position: absolute;
-                    top: 50%; left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 38px; height: 38px;
-                    background: white;
-                    border-radius: 50%;
-                    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-                    display: flex; align-items: center; justify-content: center;
-                    color: #ff7e5f;
-                    font-size: 0.85rem;
+                    padding: 8px;
+                    border-radius: 18px;
+                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
                     z-index: 10;
+                    border: 1px solid #e2e8f0;
+                    text-align: center;
                 }
-                .compare-tag {
-                    position: absolute;
-                    bottom: 12px;
-                    background: rgba(15,23,42,0.65);
-                    color: white;
-                    font-size: 0.7rem;
-                    font-weight: 700;
-                    padding: 3px 10px;
-                    border-radius: 20px;
-                    z-index: 5;
-                    backdrop-filter: blur(8px);
-                    letter-spacing: 0.06em;
-                    text-transform: uppercase;
+
+                .hero-original-card img {
+                    width: 100%;
+                    border-radius: 12px;
+                    display: block;
+                    aspect-ratio: 1/1;
+                    object-fit: cover;
                 }
-                .tag-original { left: 12px; }
-                .tag-styled   { right: 12px; }
-                /* Floating badges */
-                .hero-float-badge {
-                    position: absolute;
-                    background: white;
-                    border-radius: 50px;
-                    padding: 7px 13px;
-                    font-size: 0.77rem;
-                    font-weight: 700;
-                    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-                    display: flex; align-items: center; gap: 6px;
-                    z-index: 20;
-                    white-space: nowrap;
-                }
-                .badge-ai {
-                    top: -16px; left: 18px;
-                    color: #ff7e5f;
-                    border: 1.5px solid rgba(255,126,95,0.2);
-                }
-                .badge-stars {
-                    top: -16px; right: 18px;
-                    color: #f59e0b;
-                    border: 1.5px solid rgba(245,158,11,0.2);
-                }
-                /* Style selector chips */
-                .hero-style-strip {
-                    display: flex;
-                    gap: 8px;
-                    margin-top: 14px;
-                    justify-content: center;
-                    flex-wrap: wrap;
-                }
-                .style-chip {
-                    display: flex; align-items: center; gap: 5px;
-                    padding: 6px 14px;
-                    border-radius: 50px;
-                    border: 2px solid #e2e8f0;
-                    background: white;
-                    font-size: 0.77rem;
+
+                .hero-original-card span {
+                    display: block;
+                    font-size: 0.75rem;
                     font-weight: 700;
                     color: #64748b;
+                    margin-top: 6px;
+                }
+
+                .hero-arrow-svg {
+                    position: absolute;
+                    right: -40px;
+                    top: 40%;
+                    width: 50px;
+                    height: auto;
+                    z-index: -1;
+                    filter: drop-shadow(2px 4px 6px rgba(255, 100, 60, 0.3));
+                }
+
+                .hero-thumbs-row {
+                    display: flex;
+                    justify-content: center;
+                    gap: 15px;
+                    margin-top: 20px;
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .hero-thumb-wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .hero-thumb {
+                    width: 65px;
+                    height: 65px;
+                    border-radius: 14px;
                     cursor: pointer;
-                    transition: all 0.22s;
-                    font-family: inherit;
+                    border: 3px solid transparent;
+                    transition: 0.3s;
+                    object-fit: cover;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
                 }
-                .style-chip:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
-                .style-chip.active-chip {
-                    background: linear-gradient(135deg,#ff7e5f,#feb47b);
-                    border-color: transparent;
-                    color: white;
-                    box-shadow: 0 4px 14px rgba(255,126,95,0.35);
+
+                .hero-thumb:hover {
+                    transform: translateY(-5px);
                 }
-                .chip-dot {
-                    width: 7px; height: 7px;
-                    border-radius: 50%;
-                    flex-shrink: 0;
+
+                .hero-thumb.active-thumb {
+                    border-color: var(--primary);
+                    transform: scale(1.1) translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(255, 100, 60, 0.3);
                 }
-                .style-chip.active-chip .chip-dot { background: rgba(255,255,255,0.85) !important; }
+
+                .hero-thumb-label {
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    color: #64748b;
+                    transition: 0.3s;
+                }
+
+                .active-thumb+.hero-thumb-label {
+                    color: var(--primary);
+                }
+
                 @media (max-width: 768px) {
-                    .hero-showcase { max-width: 100%; }
-                    .hero-float-badge { display: none; }
+                    .hero-original-card {
+                        left: -20px;
+                        top: -30px;
+                        width: 90px;
+                    }
+
+                    .hero-arrow-svg {
+                        display: none;
+                    }
+
+                    .hero-thumb {
+                        width: 50px;
+                        height: 50px;
+                    }
                 }
             </style>
 
-            <div class="hero-showcase">
-                <div class="hero-showcase-glow"></div>
+            <div class="hero-interactive-container">
+                <div class="hero-bg-glow"></div>
 
-                <!-- Floating badges -->
-                <div class="hero-float-badge badge-ai">
-                    <i class="fas fa-bolt"></i> AI Powered
-                </div>
-                <div class="hero-float-badge badge-stars">
-                    ★ 4.9 / 5
-                </div>
+                <div class="hero-main-card">
+                    <!-- Main Result Image -->
+                    <img src="/static/images/hero_boy_pixar_1772354102626.png" id="heroMainImg" class="hero-main-img"
+                        alt="Generative Result">
 
-                <div class="hero-card-wrap">
-                    <!-- Before / After Compare Panel -->
-                    <div class="hero-compare-box" id="heroCompareBox">
-                        <!-- AI styled layer (behind) -->
-                        <img src="/static/images/hero_pixar_1772353027026.png"
-                             id="heroStyledImg"
-                             class="compare-styled-layer"
-                             alt="AI Styled Output">
-                        <!-- Original layer (front, clipped) -->
-                        <img src="/static/images/hero_original_1772353000427.png"
-                             id="heroOriginalLayer"
-                             class="compare-original-layer"
-                             alt="Original Photo">
-                        <!-- Drag divider -->
-                        <div class="compare-divider" id="heroCompareDivider">
-                            <div class="compare-handle-btn">
-                                <i class="fas fa-arrows-left-right"></i>
-                            </div>
+                    <!-- Floating Original Image Box with Arrow -->
+                    <div class="hero-original-card">
+                        <img src="/static/images/hero_boy_original_1772354038120.png" alt="Original Photo">
+                        <span>Original</span>
+
+                        <!-- Curved SVG Arrow pointing to main box -->
+                        <svg class="hero-arrow-svg" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 5 C 40 5, 80 30, 95 70" stroke="#ff7e5f" stroke-width="6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M75 60 L 95 70 L 90 50" stroke="#ff7e5f" stroke-width="6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </div>
+
+                    <!-- Interactive Thumbnails -->
+                    <div class="hero-thumbs-row">
+                        <div class="hero-thumb-wrapper"
+                            onclick="changeHeroStyle('pixar', '/static/images/hero_boy_pixar_1772354102626.png')">
+                            <img src="/static/images/hero_boy_pixar_1772354102626.png" id="thumb-pixar"
+                                class="hero-thumb active-thumb">
+                            <span class="hero-thumb-label">3D Pixar</span>
                         </div>
-                        <!-- Labels -->
-                        <div class="compare-tag tag-original">Original</div>
-                        <div class="compare-tag tag-styled" id="heroStyledTag">3D Pixar</div>
-                    </div>
-
-                    <!-- Style Selector -->
-                    <div class="hero-style-strip">
-                        <button class="style-chip active-chip"
-                            onclick="changeHeroCompare('/static/images/hero_pixar_1772353027026.png','3D Pixar',this)">
-                            <span class="chip-dot" style="background:#ff7e5f"></span> 3D Pixar
-                        </button>
-                        <button class="style-chip"
-                            onclick="changeHeroCompare('/static/images/hero_anime_1772353051545.png','Anime',this)">
-                            <span class="chip-dot" style="background:#7c3aed"></span> Anime
-                        </button>
-                        <button class="style-chip"
-                            onclick="changeHeroCompare('/static/images/hero_comic_1772353085870.png','Comic Book',this)">
-                            <span class="chip-dot" style="background:#0ea5e9"></span> Comic Book
-                        </button>
+                        <div class="hero-thumb-wrapper"
+                            onclick="changeHeroStyle('anime', '/static/images/hero_boy_anime_1772354129553.png')">
+                            <img src="/static/images/hero_boy_anime_1772354129553.png" id="thumb-anime"
+                                class="hero-thumb">
+                            <span class="hero-thumb-label">Anime</span>
+                        </div>
+                        <div class="hero-thumb-wrapper"
+                            onclick="changeHeroStyle('comic', '/static/images/hero_boy_comic_1772354167736.png')">
+                            <img src="/static/images/hero_boy_comic_1772354167736.png" id="thumb-comic"
+                                class="hero-thumb">
+                            <span class="hero-thumb-label">Comic Book</span>
+                        </div>
                     </div>
                 </div>
+
+
             </div>
 
             <script>
-                /* ── Before/After drag handle ── */
-                (function () {
-                    const box      = document.getElementById('heroCompareBox');
-                    const divider  = document.getElementById('heroCompareDivider');
-                    const origImg  = document.getElementById('heroOriginalLayer');
-                    let dragging   = false;
+                function changeHeroStyle(styleId, imgSrc) {
+                    // Update main image
+                    document.getElementById('heroMainImg').src = imgSrc;
 
-                    function setPos(clientX) {
-                        const r   = box.getBoundingClientRect();
-                        let pct   = ((clientX - r.left) / r.width) * 100;
-                        pct       = Math.min(95, Math.max(5, pct));
-                        divider.style.left          = pct + '%';
-                        origImg.style.clipPath      = `inset(0 ${100 - pct}% 0 0)`;
-                    }
+                    // Remove active class from all
+                    const thumbs = document.querySelectorAll('.hero-thumb');
+                    thumbs.forEach(t => t.classList.remove('active-thumb'));
 
-                    divider.addEventListener('mousedown',  e => { dragging = true; e.preventDefault(); });
-                    box.addEventListener('mousedown',      e => { dragging = true; setPos(e.clientX); });
-                    document.addEventListener('mousemove', e => { if (dragging) setPos(e.clientX); });
-                    document.addEventListener('mouseup',   ()  => { dragging = false; });
-                    divider.addEventListener('touchstart',  ()  => { dragging = true; }, { passive: true });
-                    document.addEventListener('touchmove',  e  => { if (dragging) setPos(e.touches[0].clientX); }, { passive: true });
-                    document.addEventListener('touchend',   ()  => { dragging = false; });
-                })();
-
-                /* ── Style switcher ── */
-                function changeHeroCompare(imgSrc, label, btn) {
-                    document.getElementById('heroStyledImg').src = imgSrc;
-                    document.getElementById('heroStyledTag').textContent = label;
-                    document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('active-chip'));
-                    btn.classList.add('active-chip');
+                    // Add active class to clicked
+                    document.getElementById('thumb-' + styleId).classList.add('active-thumb');
                 }
 
-                /* ── Auto-rotate every 2.5 s ── */
-                const _heroStyles = [
-                    { src: '/static/images/hero_pixar_1772353027026.png', label: '3D Pixar' },
-                    { src: '/static/images/hero_anime_1772353051545.png', label: 'Anime' },
-                    { src: '/static/images/hero_comic_1772353085870.png', label: 'Comic Book' }
+                // Auto-rotation logic
+                const heroStyles = [
+                    { id: 'pixar', src: '/static/images/hero_boy_pixar_1772354102626.png' },
+                    { id: 'anime', src: '/static/images/hero_boy_anime_1772354129553.png' },
+                    { id: 'comic', src: '/static/images/hero_boy_comic_1772354167736.png' }
                 ];
-                let _heroIdx   = 0;
-                let _heroTimer = setInterval(() => {
-                    _heroIdx = (_heroIdx + 1) % _heroStyles.length;
-                    const s  = _heroStyles[_heroIdx];
-                    document.getElementById('heroStyledImg').src   = s.src;
-                    document.getElementById('heroStyledTag').textContent = s.label;
-                    const chips = document.querySelectorAll('.style-chip');
-                    chips.forEach(c => c.classList.remove('active-chip'));
-                    if (chips[_heroIdx]) chips[_heroIdx].classList.add('active-chip');
-                }, 2500);
+                let currentStyleIndex = 0;
+                let autoRotateInterval;
 
-                const _showcase = document.querySelector('.hero-showcase');
-                if (_showcase) {
-                    _showcase.addEventListener('mouseenter', () => clearInterval(_heroTimer));
-                    _showcase.addEventListener('mouseleave', () => {
-                        _heroTimer = setInterval(() => {
-                            _heroIdx = (_heroIdx + 1) % _heroStyles.length;
-                            const s  = _heroStyles[_heroIdx];
-                            document.getElementById('heroStyledImg').src   = s.src;
-                            document.getElementById('heroStyledTag').textContent = s.label;
-                            const chips = document.querySelectorAll('.style-chip');
-                            chips.forEach(c => c.classList.remove('active-chip'));
-                            if (chips[_heroIdx]) chips[_heroIdx].classList.add('active-chip');
-                        }, 2500);
-                    });
+                function startAutoRotate() {
+                    autoRotateInterval = setInterval(() => {
+                        currentStyleIndex = (currentStyleIndex + 1) % heroStyles.length;
+                        changeHeroStyle(heroStyles[currentStyleIndex].id, heroStyles[currentStyleIndex].src);
+                    }, 1500); // changes every 1.5 seconds
+                }
+
+                function stopAutoRotate() {
+                    clearInterval(autoRotateInterval);
+                }
+
+                // Start immediately
+                startAutoRotate();
+
+                // Pause on hover
+                const interactiveContainer = document.querySelector('.hero-interactive-container');
+                if (interactiveContainer) {
+                    interactiveContainer.addEventListener('mouseenter', stopAutoRotate);
+                    interactiveContainer.addEventListener('mouseleave', startAutoRotate);
                 }
             </script>
         </div>
