@@ -85,6 +85,10 @@ class Database:
                 last_active TIMESTAMP WITH TIME ZONE
             )
         """)
+        # Commit CREATE TABLE before running add_column migrations.
+        # Without this, a rollback() inside add_column (triggered by a missing
+        # column SELECT) would undo the CREATE TABLE on a fresh database.
+        conn.commit()
 
         # Migration Helper
         def add_column(table, column, type_def):
@@ -669,4 +673,10 @@ class Database:
 
 
 # Global database instance
-db = Database()
+try:
+    db = Database()
+except Exception as _db_init_err:
+    import sys
+    print(f"CRITICAL: Database failed to initialize: {_db_init_err}", file=sys.stderr)
+    # Create a stub so imports don't break; app routes that require DB will fail gracefully
+    db = None
