@@ -561,25 +561,49 @@ def verify_razorpay_payment():
     data = request.json
     from modules.payment import razorpay_processor
 
+    razorpay_order_id  = data.get('razorpay_order_id', '')
+    payment_id         = data.get('razorpay_payment_id', '')  # pay_XXXX
+    razorpay_signature = data.get('razorpay_signature', '')
+
     success = razorpay_processor.verify_payment(
-        data.get('razorpay_order_id'),
-        data.get('razorpay_payment_id'),
-        data.get('razorpay_signature')
+        razorpay_order_id,
+        payment_id,
+        razorpay_signature
     )
 
     download_url = None
-    payment_id = data.get('razorpay_payment_id', '')
     user_email = ''
 
     if success and 'user' in session:
-        user_id = session['user']['id']
+        user_id  = session['user']['id']
         user_email = session['user'].get('email', '')
         username = session['user'].get('username', 'User')
         filename = data.get('image_filename', '')
         format_ext = data.get('format', 'jpg')
-        quality = data.get('quality', 95)
+        quality  = data.get('quality', 95)
+        amount   = data.get('amount', settings.DOWNLOAD_PRICE)
 
         db.log_user_activity(user_id, "payment", "Successful Razorpay transaction")
+
+        # --- FIX: also store a row keyed by the real payment_id (pay_XXXX) ---
+        # The order record (order_XXXX) was already created at order-creation time.
+        # We need a second row with transaction_id = pay_XXXX so the permanent
+        # download route (/api/download/<payment_id>) can look it up.
+        try:
+            db.create_transaction(
+                user_id=user_id,
+                transaction_id=payment_id,
+                amount=float(amount) if float(amount) < 1000 else float(amount) / 100,
+                image_filename=filename,
+                payment_method="razorpay"
+            )
+            db.update_transaction_status(payment_id, "completed")
+        except Exception as e:
+            # Row may already exist on retry — just update status
+            try:
+                db.update_transaction_status(payment_id, "completed")
+            except Exception:
+                print(f"Transaction save note: {e}")
 
         # Generate a signed 7-day download token for the modal button
         try:
@@ -596,7 +620,6 @@ def verify_razorpay_payment():
         if user_email and filename:
             import threading
             from modules.authentication import Authentication
-            # Check upfront if SMTP is configured before dispatching thread
             if settings.SMTP_USER and settings.SMTP_PASS:
                 email_sent = True
                 _app = app
