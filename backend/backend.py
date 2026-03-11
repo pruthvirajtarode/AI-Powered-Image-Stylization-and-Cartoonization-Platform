@@ -589,32 +589,41 @@ def verify_razorpay_payment():
             download_url = f"/api/user/download?filename={filename}&format={format_ext}&quality={quality}"
 
         # Send payment success email in a background thread
+        email_sent = False
         if user_email and filename:
             import threading
-            _app = app
-            _email = user_email
-            _username = username
-            _full_url = request.host_url.rstrip('/') + (download_url or '')
-            _pid = payment_id
-            _image_path = str(settings.TEMP_FOLDER / filename) if filename else None
+            from modules.authentication import Authentication
+            # Check upfront if SMTP is configured before dispatching thread
+            if settings.SMTP_USER and settings.SMTP_PASS:
+                email_sent = True
+                _app = app
+                _email = user_email
+                _username = username
+                _full_url = request.host_url.rstrip('/') + (download_url or '')
+                _pid = payment_id
+                _image_path = str(settings.TEMP_FOLDER / filename) if filename else None
 
-            def _send_email_bg():
-                with _app.app_context():
-                    try:
-                        from modules.authentication import Authentication
-                        Authentication.send_payment_success_email(
-                            _email, _username, filename, _full_url, _pid, _image_path
-                        )
-                    except Exception as e:
-                        print(f"Payment email failed: {e}")
+                def _send_email_bg():
+                    with _app.app_context():
+                        try:
+                            Authentication.send_payment_success_email(
+                                _email, _username, filename, _full_url, _pid, _image_path
+                            )
+                        except Exception as e:
+                            print(f"Payment email failed: {e}")
 
-            threading.Thread(target=_send_email_bg, daemon=True).start()
+                threading.Thread(target=_send_email_bg, daemon=True).start()
+            else:
+                print(f"SMTP not configured — skipping email for {user_email}")
+    else:
+        email_sent = False
 
     return jsonify({
         "success": success,
         "download_url": download_url,
         "payment_id": payment_id,
-        "email": user_email
+        "email": user_email,
+        "email_sent": email_sent
     })
 
 @app.route('/api/payment/subscribe', methods=['POST'])

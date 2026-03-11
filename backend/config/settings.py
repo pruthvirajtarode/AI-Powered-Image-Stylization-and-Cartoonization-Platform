@@ -80,7 +80,8 @@ SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "")  # Add your gmail here
 SMTP_PASS = os.getenv("SMTP_PASS", "")  # Add your gmail APP PASSWORD here
-SMTP_SENDER = os.getenv("SMTP_SENDER", APP_NAME + " <no-reply@toonify.ai>")
+# Default sender uses SMTP_USER so Gmail doesn't reject mismatched From address
+SMTP_SENDER = os.getenv("SMTP_SENDER", f"{APP_NAME} <{os.getenv('SMTP_USER', 'no-reply@toonify.ai')}>")
 
 # Real Google Auth Configuration
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com")

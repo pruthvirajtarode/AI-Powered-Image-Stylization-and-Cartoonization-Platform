@@ -1397,15 +1397,19 @@ document.addEventListener('DOMContentLoaded', () => {
     window.closePayment = () => { document.getElementById('paymentModal').style.display = 'none'; };
 
     // --- PAYMENT SUCCESS MODAL ---
-    window.showPaySuccess = (downloadUrl, paymentId, email, format, quality) => {
+    window.showPaySuccess = (downloadUrl, paymentId, email, format, quality, emailSent) => {
         const modal = document.getElementById('paySuccessModal');
         const dlBtn = document.getElementById('paySuccessDownloadBtn');
         const txnEl = document.getElementById('paySuccessTxnId');
         const emailEl = document.getElementById('paySuccessEmailMsg');
+        const emailedMsg = document.getElementById('paySuccessEmailedMsg');
+        const noEmailMsg = document.getElementById('paySuccessNoEmailMsg');
 
         if (dlBtn) dlBtn.href = downloadUrl || '#';
         if (txnEl) txnEl.textContent = paymentId || 'N/A';
-        if (emailEl) emailEl.textContent = email ? '\u{1F4E7} Download link sent to: ' + email : '';
+        if (emailEl) emailEl.textContent = (email && emailSent) ? '\u{1F4E7} Download link sent to: ' + email : '';
+        if (emailedMsg) emailedMsg.style.display = emailSent ? 'block' : 'none';
+        if (noEmailMsg) noEmailMsg.style.display = emailSent ? 'none' : 'block';
 
         if (modal) {
             modal.style.display = 'flex';
@@ -1523,7 +1527,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 verifyData.payment_id,
                                 verifyData.email,
                                 format,
-                                quality
+                                quality,
+                                verifyData.email_sent
                             );
                         }
                     } else {
