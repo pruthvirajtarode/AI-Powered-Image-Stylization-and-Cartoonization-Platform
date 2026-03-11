@@ -1223,6 +1223,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch('/api/config');
             const config = await res.json();
+            // Cache for use elsewhere (test-mode notice, etc.)
+            _rzpTestMode = !!config.razorpay_test_mode;
 
             google.accounts.id.initialize({
                 client_id: config.google_client_id,
@@ -1380,8 +1382,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- PAYMENT & SUBSCRIPTION LOGIC ---
+    let _rzpTestMode = false;
+
     window.openPayment = (format = 'jpg', quality = '95') => {
         document.getElementById('paymentModal').style.display = 'flex';
+        // Show test-mode UPI notice when Razorpay is not in live mode
+        const notice = document.getElementById('rzpTestNotice');
+        if (notice) notice.style.display = _rzpTestMode ? 'block' : 'none';
         // Store current format/quality in modal state
         const payBtn = document.getElementById('payBtn');
         payBtn.dataset.format = format;
@@ -1470,6 +1477,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('toonify_user'));
 
             // 3. Open Razorpay Checkout Modal
+            const isTestMode = configData.razorpay_test_mode;
             const options = {
                 "key": configData.razorpay_key,
                 "amount": data.order.amount,
@@ -1478,6 +1486,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 "description": isUpgrade ? "Creator Pro Subscription" : "HD Image Export",
                 "image": "/static/images/hero_pixar_1772353027026.png",
                 "order_id": data.order.id,
+                "notes": isTestMode ? { "test_hint": "UPI QR won't work in test mode. Use UPI ID: success@razorpay" } : {},
+                "config": {
+                    "display": {
+                        "blocks": isTestMode ? {
+                            "banks": { "name": "Test Mode — Use UPI ID: success@razorpay", "instruments": [{ "method": "upi" }, { "method": "card" }, { "method": "netbanking" }] }
+                        } : undefined,
+                        "sequence": isTestMode ? ["block.banks"] : undefined,
+                        "preferences": isTestMode ? { "show_default_blocks": true } : undefined
+                    }
+                },
                 "handler": async function (response) {
                     // 3. Verify Payment on Server
                     const verifyRes = await fetch('/api/payment/razorpay/verify', {

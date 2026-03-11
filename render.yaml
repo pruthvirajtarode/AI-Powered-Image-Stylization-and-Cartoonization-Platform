@@ -12,6 +12,10 @@ services:
         value: "False"
       - key: APP_NAME
         value: Toonify
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
       - fromDatabase:
           name: toonify-db-new
           property: connectionString

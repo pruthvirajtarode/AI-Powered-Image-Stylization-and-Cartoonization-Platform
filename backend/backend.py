@@ -41,11 +41,13 @@ create_directories()
 @app.route('/api/config')
 def get_config():
     """Return public configuration for the frontend"""
+    is_test_mode = (not settings.RAZORPAY_KEY_ID) or settings.RAZORPAY_KEY_ID.startswith('rzp_test_')
     return jsonify({
         "razorpay_key": settings.RAZORPAY_KEY_ID or "rzp_test_DEMO_KEY",
         "google_client_id": settings.GOOGLE_CLIENT_ID,
         "download_price": settings.DOWNLOAD_PRICE,
-        "app_name": settings.APP_NAME
+        "app_name": settings.APP_NAME,
+        "razorpay_test_mode": is_test_mode
     })
 
 @app.route('/')
