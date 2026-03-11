@@ -16,13 +16,57 @@
     <meta property="og:image" content="/static/images/social-preview.png">
     <meta name="twitter:card" content="summary_large_image">
 
-    <link rel="stylesheet" href="/static/css/styles.css?v=1001">
+    <!-- Tailwind CSS CDN (play CDN for class scanning) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              outfit: ['Outfit', 'sans-serif'],
+              inter: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                DEFAULT: '#ff7e5f',
+                light: '#feb47b',
+                dark:  '#e8673a',
+              },
+            },
+            backgroundImage: {
+              'brand-grad': 'linear-gradient(135deg,#ff7e5f,#feb47b)',
+              'dark-grad':  'linear-gradient(135deg,#0f172a,#1e1b4b)',
+            },
+            keyframes: {
+              float: {
+                '0%,100%': { transform: 'translateY(0px)' },
+                '50%':     { transform: 'translateY(-18px)' },
+              },
+              ticker: {
+                '0%':   { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              },
+              fadeUp: {
+                '0%': { opacity: '0', transform: 'translateY(24px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+            },
+            animation: {
+              float:   'float 8s ease-in-out infinite',
+              ticker:  'ticker 28s linear infinite',
+              'fade-up': 'fadeUp 0.6s ease forwards',
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="/static/css/styles.css?v=1002">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <!-- DEPLOY_VER_FINAL_V6 -->
+    <!-- DEPLOY_VER_FINAL_V7 -->
     <!-- MediaPipe Face Mesh -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -38,89 +82,186 @@
     <img src="/static/images/hero_pixar_1772353027026.png" class="bg-art art-top-right" alt="">
     <img src="/static/images/hero_boy_pixar_1772354102626.png" class="bg-art art-bottom-left" alt="">
 
-    <!-- Announcement Bar -->
-    <div class="ann-bar" id="annBar">
-        <div class="ann-inner">
-            <span class="ann-pill">🚀 NEW</span>
-            <span class="ann-msg">Introducing <strong>9 AI Art Styles</strong> + Batch Processing + AR Camera — all free to try!</span>
-            <a href="#app" class="ann-btn">Try Now →</a>
-        </div>
-        <button class="ann-close" onclick="document.getElementById('annBar').style.display='none'" aria-label="Close">&times;</button>
+    <!-- ═══════ ANNOUNCEMENT BAR ═══════ -->
+    <div id="annBar" class="relative z-50 bg-gradient-to-r from-violet-600 via-indigo-600 to-sky-500 text-white text-sm font-medium py-2.5 px-4 flex items-center justify-center gap-3 flex-wrap">
+        <span class="bg-white/20 border border-white/30 rounded-full px-3 py-0.5 text-xs font-bold tracking-widest">🚀 NEW</span>
+        <span class="opacity-95">Introducing <strong>9 AI Art Styles</strong> + Batch Processing + AR Camera — all free to try!</span>
+        <a href="#app" class="bg-white/20 hover:bg-white/35 border border-white/40 rounded-full px-4 py-1 text-xs font-bold transition-colors duration-200">Try Now →</a>
+        <button onclick="document.getElementById('annBar').style.display='none'" aria-label="Close"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-xl leading-none transition-colors duration-200">&times;</button>
     </div>
 
-    <!-- SaaS Navbar -->
-    <nav class="navbar"
-        style="padding: 12px 5%; height: 75px; display: flex; align-items: center; gap: 32px; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,126,95,0.12); box-shadow: 0 2px 30px rgba(0,0,0,0.06); position: sticky; top:0; z-index:1000;">
-        <a href="/" class="logo" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
-            <div
-                style="background: linear-gradient(135deg,#ff7e5f,#feb47b); color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 14px rgba(255,126,95,0.4);">
-                <i class="fas fa-wand-sparkles"></i>
-            </div>
-            <span class="logo-text"
-                style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: #1e293b;">Toonify<span
-                    style="color: var(--primary);">.AI</span></span>
-        </a>
+    <!-- ═══════ NAVBAR ═══════ -->
+    <nav id="mainNav" class="sticky top-0 z-[1000] bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-[70px] flex items-center gap-8">
 
-        <div class="nav-links">
-            <a href="/">
-                <i class="fas fa-rocket"></i> Home
-            </a>
-            <a href="#app">
-                <i class="fas fa-wand-magic-sparkles"></i> Neural Editor
-            </a>
-            <a href="/gallery">
-                <i class="fas fa-palette"></i> Art Gallery
-            </a>
-            <a href="#features">
-                <i class="fas fa-layer-group"></i> AI Styles
-            </a>
-            <a href="/docs">
-                <i class="fas fa-book-open"></i> Docs
-            </a>
-            <!-- Mobile-only auth links (CSS hides on desktop, JS toggles logged-in/out state) -->
-            <a href="#" class="mobile-nav-auth" id="mobileLoginLink" onclick="openAuth(); return false;"><i class="fas fa-sign-in-alt"></i> Login / Sign Up</a>
-            <a href="/dashboard" class="mobile-nav-auth" id="mobileDashLink" style="display:none"><i class="fas fa-th-large"></i> My Dashboard</a>
-            <a href="#" class="mobile-nav-auth" id="mobileLogoutLink" onclick="handleLogout(event)" style="display:none; color:#ef4444"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-
-        <div class="auth-section" style="margin-left: auto;">
-            <div id="profileDropdownContainer" style="position: relative; display: none;">
-                <button class="profile-pill" id="profilePillBtn">
-                    <!-- Dynamic content from app.js -->
-                </button>
-                <div class="profile-dropdown" id="profileDropdown" style="display: none;">
-                    <a href="/dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
-                    <a href="/profile"><i class="fas fa-user-gear"></i> Profile Settings</a>
-                    <a href="/billing"><i class="fas fa-history"></i> Payment History</a>
-                    <a href="/gallery"><i class="fas fa-images"></i> My Gallery</a>
-                    <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 10px 0;">
-                    <a href="#" onclick="handleLogout(event)" style="color: #ef4444;"><i
-                            class="fas fa-sign-out-alt"></i> Logout</a>
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2.5 flex-shrink-0 no-underline">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-brand-light flex items-center justify-center shadow-[0_4px_14px_rgba(255,126,95,0.40)]">
+                    <i class="fas fa-wand-sparkles text-white text-base"></i>
                 </div>
-            </div>
-            <button class="btn-auth" id="loginHeaderBtn" onclick="openAuth()">
-                <i class="fas fa-sign-in-alt"></i> Login
-            </button>
-        </div>
+                <span class="font-outfit font-extrabold text-[1.7rem] text-slate-900 tracking-tight leading-none">Toonify<span class="text-brand">.AI</span></span>
+            </a>
 
-        <div class="menu-toggle" id="menuToggle"
-            style="display: none; cursor: pointer; font-size: 1.5rem; color: var(--dark); margin-left: 20px;">
-            <i class="fas fa-bars"></i>
+            <!-- Desktop Nav Links -->
+            <div class="hidden md:flex items-center gap-7 ml-4">
+                <a href="/" class="text-slate-600 hover:text-brand font-semibold text-sm transition-colors duration-200 no-underline flex items-center gap-1.5"><i class="fas fa-rocket text-xs"></i> Home</a>
+                <a href="#app" class="text-slate-600 hover:text-brand font-semibold text-sm transition-colors duration-200 no-underline flex items-center gap-1.5"><i class="fas fa-wand-magic-sparkles text-xs"></i> Neural Editor</a>
+                <a href="/gallery" class="text-slate-600 hover:text-brand font-semibold text-sm transition-colors duration-200 no-underline flex items-center gap-1.5"><i class="fas fa-palette text-xs"></i> Gallery</a>
+                <a href="#features" class="text-slate-600 hover:text-brand font-semibold text-sm transition-colors duration-200 no-underline flex items-center gap-1.5"><i class="fas fa-layer-group text-xs"></i> AI Styles</a>
+                <a href="/docs" class="text-slate-600 hover:text-brand font-semibold text-sm transition-colors duration-200 no-underline flex items-center gap-1.5"><i class="fas fa-book-open text-xs"></i> Docs</a>
+            </div>
+
+            <!-- Auth Controls -->
+            <div class="ml-auto flex items-center gap-3">
+                <!-- Profile dropdown (populated by app.js) -->
+                <div id="profileDropdownContainer" class="relative" style="display:none;">
+                    <button class="profile-pill" id="profilePillBtn"></button>
+                    <div class="profile-dropdown" id="profileDropdown" style="display:none;">
+                        <a href="/dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+                        <a href="/profile"><i class="fas fa-user-gear"></i> Profile Settings</a>
+                        <a href="/billing"><i class="fas fa-history"></i> Payment History</a>
+                        <a href="/gallery"><i class="fas fa-images"></i> My Gallery</a>
+                        <hr class="border-0 border-t border-slate-100 my-2">
+                        <a href="#" onclick="handleLogout(event)" class="!text-red-500"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+                <button class="btn-auth hidden" id="loginHeaderBtn" onclick="openAuth()">
+                    <i class="fas fa-sign-in-alt mr-1"></i> Login
+                </button>
+                <a href="#app" class="hidden md:inline-flex items-center gap-2 bg-gradient-to-r from-brand to-brand-light text-white text-sm font-bold px-5 py-2 rounded-full shadow-[0_4px_14px_rgba(255,126,95,0.35)] hover:shadow-[0_6px_20px_rgba(255,126,95,0.50)] hover:-translate-y-0.5 transition-all duration-200 no-underline">
+                    <i class="fas fa-wand-magic-sparkles"></i> Try Free
+                </a>
+                <!-- Mobile-only auth links (shown by JS) -->
+                <a href="#" class="mobile-nav-auth" id="mobileLoginLink" onclick="openAuth(); return false;" style="display:none"><i class="fas fa-sign-in-alt"></i> Login</a>
+                <a href="/dashboard" class="mobile-nav-auth" id="mobileDashLink" style="display:none"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="#" class="mobile-nav-auth" id="mobileLogoutLink" onclick="handleLogout(event)" style="display:none; color:#ef4444"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+
+            <!-- Mobile hamburger -->
+            <div class="menu-toggle md:hidden cursor-pointer text-2xl text-slate-700 ml-3 flex-shrink-0" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </div>
         </div>
     </nav>
 
-    <!-- SaaS Hero with Automatic Carousel -->
-    <header class="hero"
-        style="background: linear-gradient(135deg,#fff8f4 0%,#fdf4ff 40%,#f0f9ff 100%); position:relative; overflow:hidden;">
-        <div class="hero-blob-1"></div>
-        <div class="hero-blob-2"></div>
-        <div
-            style="position: fixed; top: 20%; right: 10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,126,95,0.05) 0%, transparent 70%); filter: blur(60px); z-index: -1; animation: float 10s infinite;">
+    <!-- ═══════ HERO ═══════ -->
+    <header class="hero relative overflow-hidden bg-gradient-to-br from-[#fff8f4] via-[#fdf6ff] to-[#f0f9ff]">
+        <!-- Blobs -->
+        <div class="hero-blob-1 pointer-events-none"></div>
+        <div class="hero-blob-2 pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-6 py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-16">
+
+            <!-- Left — Copy -->
+            <div class="flex-1 text-center lg:text-left max-w-xl mx-auto lg:mx-0">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 bg-brand/10 border border-brand/25 rounded-full px-4 py-1.5 text-sm font-semibold text-brand mb-6">
+                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-brand"></span></span>
+                    AI-Powered · 9 Neural Art Styles
+                </div>
+
+                <h1 class="font-outfit font-extrabold text-5xl lg:text-6xl xl:text-7xl text-slate-900 leading-[1.05] tracking-tight mb-6">
+                    Transform Your<br>
+                    <span class="bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent">Photos</span>
+                    &nbsp;into Art
+                </h1>
+
+                <p class="text-slate-500 text-lg leading-relaxed mb-8 max-w-md mx-auto lg:mx-0">
+                    The world's most advanced AI stylization engine for creators. Turn any portrait, landscape, or pet photo into a professional masterpiece in seconds.
+                </p>
+
+                <!-- CTA Buttons -->
+                <div class="flex flex-wrap items-center gap-4 justify-center lg:justify-start mb-8">
+                    <a href="#app" class="inline-flex items-center gap-2 bg-gradient-to-r from-brand to-brand-light text-white font-bold text-base px-8 py-3.5 rounded-full shadow-[0_6px_22px_rgba(255,126,95,0.40)] hover:shadow-[0_10px_32px_rgba(255,126,95,0.55)] hover:-translate-y-0.5 transition-all duration-200 no-underline">
+                        <i class="fas fa-wand-magic-sparkles"></i> Open AI Editor
+                    </a>
+                    <a href="/gallery" class="inline-flex items-center gap-2 bg-white text-slate-700 font-semibold text-base px-7 py-3.5 rounded-full border border-slate-200 shadow-sm hover:border-brand hover:text-brand hover:shadow-md transition-all duration-200 no-underline">
+                        <i class="fas fa-images"></i> View Gallery
+                    </a>
+                </div>
+
+                <!-- Social Proof Pills -->
+                <div class="inline-flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-slate-100 shadow-sm rounded-full px-5 py-2.5 flex-wrap justify-center">
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-400 tracking-tighter text-lg leading-none">★★★★★</span>
+                        <span class="text-slate-700 text-sm font-semibold">4.9/5</span>
+                        <span class="text-slate-400 text-xs">· 12K+ reviews</span>
+                    </div>
+                    <div class="w-px h-4 bg-slate-200"></div>
+                    <span class="text-sm text-slate-600"><strong class="text-slate-800">2M+</strong> Projects</span>
+                    <div class="w-px h-4 bg-slate-200"></div>
+                    <span class="text-sm text-slate-600"><strong class="text-slate-800">99%</strong> Satisfaction</span>
+                </div>
+            </div>
+
+            <!-- Right — Interactive Image Card -->
+            <div class="flex-shrink-0 w-full max-w-sm lg:max-w-md">
+                <style>
+                    .hero-interactive-container { position:relative; width:100%; max-width:420px; margin:0 auto; animation:float 8s ease-in-out infinite; }
+                    @keyframes float { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-16px) } }
+                    .hero-bg-glow { position:absolute; inset:-20px; background:linear-gradient(135deg,rgba(255,126,95,.35),rgba(254,180,123,.35)); filter:blur(40px); border-radius:40px; z-index:0; }
+                    .hero-main-card { position:relative; z-index:1; background:#fff; padding:12px; border-radius:28px; box-shadow:0 25px 60px rgba(0,0,0,.12); border:1px solid rgba(255,255,255,.9); }
+                    .hero-main-img { width:100%; border-radius:18px; display:block; aspect-ratio:1/1; object-fit:cover; }
+                    .hero-original-card { position:absolute; top:60px; left:-72px; width:120px; background:#fff; padding:8px; border-radius:18px; box-shadow:0 15px 35px rgba(0,0,0,.2); z-index:10; border:1px solid #e2e8f0; text-align:center; }
+                    .hero-original-card img { width:100%; border-radius:10px; display:block; aspect-ratio:1/1; object-fit:cover; }
+                    .hero-original-card span { display:block; font-size:.72rem; font-weight:700; color:#64748b; margin-top:5px; }
+                    .hero-arrow-svg { position:absolute; right:-36px; top:40%; width:46px; height:auto; z-index:-1; filter:drop-shadow(2px 4px 6px rgba(255,100,60,.3)); }
+                    .hero-thumbs-row { display:flex; justify-content:center; gap:12px; margin-top:16px; position:relative; z-index:2; }
+                    .hero-thumb-wrapper { display:flex; flex-direction:column; align-items:center; gap:5px; }
+                    .hero-thumb { width:60px; height:60px; border-radius:14px; cursor:pointer; border:3px solid transparent; transition:.3s; object-fit:cover; box-shadow:0 5px 15px rgba(0,0,0,.08); }
+                    .hero-thumb:hover { transform:translateY(-5px); }
+                    .hero-thumb.active-thumb { border-color:#ff7e5f; transform:scale(1.08) translateY(-2px); box-shadow:0 8px 20px rgba(255,100,60,.3); }
+                    .hero-thumb-label { font-size:.68rem; font-weight:700; color:#64748b; transition:.3s; }
+                    .active-thumb + .hero-thumb-label { color:#ff7e5f; }
+                    @media(max-width:768px) { .hero-original-card { left:-16px; top:-28px; width:86px; } .hero-arrow-svg { display:none; } .hero-thumb { width:50px; height:50px; } }
+                    @keyframes popIn { from{opacity:0;transform:scale(.85) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
+                    @keyframes drawRing { to{stroke-dashoffset:0} }
+                    @keyframes drawCheck { to{stroke-dashoffset:0} }
+                    @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(520px) rotate(720deg);opacity:0} }
+                </style>
+
+                <div class="hero-interactive-container">
+                    <div class="hero-bg-glow"></div>
+                    <div class="hero-main-card">
+                        <img src="/static/images/hero_boy_pixar_1772354102626.png" id="heroMainImg" class="hero-main-img" alt="Generative Result">
+                        <div class="hero-original-card">
+                            <img src="/static/images/hero_boy_original_1772354038120.png" alt="Original Photo">
+                            <span>Original</span>
+                            <svg class="hero-arrow-svg" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 5 C 40 5, 80 30, 95 70" stroke="#ff7e5f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M75 60 L 95 70 L 90 50" stroke="#ff7e5f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="hero-thumbs-row">
+                            <div class="hero-thumb-wrapper" onclick="changeHeroStyle('pixar','/static/images/hero_boy_pixar_1772354102626.png')">
+                                <img src="/static/images/hero_boy_pixar_1772354102626.png" id="thumb-pixar" class="hero-thumb active-thumb">
+                                <span class="hero-thumb-label">3D Pixar</span>
+                            </div>
+                            <div class="hero-thumb-wrapper" onclick="changeHeroStyle('anime','/static/images/hero_boy_anime_1772354129553.png')">
+                                <img src="/static/images/hero_boy_anime_1772354129553.png" id="thumb-anime" class="hero-thumb">
+                                <span class="hero-thumb-label">Anime</span>
+                            </div>
+                            <div class="hero-thumb-wrapper" onclick="changeHeroStyle('comic','/static/images/hero_boy_comic_1772354167736.png')">
+                                <img src="/static/images/hero_boy_comic_1772354167736.png" id="thumb-comic" class="hero-thumb">
+                                <span class="hero-thumb-label">Comic Book</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    function changeHeroStyle(styleId,imgSrc){document.getElementById('heroMainImg').src=imgSrc;document.querySelectorAll('.hero-thumb').forEach(t=>t.classList.remove('active-thumb'));document.getElementById('thumb-'+styleId).classList.add('active-thumb');}
+                    const heroStyles=[{id:'pixar',src:'/static/images/hero_boy_pixar_1772354102626.png'},{id:'anime',src:'/static/images/hero_boy_anime_1772354129553.png'},{id:'comic',src:'/static/images/hero_boy_comic_1772354167736.png'}];
+                    let heroIdx=0,autoRot;
+                    function startAutoRotate(){autoRot=setInterval(()=>{heroIdx=(heroIdx+1)%heroStyles.length;changeHeroStyle(heroStyles[heroIdx].id,heroStyles[heroIdx].src);},1800);}
+                    function stopAutoRotate(){clearInterval(autoRot);}
+                    startAutoRotate();
+                    const ic=document.querySelector('.hero-interactive-container');
+                    if(ic){ic.addEventListener('mouseenter',stopAutoRotate);ic.addEventListener('mouseleave',startAutoRotate);}
+                </script>
+            </div><!-- /right visual -->
         </div>
-        <div
-            style="position: fixed; bottom: 10%; left: 5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(37,211,102,0.03) 0%, transparent 70%); filter: blur(80px); z-index: -1; animation: float 12s infinite reverse;">
-        </div>
-        <div class="hero-content">
+    </header>
 
             <h1 style="font-family: 'Outfit', sans-serif; font-weight: 800; letter-spacing: -0.03em;">Transform Your
                 <span
@@ -622,46 +763,74 @@
     <!-- ═══════════════════════════════════════════════ -->
     <!-- HOW IT WORKS -->
     <!-- ═══════════════════════════════════════════════ -->
-    <section class="hiw-section" id="how-it-works">
-        <div class="section-title">
-            <div class="section-eyebrow">Simple Process</div>
-            <h2>Transform in <span style="background:linear-gradient(135deg,#ff7e5f,#feb47b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">3 Steps</span></h2>
-            <p>No design skills needed. Upload, choose a style, and download your AI masterpiece — in under 10 seconds.</p>
-        </div>
-        <div class="hiw-grid">
-            <div class="hiw-step">
-                <div class="hiw-step-num">01</div>
-                <div class="hiw-icon-wrap" style="background:linear-gradient(135deg,rgba(255,126,95,0.15),rgba(254,180,123,0.1));">
-                    <i class="fas fa-cloud-arrow-up" style="color:#ff7e5f;"></i>
+    <!-- ═══════ HOW IT WORKS ═══════ -->
+    <section id="how-it-works" class="relative overflow-hidden bg-[#080810] py-24">
+        <!-- Background glow -->
+        <div class="absolute inset-0 pointer-events-none" style="background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(99,102,241,0.10) 0%,transparent 70%);"></div>
+
+        <div class="max-w-6xl mx-auto px-6 text-center relative z-10">
+            <!-- Eyebrow -->
+            <span class="inline-block bg-indigo-500/10 border border-indigo-400/25 text-indigo-400 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-5">Simple Process</span>
+            <h2 class="font-outfit font-extrabold text-4xl md:text-5xl text-white tracking-tight mb-4">
+                Transform in <span class="bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent">3 Steps</span>
+            </h2>
+            <p class="text-slate-400 text-lg max-w-xl mx-auto mb-16">No design skills needed. Upload, choose a style, and download your AI masterpiece — in under 10 seconds.</p>
+
+            <!-- Steps Grid -->
+            <div class="grid md:grid-cols-3 gap-6 relative">
+                <!-- Connector line (desktop) -->
+                <div class="hidden md:block absolute top-14 left-[38%] right-[38%] h-px bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent pointer-events-none"></div>
+
+                <!-- Step 1 -->
+                <div class="relative group bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] hover:border-indigo-500/40 rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute top-5 right-6 text-6xl font-extrabold font-outfit text-white/[0.04] leading-none select-none">01</div>
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand/20 to-brand-light/10 flex items-center justify-center mx-auto mb-5 shadow-[0_0_30px_rgba(255,126,95,0.2)]">
+                        <i class="fas fa-cloud-arrow-up text-2xl text-brand"></i>
+                    </div>
+                    <h3 class="font-outfit font-bold text-white text-xl mb-3">Upload Your Photo</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Drag &amp; drop any portrait, landscape, or pet photo. Supports JPG &amp; PNG up to 10MB. Batch upload multiple files at once.</p>
+                    <div class="mt-5 inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold px-3 py-1 rounded-full">
+                        <i class="fas fa-bolt text-[10px]"></i> Instant preview
+                    </div>
                 </div>
-                <h3>Upload Your Photo</h3>
-                <p>Drag &amp; drop any portrait, landscape, or pet photo. Supports JPG &amp; PNG up to 10MB. Batch upload multiple files at once.</p>
-                <div class="hiw-chip"><i class="fas fa-bolt" style="color:#f59e0b;"></i> Instant preview</div>
-            </div>
-            <div class="hiw-arrow"><i class="fas fa-arrow-right"></i></div>
-            <div class="hiw-step hiw-step--featured">
-                <div class="hiw-step-num">02</div>
-                <div class="hiw-icon-wrap" style="background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(165,180,252,0.1));">
-                    <i class="fas fa-wand-magic-sparkles" style="color:#6366f1;"></i>
+
+                <!-- Step 2 (featured) -->
+                <div class="relative group bg-gradient-to-b from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 shadow-[0_0_50px_rgba(99,102,241,0.15)]">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand to-brand-light text-white text-[10px] font-black tracking-widest px-4 py-1 rounded-full shadow-lg">✦ MOST POPULAR</div>
+                    <div class="absolute top-5 right-6 text-6xl font-extrabold font-outfit text-white/[0.04] leading-none select-none">02</div>
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/25 to-purple-500/15 flex items-center justify-center mx-auto mb-5 shadow-[0_0_35px_rgba(99,102,241,0.3)]">
+                        <i class="fas fa-wand-magic-sparkles text-2xl text-indigo-400"></i>
+                    </div>
+                    <h3 class="font-outfit font-bold text-white text-xl mb-3">Pick an AI Style</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Choose from 9 pro neural styles — 3D Pixar, Anime, Comic Book, Studio Ghibli, Oil Painting and more. Each powered by a dedicated neural model.</p>
+                    <div class="mt-5 inline-flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-400/25 text-indigo-400 text-xs font-bold px-3 py-1 rounded-full">
+                        <i class="fas fa-palette text-[10px]"></i> 9 unique styles
+                    </div>
                 </div>
-                <h3>Pick an AI Style</h3>
-                <p>Choose from 9 pro neural styles — 3D Pixar, Anime, Comic Book, Studio Ghibli, Oil Painting and more. Each powered by a dedicated neural model.</p>
-                <div class="hiw-chip"><i class="fas fa-palette" style="color:#6366f1;"></i> 9 unique styles</div>
-            </div>
-            <div class="hiw-arrow"><i class="fas fa-arrow-right"></i></div>
-            <div class="hiw-step">
-                <div class="hiw-step-num">03</div>
-                <div class="hiw-icon-wrap" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(134,239,172,0.1));">
-                    <i class="fas fa-download" style="color:#22c55e;"></i>
+
+                <!-- Step 3 -->
+                <div class="relative group bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.08] hover:border-emerald-500/40 rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2">
+                    <div class="absolute top-5 right-6 text-6xl font-extrabold font-outfit text-white/[0.04] leading-none select-none">03</div>
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-green-400/10 flex items-center justify-center mx-auto mb-5 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+                        <i class="fas fa-download text-2xl text-emerald-400"></i>
+                    </div>
+                    <h3 class="font-outfit font-bold text-white text-xl mb-3">Download Your Art</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Export in 4K Ultra-HD as JPG, PNG, or PDF. Your artwork is sent to your email and ready for social media, print, or NFT minting.</p>
+                    <div class="mt-5 inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-400/25 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full">
+                        <i class="fas fa-star text-[10px]"></i> 4K Ultra-HD
+                    </div>
                 </div>
-                <h3>Download Your Art</h3>
-                <p>Export in 4K Ultra-HD as JPG, PNG, or PDF. Your artwork is sent to your email and ready for social media, print, or NFT minting.</p>
-                <div class="hiw-chip"><i class="fas fa-star" style="color:#22c55e;"></i> 4K Ultra-HD</div>
             </div>
-        </div>
-        <div class="hiw-cta-row">
-            <a href="#app" class="btn-cta-primary"><i class="fas fa-rocket"></i> Start Creating Free</a>
-            <span class="hiw-note"><i class="fas fa-lock" style="color:#94a3b8;font-size:0.85rem;"></i> No credit card required for free plan</span>
+
+            <!-- Bottom CTA -->
+            <div class="mt-14 flex flex-wrap items-center justify-center gap-4">
+                <a href="#app" class="inline-flex items-center gap-2 bg-gradient-to-r from-brand to-brand-light text-white font-bold px-8 py-3.5 rounded-full shadow-[0_6px_22px_rgba(255,126,95,0.40)] hover:shadow-[0_10px_32px_rgba(255,126,95,0.55)] hover:-translate-y-0.5 transition-all duration-200 no-underline">
+                    <i class="fas fa-rocket"></i> Start Creating Free
+                </a>
+                <span class="text-slate-500 text-sm flex items-center gap-1.5">
+                    <i class="fas fa-lock text-slate-600 text-xs"></i> No credit card required
+                </span>
+            </div>
         </div>
     </section>
 
@@ -1123,313 +1292,303 @@
     <!-- ═══════════════════════════════════════════════ -->
     <!-- TESTIMONIALS -->
     <!-- ═══════════════════════════════════════════════ -->
-    <section class="testi-section" id="reviews">
-        <div class="section-title">
-            <div class="section-eyebrow">Customer Reviews</div>
-            <h2>Loved by <span style="background:linear-gradient(135deg,#ff7e5f,#feb47b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">2M+ Creators</span></h2>
-            <p>Join photographers, artists, and content creators already transforming their work.</p>
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- TESTIMONIALS — Tailwind -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section id="reviews" class="bg-[#08080f] py-24 overflow-hidden">
+      <div class="max-w-6xl mx-auto px-6">
+        <!-- heading -->
+        <div class="text-center mb-12">
+          <span class="inline-block bg-white/10 border border-white/20 rounded-full px-4 py-1 text-xs font-bold tracking-widest text-brand uppercase mb-4">Customer Reviews</span>
+          <h2 class="font-outfit text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
+            Loved by <span class="bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent">2M+ Creators</span>
+          </h2>
+          <p class="text-slate-400 text-lg max-w-xl mx-auto">Join photographers, artists, and content creators already transforming their work.</p>
         </div>
-        <div class="testi-stars-banner">
-            <span class="testi-stars-row">★★★★★</span>
-            <strong>4.9 / 5</strong>
-            <span class="testi-divider">·</span>
-            <span>12,400+ verified reviews</span>
+        <!-- star banner -->
+        <div class="flex items-center justify-center gap-3 mb-12">
+          <span class="text-yellow-400 text-xl tracking-tighter">★★★★★</span>
+          <strong class="text-white font-bold">4.9 / 5</strong>
+          <span class="text-slate-600">&middot;</span>
+          <span class="text-slate-400 text-sm">12,400+ verified reviews</span>
         </div>
-        <div class="testi-grid">
-            <div class="testi-card">
-                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
-                <div class="testi-rating">★★★★★</div>
-                <p>"Toonify blew my mind. I converted 50 family photos into Pixar-style portraits in under 5 minutes. The quality looks like a professional art studio did it — my clients are OBSESSED."</p>
-                <div class="testi-author-row">
-                    <div class="testi-ava" style="background:linear-gradient(135deg,#ff7e5f,#feb47b);">P</div>
-                    <div>
-                        <strong>Priya S.</strong>
-                        <span>Portrait Photographer · Mumbai</span>
-                    </div>
-                </div>
+        <!-- grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Card 1 -->
+          <div class="group bg-white/[0.04] border border-white/10 rounded-2xl p-7 flex flex-col gap-4 hover:border-brand/40 hover:bg-white/[0.07] transition-all duration-300">
+            <i class="fas fa-quote-left text-brand/60 text-2xl"></i>
+            <div class="text-yellow-400 text-sm tracking-tighter">★★★★★</div>
+            <p class="text-slate-300 text-sm leading-relaxed flex-1">"Toonify blew my mind. I converted 50 family photos into Pixar-style portraits in under 5 minutes. The quality looks like a professional art studio did it — my clients are OBSESSED."</p>
+            <div class="flex items-center gap-3 pt-2 border-t border-white/10">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:linear-gradient(135deg,#ff7e5f,#feb47b);">P</div>
+              <div>
+                <div class="text-white font-semibold text-sm">Priya S.</div>
+                <div class="text-slate-500 text-xs">Portrait Photographer · Mumbai</div>
+              </div>
             </div>
-            <div class="testi-card testi-card--featured">
-                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
-                <div class="testi-rating">★★★★★</div>
-                <p>"We use Toonify for all our social media content. The anime and comic book styles consistently go viral. Our Instagram engagement went up 340% after switching to AI-stylized posts."</p>
-                <div class="testi-author-row">
-                    <div class="testi-ava" style="background:linear-gradient(135deg,#6366f1,#a855f7);">R</div>
-                    <div>
-                        <strong>Rahul M.</strong>
-                        <span>Content Creator · 2.1M followers</span>
-                    </div>
-                </div>
+          </div>
+
+          <!-- Card 2 — featured -->
+          <div class="group relative bg-gradient-to-br from-brand/20 to-brand-light/10 border border-brand/40 rounded-2xl p-7 flex flex-col gap-4 shadow-[0_0_40px_rgba(255,126,95,0.15)]">
+            <span class="absolute top-4 right-4 bg-brand text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Featured</span>
+            <i class="fas fa-quote-left text-brand text-2xl"></i>
+            <div class="text-yellow-400 text-sm tracking-tighter">★★★★★</div>
+            <p class="text-white text-sm leading-relaxed flex-1">"We use Toonify for all our social media content. The anime and comic book styles consistently go viral. Our Instagram engagement went up 340% after switching to AI-stylized posts."</p>
+            <div class="flex items-center gap-3 pt-2 border-t border-white/10">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:linear-gradient(135deg,#6366f1,#a855f7);">R</div>
+              <div>
+                <div class="text-white font-semibold text-sm">Rahul M.</div>
+                <div class="text-slate-400 text-xs">Content Creator · 2.1M followers</div>
+              </div>
             </div>
-            <div class="testi-card">
-                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
-                <div class="testi-rating">★★★★★</div>
-                <p>"The batch processing is a game changer. I process entire wedding albums into cartoon portraits for clients. The download email link makes it so easy — just click and download anytime."</p>
-                <div class="testi-author-row">
-                    <div class="testi-ava" style="background:linear-gradient(135deg,#22c55e,#16a34a);">A</div>
-                    <div>
-                        <strong>Aditya K.</strong>
-                        <span>Wedding Photographer · Pune</span>
-                    </div>
-                </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="group bg-white/[0.04] border border-white/10 rounded-2xl p-7 flex flex-col gap-4 hover:border-brand/40 hover:bg-white/[0.07] transition-all duration-300">
+            <i class="fas fa-quote-left text-brand/60 text-2xl"></i>
+            <div class="text-yellow-400 text-sm tracking-tighter">★★★★★</div>
+            <p class="text-slate-300 text-sm leading-relaxed flex-1">"The batch processing is a game changer. I process entire wedding albums into cartoon portraits for clients. The download email link makes it so easy — just click and download anytime."</p>
+            <div class="flex items-center gap-3 pt-2 border-t border-white/10">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:linear-gradient(135deg,#22c55e,#16a34a);">A</div>
+              <div>
+                <div class="text-white font-semibold text-sm">Aditya K.</div>
+                <div class="text-slate-500 text-xs">Wedding Photographer · Pune</div>
+              </div>
             </div>
-            <div class="testi-card">
-                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
-                <div class="testi-rating">★★★★★</div>
-                <p>"As a game concept artist, I use Toonify to prototype character styles instantly. The Studio Ghibli and anime modes are phenomenally accurate. Saves me hours every single week."</p>
-                <div class="testi-author-row">
-                    <div class="testi-ava" style="background:linear-gradient(135deg,#f59e0b,#d97706);">S</div>
-                    <div>
-                        <strong>Sneha T.</strong>
-                        <span>Game Concept Artist · Bangalore</span>
-                    </div>
-                </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="group bg-white/[0.04] border border-white/10 rounded-2xl p-7 flex flex-col gap-4 hover:border-brand/40 hover:bg-white/[0.07] transition-all duration-300">
+            <i class="fas fa-quote-left text-brand/60 text-2xl"></i>
+            <div class="text-yellow-400 text-sm tracking-tighter">★★★★★</div>
+            <p class="text-slate-300 text-sm leading-relaxed flex-1">"As a game concept artist, I use Toonify to prototype character styles instantly. The Studio Ghibli and anime modes are phenomenally accurate. Saves me hours every single week."</p>
+            <div class="flex items-center gap-3 pt-2 border-t border-white/10">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:linear-gradient(135deg,#f59e0b,#d97706);">S</div>
+              <div>
+                <div class="text-white font-semibold text-sm">Sneha T.</div>
+                <div class="text-slate-500 text-xs">Game Concept Artist · Bangalore</div>
+              </div>
             </div>
-            <div class="testi-card">
-                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
-                <div class="testi-rating">★★★★★</div>
-                <p>"I gifted my parents cartoon versions of their wedding photos as an anniversary present. They cried. The 3D Pixar style is so heartwarming. Best ₹28 I've ever spent — seriously."</p>
-                <div class="testi-author-row">
-                    <div class="testi-ava" style="background:linear-gradient(135deg,#ec4899,#be185d);">V</div>
-                    <div>
-                        <strong>Vikas P.</strong>
-                        <span>Software Engineer · Delhi</span>
-                    </div>
-                </div>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="group bg-white/[0.04] border border-white/10 rounded-2xl p-7 flex flex-col gap-4 hover:border-brand/40 hover:bg-white/[0.07] transition-all duration-300">
+            <i class="fas fa-quote-left text-brand/60 text-2xl"></i>
+            <div class="text-yellow-400 text-sm tracking-tighter">★★★★★</div>
+            <p class="text-slate-300 text-sm leading-relaxed flex-1">"I gifted my parents cartoon versions of their wedding photos as an anniversary present. They cried. The 3D Pixar style is so heartwarming. Best ₹28 I've ever spent — seriously."</p>
+            <div class="flex items-center gap-3 pt-2 border-t border-white/10">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:linear-gradient(135deg,#ec4899,#be185d);">V</div>
+              <div>
+                <div class="text-white font-semibold text-sm">Vikas P.</div>
+                <div class="text-slate-500 text-xs">Software Engineer · Delhi</div>
+              </div>
             </div>
-            <div class="testi-card">
-                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
-                <div class="testi-rating">★★★★★</div>
-                <p>"I run an online merch store. Toonify lets me turn customer selfies into custom comic prints. The API integration on the Elite plan streamlined everything. ROI in the first week."</p>
-                <div class="testi-author-row">
-                    <div class="testi-ava" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">N</div>
-                    <div>
-                        <strong>Neha R.</strong>
-                        <span>Merch Store Founder · Hyderabad</span>
-                    </div>
-                </div>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="group bg-white/[0.04] border border-white/10 rounded-2xl p-7 flex flex-col gap-4 hover:border-brand/40 hover:bg-white/[0.07] transition-all duration-300">
+            <i class="fas fa-quote-left text-brand/60 text-2xl"></i>
+            <div class="text-yellow-400 text-sm tracking-tighter">★★★★★</div>
+            <p class="text-slate-300 text-sm leading-relaxed flex-1">"I run an online merch store. Toonify lets me turn customer selfies into custom comic prints. The API integration on the Elite plan streamlined everything. ROI in the first week."</p>
+            <div class="flex items-center gap-3 pt-2 border-t border-white/10">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">N</div>
+              <div>
+                <div class="text-white font-semibold text-sm">Neha R.</div>
+                <div class="text-slate-500 text-xs">Merch Store Founder · Hyderabad</div>
+              </div>
             </div>
+          </div>
+
         </div>
+      </div>
     </section>
 
-    <!-- SaaS Pricing Table -->
-    <section class="pricing" id="pricing"
-        style="background:linear-gradient(135deg,#ffffff 0%,#f8faff 50%,#ffffff 100%); padding:8rem 8%; position:relative; overflow:hidden;">
-        <div
-            style="position:absolute;inset:0;background-image:radial-gradient(circle at 20% 50%,rgba(255,126,95,0.08) 0%,transparent 50%),radial-gradient(circle at 80% 30%,rgba(99,102,241,0.08) 0%,transparent 50%);pointer-events:none;">
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- PRICING — Tailwind -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section id="pricing" class="relative bg-white py-24 overflow-hidden">
+      <!-- subtle blobs -->
+      <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(255,126,95,0.07)_0%,transparent_60%),radial-gradient(circle_at_80%_30%,rgba(99,102,241,0.07)_0%,transparent_60%)]"></div>
+      <div class="max-w-6xl mx-auto px-6 relative z-10">
+        <!-- heading -->
+        <div class="text-center mb-16">
+          <span class="inline-block bg-brand/10 border border-brand/20 rounded-full px-4 py-1 text-xs font-bold tracking-widest text-brand uppercase mb-4">Pricing</span>
+          <h2 class="font-outfit text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+            Ready to <span class="bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent">Upgrade?</span>
+          </h2>
+          <p class="text-slate-500 text-lg max-w-lg mx-auto">Choose the plan that fits your creative workflow.</p>
         </div>
-        <div class="section-title" style="position:relative;z-index:1;">
-            <h2 style="color:#1e293b;-webkit-text-fill-color:#1e293b;">Ready to <span
-                    style="background:linear-gradient(135deg,#ff7e5f,#feb47b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Upgrade?</span>
-            </h2>
-            <p style="color:#64748b;-webkit-text-fill-color:#64748b;">Choose the plan that fits your creative workflow.
-            </p>
+        <!-- cards -->
+        <div class="grid md:grid-cols-3 gap-8 items-start">
+
+          <!-- Starter -->
+          <div class="relative bg-white border border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <h4 class="text-slate-500 font-semibold text-base mb-1">Starter</h4>
+            <div class="text-6xl font-extrabold font-outfit bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent mb-1">$0</div>
+            <p class="text-slate-400 text-sm mb-7">Free forever</p>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center gap-3 text-slate-600 text-sm border-b border-slate-100 pb-3"><i class="fas fa-check text-emerald-400 w-4 shrink-0"></i> Standard Quality</li>
+              <li class="flex items-center gap-3 text-slate-600 text-sm border-b border-slate-100 pb-3"><i class="fas fa-check text-emerald-400 w-4 shrink-0"></i> 5 Generations / Day</li>
+              <li class="flex items-center gap-3 text-slate-600 text-sm"><i class="fas fa-check text-emerald-400 w-4 shrink-0"></i> Basic Styles</li>
+            </ul>
+            <button onclick="showStarterPlan()" class="w-full py-3.5 rounded-2xl bg-slate-100 text-slate-600 border border-slate-200 font-bold text-sm hover:bg-slate-200 transition-all cursor-pointer">Current Plan</button>
+          </div>
+
+          <!-- Creator Pro — featured -->
+          <div class="relative bg-gradient-to-b from-[#fff5f2] to-white border-2 border-brand/50 rounded-3xl p-8 shadow-[0_20px_60px_rgba(255,126,95,0.18)] hover:shadow-[0_30px_80px_rgba(255,126,95,0.28)] transition-all duration-300 hover:-translate-y-2">
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand to-brand-light text-white text-[10px] font-extrabold px-5 py-1.5 rounded-full shadow-lg tracking-widest uppercase">★ Best Value</div>
+            <h4 class="text-slate-500 font-semibold text-base mb-1">Creator Pro</h4>
+            <div class="text-6xl font-extrabold font-outfit bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent mb-1">$19</div>
+            <p class="text-slate-400 text-sm mb-7">per month</p>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center gap-3 text-slate-700 text-sm border-b border-slate-100 pb-3"><i class="fas fa-check text-emerald-400 w-4 shrink-0"></i> 4K Ultra-HD Export</li>
+              <li class="flex items-center gap-3 text-slate-700 text-sm border-b border-slate-100 pb-3"><i class="fas fa-check text-emerald-400 w-4 shrink-0"></i> Unlimited Generations</li>
+              <li class="flex items-center gap-3 text-slate-700 text-sm"><i class="fas fa-check text-emerald-400 w-4 shrink-0"></i> Priority Neural Processing</li>
+            </ul>
+            <button onclick="upgradeToPro()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-brand to-brand-light text-white font-extrabold text-sm shadow-[0_6px_20px_rgba(255,126,95,0.4)] hover:shadow-[0_10px_30px_rgba(255,126,95,0.55)] hover:-translate-y-0.5 transition-all cursor-pointer">Get Started Now ✦</button>
+          </div>
+
+          <!-- Agency Elite -->
+          <div class="relative bg-white border border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <h4 class="text-slate-500 font-semibold text-base mb-1">Agency Elite</h4>
+            <div class="text-6xl font-extrabold font-outfit bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-1">$49</div>
+            <p class="text-slate-400 text-sm mb-7">per month</p>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center gap-3 text-slate-600 text-sm border-b border-slate-100 pb-3"><i class="fas fa-check text-emerald-400 w-4 shrink-0"></i> Team Collaboration</li>
+              <li class="flex items-center gap-3 text-slate-600 text-sm border-b border-slate-100 pb-3"><i class="fas fa-check text-emerald-400 w-4 shrink-0"></i> API Integration Access</li>
+              <li class="flex items-center gap-3 text-slate-600 text-sm"><i class="fas fa-check text-emerald-400 w-4 shrink-0"></i> Custom Neural Training</li>
+            </ul>
+            <button onclick="contactSales()" class="w-full py-3.5 rounded-2xl bg-slate-100 text-slate-600 border border-slate-200 font-bold text-sm hover:bg-slate-200 transition-all cursor-pointer">Contact Sales</button>
+          </div>
+
         </div>
-        <div class="price-grid" style="position:relative;z-index:1;">
-            <div class="price-card"
-                style="background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(99,102,241,0.15);border-radius:28px;padding:3rem 2rem;transition:all 0.4s ease;box-shadow:0 8px 30px rgba(99,102,241,0.08);">
-                <h4 style="color:#64748b;font-size:1.1rem;margin-bottom:0.5rem;">Starter</h4>
-                <div class="amount"
-                    style="font-size:4rem;font-weight:800;font-family:'Baloo 2';background:linear-gradient(135deg,#ff7e5f,#feb47b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
-                    $0</div>
-                <ul style="list-style:none;padding:0;margin-bottom:2rem;">
-                    <li
-                        style="padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06);color:#475569;display:flex;align-items:center;gap:10px;">
-                        <i class="fas fa-check" style="color:#34d399;"></i> Standard Quality
-                    </li>
-                    <li
-                        style="padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06);color:#475569;display:flex;align-items:center;gap:10px;">
-                        <i class="fas fa-check" style="color:#34d399;"></i> 5 Generations / Day
-                    </li>
-                    <li style="padding:10px 0;color:#475569;display:flex;align-items:center;gap:10px;"><i
-                            class="fas fa-check" style="color:#34d399;"></i> Basic Styles</li>
-                </ul>
-                <button onclick="showStarterPlan()"
-                    style="width:100%;padding:1rem;border-radius:14px;background:rgba(99,102,241,0.08);color:#475569;border:1px solid rgba(99,102,241,0.2);font-weight:800;font-size:1rem;cursor:pointer;transition:all 0.3s;">Current
-                    Plan</button>
-            </div>
-            <div class="price-card popular"
-                style="background:linear-gradient(135deg,rgba(255,126,95,0.12),rgba(254,180,123,0.08));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:2px solid rgba(255,126,95,0.5);border-radius:28px;padding:3rem 2rem;position:relative;transition:all 0.4s ease;box-shadow:0 20px 60px rgba(255,126,95,0.15);background-color:white;">
-                <div class="popular-badge"
-                    style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ff7e5f,#feb47b);color:white;padding:6px 22px;border-radius:50px;font-size:11px;font-weight:800;letter-spacing:1.5px;box-shadow:0 4px 16px rgba(255,126,95,0.4);">
-                    ★ BEST VALUE</div>
-                <h4 style="color:#64748b;font-size:1.1rem;margin-bottom:0.5rem;">Creator Pro</h4>
-                <div
-                    style="font-size:4rem;font-weight:800;font-family:'Baloo 2';background:linear-gradient(135deg,#ff7e5f,#feb47b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
-                    $19</div>
-                <ul style="list-style:none;padding:0;margin-bottom:2rem;">
-                    <li
-                        style="padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.08);color:#334155;display:flex;align-items:center;gap:10px;">
-                        <i class="fas fa-check" style="color:#34d399;"></i> 4K Ultra-HD Export
-                    </li>
-                    <li
-                        style="padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.08);color:#334155;display:flex;align-items:center;gap:10px;">
-                        <i class="fas fa-check" style="color:#34d399;"></i> Unlimited Generations
-                    </li>
-                    <li style="padding:10px 0;color:#334155;display:flex;align-items:center;gap:10px;"><i
-                            class="fas fa-check" style="color:#34d399;"></i> Priority Neural Processing</li>
-                </ul>
-                <button onclick="upgradeToPro()"
-                    style="width:100%;padding:1rem;border-radius:14px;background:linear-gradient(135deg,#ff7e5f,#feb47b);color:white;border:none;font-weight:800;font-size:1rem;cursor:pointer;box-shadow:0 6px 20px rgba(255,126,95,0.4);transition:all 0.3s;">Get
-                    Started Now ✦</button>
-            </div>
-            <div class="price-card"
-                style="background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(99,102,241,0.15);border-radius:28px;padding:3rem 2rem;transition:all 0.4s ease;box-shadow:0 8px 30px rgba(99,102,241,0.08);">
-                <h4 style="color:#64748b;font-size:1.1rem;margin-bottom:0.5rem;">Agency Elite</h4>
-                <div
-                    style="font-size:4rem;font-weight:800;font-family:'Baloo 2';background:linear-gradient(135deg,#818cf8,#a5b4fc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">
-                    $49</div>
-                <ul style="list-style:none;padding:0;margin-bottom:2rem;">
-                    <li
-                        style="padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06);color:#475569;display:flex;align-items:center;gap:10px;">
-                        <i class="fas fa-check" style="color:#34d399;"></i> Team Collaboration
-                    </li>
-                    <li
-                        style="padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.06);color:#475569;display:flex;align-items:center;gap:10px;">
-                        <i class="fas fa-check" style="color:#34d399;"></i> API Integration Access
-                    </li>
-                    <li style="padding:10px 0;color:#475569;display:flex;align-items:center;gap:10px;"><i
-                            class="fas fa-check" style="color:#34d399;"></i> Custom Neural Training</li>
-                </ul>
-                <button onclick="contactSales()"
-                    style="width:100%;padding:1rem;border-radius:14px;background:rgba(99,102,241,0.08);color:#475569;border:1px solid rgba(99,102,241,0.2);font-weight:800;font-size:1rem;cursor:pointer;transition:all 0.3s;">Contact
-                    Sales</button>
-            </div>
-        </div>
+      </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════ -->
-    <!-- FAQ -->
-    <!-- ═══════════════════════════════════════════════ -->
-    <section class="faq-section" id="faq">
-        <div class="faq-inner">
-            <div class="section-title">
-                <div class="section-eyebrow">Got Questions?</div>
-                <h2>Frequently Asked <span style="background:linear-gradient(135deg,#ff7e5f,#feb47b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Questions</span></h2>
-                <p>Everything you need to know about Toonify AI.</p>
-            </div>
-            <div class="faq-list">
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        <span>What AI styles does Toonify support?</span>
-                        <i class="fas fa-chevron-down faq-chevron"></i>
-                    </button>
-                    <div class="faq-a">
-                        <p>Toonify offers <strong>9 professional neural styles</strong>: 3D Pixar, Anime, Comic Book, Studio Ghibli, Oil Painting, Watercolor, Digital Sketch, Pop Art, and Vintage. Each style is powered by a dedicated, purpose-trained neural model for the highest quality output.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        <span>How long does it take to process a photo?</span>
-                        <i class="fas fa-chevron-down faq-chevron"></i>
-                    </button>
-                    <div class="faq-a">
-                        <p>Most photos are processed in <strong>under 10 seconds</strong>. Processing time may vary slightly based on image complexity, selected style, and server load. Pro and Elite users get priority GPU queue access for the fastest speeds.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        <span>Is there a free plan? What are the limits?</span>
-                        <i class="fas fa-chevron-down faq-chevron"></i>
-                    </button>
-                    <div class="faq-a">
-                        <p>Yes! The <strong>Starter (free) plan</strong> gives you 5 AI transformations per day with standard quality output. You can preview your result without paying. To download the full watermark-free version, a one-time payment of ₹28 is charged per image. Upgrade to Pro (₹1,900/month) for unlimited generations and 4K export.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        <span>How does the download email link work?</span>
-                        <i class="fas fa-chevron-down faq-chevron"></i>
-                    </button>
-                    <div class="faq-a">
-                        <p>After a successful payment, Toonify automatically sends a <strong>permanent download link</strong> to your registered email address. Unlike many services, this link <strong>never expires</strong> — you can click it days or weeks later to re-download your artwork anytime. The link is tied to your payment ID and is fully secure.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        <span>What image formats can I download?</span>
-                        <i class="fas fa-chevron-down faq-chevron"></i>
-                    </button>
-                    <div class="faq-a">
-                        <p>You can download your artwork as <strong>Standard JPEG (.jpg)</strong>, <strong>Lossless PNG (.png)</strong>, or <strong>Document PDF (.pdf)</strong>. Pro and Elite users can export at up to 4K Ultra-HD resolution (100% quality). Perfect for social media, print, canvas, or NFT minting.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        <span>Is my uploaded photo private and secure?</span>
-                        <i class="fas fa-chevron-down faq-chevron"></i>
-                    </button>
-                    <div class="faq-a">
-                        <p>Absolutely. All uploads are processed over <strong>HTTPS encrypted channels</strong>. We do not train our AI models on your personal photos, and we do not share your images with third parties. Processed files are stored temporarily and not used for any purpose beyond delivering your output.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        <span>Can I batch process multiple photos at once?</span>
-                        <i class="fas fa-chevron-down faq-chevron"></i>
-                    </button>
-                    <div class="faq-a">
-                        <p>Yes! Toonify supports <strong>batch processing</strong> — upload multiple images at once, assign different styles to each, and process them all in one click. The results appear in a grid view for easy comparison. Pro users can batch up to 20 images, Elite users have no batch limit.</p>
-                    </div>
-                </div>
-                <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">
-                        <span>What payment methods are accepted?</span>
-                        <i class="fas fa-chevron-down faq-chevron"></i>
-                    </button>
-                    <div class="faq-a">
-                        <p>We use <strong>Razorpay</strong> for all payments in India. You can pay via UPI (GPay, PhonePe, BHIM, Paytm), debit/credit cards (Visa, Mastercard, RuPay), net banking, and wallets. All transactions are 256-bit SSL secured. We never store your payment details.</p>
-                    </div>
-                </div>
-            </div>
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- FAQ — Tailwind -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section id="faq" class="bg-[#07070e] py-24 overflow-hidden">
+      <div class="max-w-3xl mx-auto px-6">
+        <!-- heading -->
+        <div class="text-center mb-14">
+          <span class="inline-block bg-white/10 border border-white/20 rounded-full px-4 py-1 text-xs font-bold tracking-widest text-brand uppercase mb-4">Got Questions?</span>
+          <h2 class="font-outfit text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
+            Frequently Asked <span class="bg-gradient-to-r from-brand to-brand-light bg-clip-text text-transparent">Questions</span>
+          </h2>
+          <p class="text-slate-400 text-lg">Everything you need to know about Toonify AI.</p>
         </div>
+        <!-- accordion -->
+        <div class="divide-y divide-white/10" id="faqAccordion">
+
+          <div class="faq-item py-5">
+            <button class="faq-q w-full flex items-center justify-between text-left gap-4" onclick="toggleFaq(this)">
+              <span class="text-white font-medium text-base">What AI styles does Toonify support?</span>
+              <i class="fas fa-chevron-down faq-chevron text-brand transition-transform duration-300 shrink-0"></i>
+            </button>
+            <div class="faq-a overflow-hidden max-h-0 transition-all duration-300">
+              <p class="pt-4 text-slate-400 text-sm leading-relaxed">Toonify offers <strong class="text-white">9 professional neural styles</strong>: 3D Pixar, Anime, Comic Book, Studio Ghibli, Oil Painting, Watercolor, Digital Sketch, Pop Art, and Vintage. Each style is powered by a dedicated, purpose-trained neural model for the highest quality output.</p>
+            </div>
+          </div>
+
+          <div class="faq-item py-5">
+            <button class="faq-q w-full flex items-center justify-between text-left gap-4" onclick="toggleFaq(this)">
+              <span class="text-white font-medium text-base">How long does it take to process a photo?</span>
+              <i class="fas fa-chevron-down faq-chevron text-brand transition-transform duration-300 shrink-0"></i>
+            </button>
+            <div class="faq-a overflow-hidden max-h-0 transition-all duration-300">
+              <p class="pt-4 text-slate-400 text-sm leading-relaxed">Most photos are processed in <strong class="text-white">under 10 seconds</strong>. Processing time may vary slightly based on image complexity, selected style, and server load. Pro and Elite users get priority GPU queue access for the fastest speeds.</p>
+            </div>
+          </div>
+
+          <div class="faq-item py-5">
+            <button class="faq-q w-full flex items-center justify-between text-left gap-4" onclick="toggleFaq(this)">
+              <span class="text-white font-medium text-base">Is there a free plan? What are the limits?</span>
+              <i class="fas fa-chevron-down faq-chevron text-brand transition-transform duration-300 shrink-0"></i>
+            </button>
+            <div class="faq-a overflow-hidden max-h-0 transition-all duration-300">
+              <p class="pt-4 text-slate-400 text-sm leading-relaxed">Yes! The <strong class="text-white">Starter (free) plan</strong> gives you 5 AI transformations per day with standard quality output. You can preview your result without paying. To download the full watermark-free version, a one-time payment of ₹28 is charged per image. Upgrade to Pro (₹1,900/month) for unlimited generations and 4K export.</p>
+            </div>
+          </div>
+
+          <div class="faq-item py-5">
+            <button class="faq-q w-full flex items-center justify-between text-left gap-4" onclick="toggleFaq(this)">
+              <span class="text-white font-medium text-base">How does the download email link work?</span>
+              <i class="fas fa-chevron-down faq-chevron text-brand transition-transform duration-300 shrink-0"></i>
+            </button>
+            <div class="faq-a overflow-hidden max-h-0 transition-all duration-300">
+              <p class="pt-4 text-slate-400 text-sm leading-relaxed">After a successful payment, Toonify automatically sends a <strong class="text-white">permanent download link</strong> to your registered email address. Unlike many services, this link <strong class="text-white">never expires</strong> — you can click it days or weeks later to re-download your artwork anytime. The link is tied to your payment ID and is fully secure.</p>
+            </div>
+          </div>
+
+          <div class="faq-item py-5">
+            <button class="faq-q w-full flex items-center justify-between text-left gap-4" onclick="toggleFaq(this)">
+              <span class="text-white font-medium text-base">What image formats can I download?</span>
+              <i class="fas fa-chevron-down faq-chevron text-brand transition-transform duration-300 shrink-0"></i>
+            </button>
+            <div class="faq-a overflow-hidden max-h-0 transition-all duration-300">
+              <p class="pt-4 text-slate-400 text-sm leading-relaxed">You can download your artwork as <strong class="text-white">Standard JPEG (.jpg)</strong>, <strong class="text-white">Lossless PNG (.png)</strong>, or <strong class="text-white">Document PDF (.pdf)</strong>. Pro and Elite users can export at up to 4K Ultra-HD resolution (100% quality). Perfect for social media, print, canvas, or NFT minting.</p>
+            </div>
+          </div>
+
+          <div class="faq-item py-5">
+            <button class="faq-q w-full flex items-center justify-between text-left gap-4" onclick="toggleFaq(this)">
+              <span class="text-white font-medium text-base">Is my uploaded photo private and secure?</span>
+              <i class="fas fa-chevron-down faq-chevron text-brand transition-transform duration-300 shrink-0"></i>
+            </button>
+            <div class="faq-a overflow-hidden max-h-0 transition-all duration-300">
+              <p class="pt-4 text-slate-400 text-sm leading-relaxed">Absolutely. All uploads are processed over <strong class="text-white">HTTPS encrypted channels</strong>. We do not train our AI models on your personal photos, and we do not share your images with third parties. Processed files are stored temporarily and not used for any purpose beyond delivering your output.</p>
+            </div>
+          </div>
+
+          <div class="faq-item py-5">
+            <button class="faq-q w-full flex items-center justify-between text-left gap-4" onclick="toggleFaq(this)">
+              <span class="text-white font-medium text-base">Can I batch process multiple photos at once?</span>
+              <i class="fas fa-chevron-down faq-chevron text-brand transition-transform duration-300 shrink-0"></i>
+            </button>
+            <div class="faq-a overflow-hidden max-h-0 transition-all duration-300">
+              <p class="pt-4 text-slate-400 text-sm leading-relaxed">Yes! Toonify supports <strong class="text-white">batch processing</strong> — upload multiple images at once, assign different styles to each, and process them all in one click. The results appear in a grid view for easy comparison. Pro users can batch up to 20 images, Elite users have no batch limit.</p>
+            </div>
+          </div>
+
+          <div class="faq-item py-5">
+            <button class="faq-q w-full flex items-center justify-between text-left gap-4" onclick="toggleFaq(this)">
+              <span class="text-white font-medium text-base">What payment methods are accepted?</span>
+              <i class="fas fa-chevron-down faq-chevron text-brand transition-transform duration-300 shrink-0"></i>
+            </button>
+            <div class="faq-a overflow-hidden max-h-0 transition-all duration-300">
+              <p class="pt-4 text-slate-400 text-sm leading-relaxed">We use <strong class="text-white">Razorpay</strong> for all payments in India. You can pay via UPI (GPay, PhonePe, BHIM, Paytm), debit/credit cards (Visa, Mastercard, RuPay), net banking, and wallets. All transactions are 256-bit SSL secured. We never store your payment details.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </section>
 
-    <!-- Quick Navigation Section -->
-    <section
-        style="background: linear-gradient(135deg,#fff8f4 0%,#f5f0ff 50%,#f0f8ff 100%); padding: 100px 5%; text-align: center; position:relative; overflow:hidden;">
-        <div
-            style="position:absolute;inset:0;background-image:radial-gradient(circle at 30% 50%,rgba(255,126,95,0.07) 0%,transparent 50%),radial-gradient(circle at 70% 50%,rgba(99,102,241,0.07) 0%,transparent 50%);pointer-events:none;">
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- QUICK NAV CTA — Tailwind -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="relative bg-gradient-to-br from-[#fff8f4] via-[#f5f0ff] to-[#f0f8ff] py-24 overflow-hidden text-center">
+      <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,126,95,0.07)_0%,transparent_55%),radial-gradient(circle_at_70%_50%,rgba(99,102,241,0.07)_0%,transparent_55%)]"></div>
+      <div class="max-w-4xl mx-auto px-6 relative z-10">
+        <h2 class="font-outfit text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">Ready to Transform Your Photos?</h2>
+        <p class="text-slate-500 text-lg mb-14">Choose your next step below</p>
+        <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <button onclick="window.location.href='#app'" class="flex items-center justify-center gap-2.5 px-6 py-5 rounded-2xl bg-gradient-to-r from-brand to-brand-light text-white font-semibold text-sm shadow-[0_5px_15px_rgba(255,126,95,0.35)] hover:shadow-[0_10px_28px_rgba(255,126,95,0.5)] hover:-translate-y-1 transition-all cursor-pointer border-0">
+            <i class="fas fa-wand-magic-sparkles"></i> Get Started Now
+          </button>
+          <button onclick="window.location.href='/gallery'" class="flex items-center justify-center gap-2.5 px-6 py-5 rounded-2xl bg-white text-brand border-2 border-brand font-semibold text-sm shadow-sm hover:bg-brand hover:text-white hover:-translate-y-1 transition-all cursor-pointer">
+            <i class="fas fa-palette"></i> View Gallery
+          </button>
+          <button onclick="window.location.href='/#features'" class="flex items-center justify-center gap-2.5 px-6 py-5 rounded-2xl bg-white text-brand border-2 border-brand font-semibold text-sm shadow-sm hover:bg-brand hover:text-white hover:-translate-y-1 transition-all cursor-pointer">
+            <i class="fas fa-layer-group"></i> Explore Styles
+          </button>
+          <button onclick="window.location.href='/docs'" class="flex items-center justify-center gap-2.5 px-6 py-5 rounded-2xl bg-white text-brand border-2 border-brand font-semibold text-sm shadow-sm hover:bg-brand hover:text-white hover:-translate-y-1 transition-all cursor-pointer">
+            <i class="fas fa-book-open"></i> View Docs
+          </button>
         </div>
-        <h2
-            style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 3.2rem; letter-spacing: -1.5px; margin-bottom: 15px; color: #1e293b; position:relative;">
-            Ready to Transform Your Photos?</h2>
-        <p style="font-size: 1.15rem; color: #64748b; margin-bottom: 60px; position:relative;">Choose your next step
-            below</p>
-
-        <div
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto;">
-            <!-- Get Started Button -->
-            <button onclick="window.location.href='#app'"
-                style="padding: 20px 30px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(255, 100, 60, 0.2);"
-                onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 25px rgba(255, 100, 60, 0.3)';"
-                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(255, 100, 60, 0.2)';">
-                <i class="fas fa-wand-magic-sparkles"></i> Get Started Now
-            </button>
-
-            <!-- View Gallery Button -->
-            <button onclick="window.location.href='/gallery'"
-                style="padding: 20px 30px; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);"
-                onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.boxShadow='0 10px 25px rgba(255, 100, 60, 0.15)';"
-                onmouseout="this.style.background='white'; this.style.color='var(--primary)'; this.style.boxShadow='0 5px 15px rgba(0, 0, 0, 0.05)';">
-                <i class="fas fa-palette"></i> View Gallery
-            </button>
-
-            <!-- Explore Styles Button -->
-            <button onclick="window.location.href='/#features'"
-                style="padding: 20px 30px; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);"
-                onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.boxShadow='0 10px 25px rgba(255, 100, 60, 0.15)';"
-                onmouseout="this.style.background='white'; this.style.color='var(--primary)'; this.style.boxShadow='0 5px 15px rgba(0, 0, 0, 0.05)';">
-                <i class="fas fa-layer-group"></i> Explore Styles
-            </button>
-
-            <!-- View Docs Button -->
-            <button onclick="window.location.href='/docs'"
-                style="padding: 20px 30px; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);"
-                onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.boxShadow='0 10px 25px rgba(255, 100, 60, 0.15)';"
-                onmouseout="this.style.background='white'; this.style.color='var(--primary)'; this.style.boxShadow='0 5px 15px rgba(0, 0, 0, 0.05)';">
-                <i class="fas fa-book-open"></i> View Docs
-            </button>
-        </div>
+      </div>
     </section>
 
 
@@ -1967,48 +2126,71 @@
         style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 100px; height: 4px; background: white; border-radius: 2px; opacity: 0.5;">
     </div>
 
-    <footer class="saas-footer">
-        <div class="footer-grid">
-            <div class="footer-brand">
-                <div class="logo">
-                    <i class="fas fa-magic"></i>
-                    <span>Toonify.AI</span>
-                </div>
-                <p>The premier AI stylization engine for professional creators and digital artists worldwide.
-                    Transform your reality into art.</p>
-                <div class="footer-badge">
-                    <i class="fas fa-shield-halved"></i> Trusted by 10,000+ creators
-                </div>
-                <div class="social-links">
-                    <a href="/twitter" title="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="/instagram" title="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="/discord" title="Discord"><i class="fab fa-discord"></i></a>
-                </div>
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- FOOTER — Tailwind -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <footer class="bg-[#06060c] border-t border-white/[0.07] pt-16 pb-8">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-4 gap-10 mb-14">
+
+          <!-- Brand column -->
+          <div class="md:col-span-1">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-light flex items-center justify-center text-white text-base shadow-lg">
+                <i class="fas fa-magic"></i>
+              </span>
+              <span class="font-outfit font-extrabold text-xl text-white tracking-tight">Toonify.AI</span>
             </div>
-            <div class="footer-links">
-                <h5>Product</h5>
-                <a href="/#app">Neural Editor</a>
-                <a href="/gallery">Art Gallery</a>
-                <a href="/#features">AI Styles</a>
-                <a href="/docs">Documentation</a>
+            <p class="text-slate-500 text-sm leading-relaxed mb-5">The premier AI stylization engine for professional creators and digital artists worldwide. Transform your reality into art.</p>
+            <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-xs text-slate-400 mb-6">
+              <i class="fas fa-shield-halved text-brand"></i> Trusted by 10,000+ creators
             </div>
-            <div class="footer-links">
-                <h5>Company</h5>
-                <a href="/our-story">Our Story</a>
-                <a href="/privacy-policy">Privacy Policy</a>
-                <a href="/terms-of-service">Terms of Service</a>
-                <a href="/security">Security Pulse</a>
+            <div class="flex items-center gap-3">
+              <a href="/twitter" title="Twitter" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-brand/20 hover:border-brand/40 transition-all"><i class="fab fa-twitter text-sm"></i></a>
+              <a href="/instagram" title="Instagram" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-brand/20 hover:border-brand/40 transition-all"><i class="fab fa-instagram text-sm"></i></a>
+              <a href="/discord" title="Discord" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-brand/20 hover:border-brand/40 transition-all"><i class="fab fa-discord text-sm"></i></a>
             </div>
-            <div class="footer-links">
-                <h5>Support</h5>
-                <a href="mailto:support@toonify.ai">Contact Support</a>
-                <a href="/tutorials">Tutorials</a>
-                <a href="/billing">Billing FAQ</a>
-            </div>
+          </div>
+
+          <!-- Product -->
+          <div>
+            <h5 class="text-white font-semibold text-sm mb-4 tracking-wide">Product</h5>
+            <ul class="space-y-3">
+              <li><a href="/#app" class="text-slate-500 text-sm hover:text-brand transition-colors">Neural Editor</a></li>
+              <li><a href="/gallery" class="text-slate-500 text-sm hover:text-brand transition-colors">Art Gallery</a></li>
+              <li><a href="/#features" class="text-slate-500 text-sm hover:text-brand transition-colors">AI Styles</a></li>
+              <li><a href="/docs" class="text-slate-500 text-sm hover:text-brand transition-colors">Documentation</a></li>
+            </ul>
+          </div>
+
+          <!-- Company -->
+          <div>
+            <h5 class="text-white font-semibold text-sm mb-4 tracking-wide">Company</h5>
+            <ul class="space-y-3">
+              <li><a href="/our-story" class="text-slate-500 text-sm hover:text-brand transition-colors">Our Story</a></li>
+              <li><a href="/privacy-policy" class="text-slate-500 text-sm hover:text-brand transition-colors">Privacy Policy</a></li>
+              <li><a href="/terms-of-service" class="text-slate-500 text-sm hover:text-brand transition-colors">Terms of Service</a></li>
+              <li><a href="/security" class="text-slate-500 text-sm hover:text-brand transition-colors">Security Pulse</a></li>
+            </ul>
+          </div>
+
+          <!-- Support -->
+          <div>
+            <h5 class="text-white font-semibold text-sm mb-4 tracking-wide">Support</h5>
+            <ul class="space-y-3">
+              <li><a href="mailto:support@toonify.ai" class="text-slate-500 text-sm hover:text-brand transition-colors">Contact Support</a></li>
+              <li><a href="/tutorials" class="text-slate-500 text-sm hover:text-brand transition-colors">Tutorials</a></li>
+              <li><a href="/billing" class="text-slate-500 text-sm hover:text-brand transition-colors">Billing FAQ</a></li>
+            </ul>
+          </div>
+
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Toonify Creative Inc. Built with <span class="heart">❤️</span> for the AI Generation.</p>
+        <!-- bottom bar -->
+        <div class="border-t border-white/[0.07] pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p class="text-slate-600 text-xs">&copy; 2026 Toonify Creative Inc. Built with ❤️ for the AI Generation.</p>
+          <p class="text-slate-700 text-xs">Powered by Neural Engines &nbsp;·&nbsp; Secured by Razorpay &nbsp;·&nbsp; SSL Encrypted</p>
         </div>
+      </div>
     </footer>
 
 
@@ -2052,9 +2234,22 @@
     // FAQ accordion
     function toggleFaq(btn) {
         var item = btn.parentElement;
+        var answer = item.querySelector('.faq-a');
+        var chevron = btn.querySelector('.faq-chevron');
         var isOpen = item.classList.contains('faq-open');
-        document.querySelectorAll('.faq-item').forEach(function(i){ i.classList.remove('faq-open'); });
-        if (!isOpen) item.classList.add('faq-open');
+        // close all
+        document.querySelectorAll('.faq-item').forEach(function(i){
+            i.classList.remove('faq-open');
+            var a = i.querySelector('.faq-a');
+            var c = i.querySelector('.faq-chevron');
+            if (a) a.style.maxHeight = '0px';
+            if (c) { c.style.transform = ''; }
+        });
+        if (!isOpen) {
+            item.classList.add('faq-open');
+            if (answer) answer.style.maxHeight = answer.scrollHeight + 'px';
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+        }
     }
 
     // Social proof notifications
