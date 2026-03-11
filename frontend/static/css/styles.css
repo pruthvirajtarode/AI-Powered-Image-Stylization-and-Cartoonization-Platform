@@ -3344,6 +3344,39 @@ body {
 }
 
 /* ============================================================
+   ★  TOONIFY SAAS UI POLISH — complete override layer
+   ============================================================ */
+
+/* ── Dark-section base colours (hiw / testi / faq inherit this) ── */
+.hiw-section .section-title h2,
+.testi-section .section-title h2,
+.faq-inner .section-title h2 {
+    color: #f1f5f9;
+    -webkit-text-fill-color: #f1f5f9;
+}
+.hiw-section .section-title h2 span,
+.testi-section .section-title h2 span,
+.faq-inner .section-title h2 span {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hiw-section .section-title p,
+.testi-section .section-title p,
+.faq-inner .section-title p {
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+}
+.hiw-section .section-eyebrow,
+.testi-section .section-eyebrow,
+.faq-inner .section-eyebrow {
+    color: #a5b4fc;
+    border-color: rgba(99,102,241,0.3);
+    background: rgba(99,102,241,0.12);
+}
+
+/* ============================================================
    ANNOUNCEMENT BAR
    ============================================================ */
 .ann-bar {
@@ -3405,93 +3438,9 @@ body {
 }
 .ann-close:hover { color: #fff; }
 
-/* ============================================================
-   SECTION EYEBROW + CTA BUTTONS
-   ============================================================ */
-.section-eyebrow {
-    display: inline-block;
-    background: linear-gradient(90deg, rgba(99,102,241,0.14) 0%, rgba(14,165,233,0.14) 100%);
-    border: 1px solid rgba(99,102,241,0.28);
-    border-radius: 20px;
-    padding: 4px 16px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #a5b4fc;
-    margin-bottom: 14px;
-}
-.btn-cta-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
-    color: #fff;
-    border: none;
-    border-radius: 28px;
-    padding: 13px 30px;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: 0 4px 20px rgba(99,102,241,0.35);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.btn-cta-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(99,102,241,0.5);
-    color: #fff;
-}
-.btn-cta-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: rgba(255,255,255,0.07);
-    color: #e2e8f0;
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 28px;
-    padding: 12px 28px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.2s, border-color 0.2s;
-}
-.btn-cta-secondary:hover {
-    background: rgba(255,255,255,0.13);
-    border-color: rgba(255,255,255,0.3);
-    color: #fff;
-}
-.hero-cta-group {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 8px;
-}
-.hero-stats-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 18px;
-}
-.stat-pill {
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.14);
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 0.8rem;
-    color: #cbd5e1;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-.stat-pill strong { color: #f1f5f9; }
-.stat-stars { color: #fbbf24; letter-spacing: -2px; }
-.stat-divider { color: rgba(255,255,255,0.25); font-size: 1.1rem; }
+/* ─── SECTION EYEBROW, CTA BUTTONS, HERO STATS: defined in the polish block below ─── */
+/* (kept as placeholder — actual definitions are in the ★ SAAS UI POLISH section) */
+.hero-cta-group-placeholder { /* intentionally empty */ }
 
 /* ============================================================
    HOW IT WORKS SECTION
@@ -3799,22 +3748,19 @@ body {
 .faq-q:hover { color: #a5b4fc; }
 .faq-item.faq-open .faq-q { color: #a5b4fc; }
 .faq-chevron {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.07);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
+    color: #64748b;
+    transition: transform 0.3s ease, color 0.2s;
     flex-shrink: 0;
-    transition: transform 0.25s, background 0.2s;
-    color: #94a3b8;
+    margin-left: 4px;
 }
-.faq-item.faq-open .faq-chevron { transform: rotate(180deg); background: rgba(99,102,241,0.25); color: #a5b4fc; }
+.faq-item.faq-open .faq-chevron {
+    transform: rotate(180deg);
+    color: #a5b4fc;
+}
 .faq-a {
     display: none;
-    padding: 0 22px 20px;
+    padding: 0 22px 22px;
     color: #94a3b8;
     font-size: 0.93rem;
     line-height: 1.7;
@@ -3835,7 +3781,7 @@ body {
     border: 1px solid rgba(99,102,241,0.35);
     border-radius: 16px;
     padding: 14px 18px;
-    display: none;
+    display: none;                          /* hidden by default */
     align-items: center;
     gap: 13px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
@@ -3855,6 +3801,7 @@ body {
     display: flex;
     transform: translateY(20px);
     opacity: 0;
+    pointer-events: none;
 }
 .sp-avatar {
     width: 38px;
@@ -3885,6 +3832,267 @@ body {
     .testi-grid { grid-template-columns: 1fr; }
     .sp-toast { left: 12px; right: 12px; max-width: calc(100% - 24px); }
     .ann-bar { font-size: 0.78rem; padding: 8px 36px 8px 12px; }
+}
+
+/* ============================================================
+   HERO STAT PILLS — light background context
+   ============================================================ */
+.stat-pill {
+    background: rgba(255,255,255,0.82);
+    border: 1px solid rgba(0,0,0,0.09);
+    border-radius: 50px;
+    padding: 7px 16px;
+    font-size: 0.82rem;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.stat-pill strong { color: #1e293b; font-weight: 700; }
+.stat-stars { color: #f59e0b; letter-spacing: -1px; font-size: 0.9rem; }
+.stat-divider { color: rgba(0,0,0,0.18); font-size: 1rem; }
+.stat-divider::before { content: '·'; }
+
+/* ============================================================
+   HERO CTA BUTTONS — updated for light hero background
+   ============================================================ */
+.btn-cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 30px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 6px 22px rgba(255,126,95,0.38);
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: -0.01em;
+}
+.btn-cta-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(255,126,95,0.52);
+    color: #fff;
+}
+.btn-cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 50px;
+    padding: 13px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+    letter-spacing: -0.01em;
+}
+.btn-cta-secondary:hover {
+    background: #f8fafc;
+    border-color: #ff7e5f;
+    color: #ff7e5f;
+    box-shadow: 0 4px 16px rgba(255,126,95,0.15);
+}
+
+.hero-cta-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+.hero-stats-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 50px;
+    padding: 8px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* ============================================================
+   SECTION EYEBROW
+   ============================================================ */
+.section-eyebrow {
+    display: inline-block;
+    background: rgba(255,126,95,0.1);
+    border: 1px solid rgba(255,126,95,0.22);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #ff7e5f;
+    margin-bottom: 14px;
+}
+
+/* ============================================================
+   HOW IT WORKS STEP NUMBER BADGE
+   ============================================================ */
+.hiw-step-num {
+    position: absolute;
+    top: -14px;
+    right: 18px;
+    font-size: 3rem;
+    font-weight: 800;
+    font-family: 'Outfit', sans-serif;
+    color: rgba(255,255,255,0.06);
+    letter-spacing: -0.05em;
+    line-height: 1;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* ============================================================
+   TESTIMONIAL STARS BANNER
+   ============================================================ */
+.testi-stars-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 18px auto 48px;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    color: #94a3b8;
+}
+.testi-stars-banner strong { color: #f1f5f9; font-size: 1.05rem; }
+.testi-stars-row { color: #f59e0b; font-size: 1.2rem; letter-spacing: -2px; }
+.testi-divider { color: rgba(255,255,255,0.2); }
+.testi-quote {
+    color: #a5b4fc;
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    line-height: 1;
+}
+.testi-card p {
+    color: #cbd5e1;
+    font-size: 0.92rem;
+    line-height: 1.68;
+    font-style: italic;
+    margin: 0 0 18px;
+}
+.testi-author-row .info strong { color: #f1f5f9; font-size: 0.9rem; display: block; }
+.testi-author-row .info span { color: #64748b; font-size: 0.78rem; }
+
+/* ============================================================
+   PRICING SECTION — richer cards
+   ============================================================ */
+.pricing .section-title { margin-bottom: 3.5rem; }
+.pricing .section-title h2::after { content: none !important; }
+
+.price-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+/* ============================================================
+   QUICK NAV SECTION
+   ============================================================ */
+.quick-nav-section {
+    background: linear-gradient(135deg, #fff8f4 0%, #f5f0ff 50%, #f0f9ff 100%);
+    padding: 100px 5%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ============================================================
+   SECTION TITLE UNDERLINE — remove auto-underline on dark bgs
+   ============================================================ */
+.hiw-section .section-title h2::after,
+.testi-section .section-title h2::after,
+.faq-inner .section-title h2::after { content: none !important; }
+
+/* ============================================================
+   SCROLL REVEAL for new sections
+   ============================================================ */
+.hiw-section,
+.testi-section,
+.faq-section {
+    scroll-margin-top: 80px;
+}
+
+/* ============================================================
+   FOOTER POLISH
+   ============================================================ */
+.saas-footer .logo span {
+    color: #f1f5f9;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+.saas-footer .logo i { color: #ff7e5f; }
+.footer-brand p { color: #94a3b8; font-size: 0.9rem; line-height: 1.65; margin: 14px 0; }
+.footer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-bottom: 16px;
+}
+.footer-badge i { color: #34d399; }
+.footer-links h5 { color: #f1f5f9; font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
+.footer-links a { color: #64748b; font-size: 0.9rem; display: block; margin-bottom: 10px; text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: #ff7e5f; }
+.footer-bottom p { color: #475569; font-size: 0.82rem; }
+.footer-bottom .heart { font-size: 0.9rem; }
+.social-links { display: flex; gap: 10px; margin-top: 14px; }
+.social-links a {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.social-links a:hover { background: #ff7e5f; color: #fff; border-color: #ff7e5f; }
+
+/* ============================================================
+   RESPONSIVE MOBILE
+   ============================================================ */
+@media (max-width: 768px) {
+    .hiw-section h2, .testi-section h2, .faq-inner h2 { font-size: 1.85rem; }
+    .hiw-grid { flex-direction: column; align-items: center; }
+    .hiw-arrow { transform: rotate(90deg); padding: 4px 0; }
+    .hiw-step { max-width: 100%; width: 100%; }
+    .hiw-step--featured { transform: scale(1); }
+    .testi-grid { grid-template-columns: 1fr; }
+    .sp-toast { left: 12px; right: 12px; max-width: calc(100% - 24px); }
+    .ann-bar { font-size: 0.78rem; padding: 8px 40px 8px 14px; }
+    .hero-stats-row { padding: 6px 14px; gap: 8px; }
+    .hero-cta-group { flex-direction: column; align-items: stretch; }
+    .btn-cta-primary, .btn-cta-secondary { justify-content: center; }
 }
 
 @keyframes recordPulse {
