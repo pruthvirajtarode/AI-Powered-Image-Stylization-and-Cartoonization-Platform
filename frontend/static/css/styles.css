@@ -1550,6 +1550,31 @@ h6 {
     }
 }
 
+/* Mobile-only auth links in hamburger menu (hidden on desktop) */
+.mobile-nav-auth {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-nav-auth {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px 0;
+        border-top: 1px solid #f8fafc;
+        font-weight: 600;
+        width: 100%;
+        color: var(--dark);
+        text-decoration: none;
+        font-size: 1rem;
+    }
+    /* Payment modal: better padding on small screens */
+    #paymentModal .app-container {
+        padding: 24px 20px !important;
+        width: 92%;
+    }
+}
+
 @media (max-width: 480px) {
     .hero h1 {
         font-size: 2.2rem;

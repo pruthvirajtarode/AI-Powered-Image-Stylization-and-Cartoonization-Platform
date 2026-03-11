@@ -23,7 +23,7 @@ DATABASE_PATH = os.getenv("DATABASE_PATH", str(BASE_DIR / "data" / "users.db"))
 # Payment Configuration
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY", "")
-PAYMENT_AMOUNT = int(os.getenv("PAYMENT_AMOUNT", "299"))  # in cents
+PAYMENT_AMOUNT = int(os.getenv("PAYMENT_AMOUNT", "33"))  # in cents
 PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY", "usd")
 
 # Razorpay Configuration (Alternative)

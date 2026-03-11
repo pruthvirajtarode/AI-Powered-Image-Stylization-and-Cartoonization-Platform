@@ -228,6 +228,92 @@ class Authentication:
             return False
 
     @staticmethod
+    def send_payment_success_email(receiver_email: str, username: str,
+                                   filename: str, download_url: str,
+                                   payment_id: str) -> bool:
+        """Send a beautiful payment success email with the download link."""
+        if not settings.SMTP_USER or not settings.SMTP_PASS:
+            print(f"DEBUG: Payment success email would be sent to {receiver_email} (download: {download_url})")
+            return False
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = settings.SMTP_SENDER
+            msg['To'] = receiver_email
+            msg['Subject'] = f"🎨 Your Toonify AI Artwork is Ready! — {settings.APP_NAME}"
+
+            body = f"""
+            <html>
+            <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;">
+              <div style="max-width:600px;margin:40px auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.08);">
+                <!-- Header -->
+                <div style="background:linear-gradient(135deg,#ff7e5f,#feb47b);padding:40px 40px 30px;text-align:center;">
+                  <div style="background:rgba(255,255,255,0.2);width:72px;height:72px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
+                    <span style="font-size:2.2rem;">🎨</span>
+                  </div>
+                  <h1 style="color:#fff;margin:0;font-size:1.9rem;font-weight:800;letter-spacing:-0.5px;">Payment Successful!</h1>
+                  <p style="color:rgba(255,255,255,0.88);margin:8px 0 0;font-size:1rem;">Your AI-stylized artwork is ready</p>
+                </div>
+                <!-- Body -->
+                <div style="padding:36px 40px;">
+                  <p style="color:#1e293b;font-size:1.05rem;margin:0 0 8px;">Hi <strong>{username}</strong>,</p>
+                  <p style="color:#475569;font-size:0.97rem;margin:0 0 28px;line-height:1.7;">
+                    Thank you for your purchase! 🙌 Your neural artwork has been generated and is ready for download.
+                    The high-resolution export is waiting below — no watermark, full quality.
+                  </p>
+                  <!-- Download CTA -->
+                  <div style="text-align:center;margin-bottom:28px;">
+                    <a href="{download_url}"
+                       style="display:inline-block;background:linear-gradient(135deg,#ff7e5f,#feb47b);color:#fff;font-size:1.05rem;font-weight:700;padding:16px 40px;border-radius:50px;text-decoration:none;box-shadow:0 8px 24px rgba(255,126,95,0.35);">
+                      ⬇️ &nbsp; Download Your Artwork
+                    </a>
+                    <p style="color:#94a3b8;font-size:0.78rem;margin:10px 0 0;">Link expires in 1 hour for your security</p>
+                  </div>
+                  <!-- Transaction info -->
+                  <div style="background:#f8fafc;border-radius:12px;padding:16px 20px;margin-bottom:28px;border:1px solid #e2e8f0;">
+                    <p style="margin:0 0 6px;color:#64748b;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Transaction Details</p>
+                    <table style="width:100%;border-collapse:collapse;">
+                      <tr>
+                        <td style="color:#94a3b8;font-size:0.85rem;padding:4px 0;">Payment ID</td>
+                        <td style="color:#1e293b;font-size:0.85rem;font-family:monospace;text-align:right;">{payment_id}</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#94a3b8;font-size:0.85rem;padding:4px 0;">Amount</td>
+                        <td style="color:#22c55e;font-size:0.85rem;font-weight:700;text-align:right;">$0.33</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#94a3b8;font-size:0.85rem;padding:4px 0;">Status</td>
+                        <td style="color:#22c55e;font-size:0.85rem;font-weight:700;text-align:right;">✅ Completed</td>
+                      </tr>
+                    </table>
+                  </div>
+                  <p style="color:#94a3b8;font-size:0.85rem;line-height:1.6;margin:0;">
+                    Need help? Simply reply to this email and we'll be happy to assist.
+                  </p>
+                </div>
+                <!-- Footer -->
+                <div style="background:#f8fafc;padding:20px 40px;border-top:1px solid #e2e8f0;text-align:center;">
+                  <p style="color:#94a3b8;font-size:0.78rem;margin:0;">
+                    &copy; 2026 {settings.APP_NAME}.AI &mdash; Powered by Neural Engine<br>
+                    You received this because you made a purchase on Toonify AI.
+                  </p>
+                </div>
+              </div>
+            </body>
+            </html>
+            """
+            msg.attach(MIMEText(body, 'html'))
+
+            server = smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT)
+            server.starttls()
+            server.login(settings.SMTP_USER, settings.SMTP_PASS)
+            server.send_message(msg)
+            server.quit()
+            return True
+        except Exception as e:
+            print(f"ERROR: Failed to send payment success email: {e}")
+            return False
+
+    @staticmethod
     def verify_email_code(email: str, code: str) -> Tuple[bool, str]:
         """Verify the 6-digit code sent to user's email"""
         # Dev Mode Bypass

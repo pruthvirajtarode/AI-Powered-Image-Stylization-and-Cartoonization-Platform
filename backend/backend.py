@@ -558,17 +558,61 @@ def create_razorpay_order():
 def verify_razorpay_payment():
     data = request.json
     from modules.payment import razorpay_processor
-    
+
     success = razorpay_processor.verify_payment(
         data.get('razorpay_order_id'),
         data.get('razorpay_payment_id'),
         data.get('razorpay_signature')
     )
-    
+
+    download_url = None
+    payment_id = data.get('razorpay_payment_id', '')
+    user_email = ''
+
     if success and 'user' in session:
-        db.log_user_activity(session['user']['id'], "payment", "Successful Razorpay transaction")
-        
-    return jsonify({"success": success})
+        user_id = session['user']['id']
+        user_email = session['user'].get('email', '')
+        username = session['user'].get('username', 'User')
+        filename = data.get('image_filename', '')
+        format_ext = data.get('format', 'jpg')
+        quality = data.get('quality', 95)
+
+        db.log_user_activity(user_id, "payment", "Successful Razorpay transaction")
+
+        # Generate a signed 1-hour download token
+        try:
+            token = download_serializer.dumps({"u": user_id, "f": filename})
+            download_url = f"/api/user/download?filename={filename}&format={format_ext}&quality={quality}&token={token}"
+        except Exception:
+            download_url = f"/api/user/download?filename={filename}&format={format_ext}&quality={quality}"
+
+        # Send payment success email in a background thread
+        if user_email and filename:
+            import threading
+            _app = app
+            _email = user_email
+            _username = username
+            _full_url = request.host_url.rstrip('/') + (download_url or '')
+            _pid = payment_id
+
+            def _send_email_bg():
+                with _app.app_context():
+                    try:
+                        from modules.authentication import Authentication
+                        Authentication.send_payment_success_email(
+                            _email, _username, filename, _full_url, _pid
+                        )
+                    except Exception as e:
+                        print(f"Payment email failed: {e}")
+
+            threading.Thread(target=_send_email_bg, daemon=True).start()
+
+    return jsonify({
+        "success": success,
+        "download_url": download_url,
+        "payment_id": payment_id,
+        "email": user_email
+    })
 
 @app.route('/api/payment/subscribe', methods=['POST'])
 def subscribe_plan():

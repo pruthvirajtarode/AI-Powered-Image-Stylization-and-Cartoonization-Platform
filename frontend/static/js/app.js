@@ -1389,6 +1389,54 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.closePayment = () => { document.getElementById('paymentModal').style.display = 'none'; };
 
+    // --- PAYMENT SUCCESS MODAL ---
+    window.showPaySuccess = (downloadUrl, paymentId, email, format, quality) => {
+        const modal = document.getElementById('paySuccessModal');
+        const dlBtn = document.getElementById('paySuccessDownloadBtn');
+        const txnEl = document.getElementById('paySuccessTxnId');
+        const emailEl = document.getElementById('paySuccessEmailMsg');
+
+        if (dlBtn) dlBtn.href = downloadUrl || '#';
+        if (txnEl) txnEl.textContent = paymentId || 'N/A';
+        if (emailEl) emailEl.textContent = email ? '\u{1F4E7} Download link sent to: ' + email : '';
+
+        if (modal) {
+            modal.style.display = 'flex';
+            _launchConfetti();
+        }
+    };
+
+    window.closePaySuccess = () => {
+        const modal = document.getElementById('paySuccessModal');
+        if (modal) modal.style.display = 'none';
+        const c = document.getElementById('confettiContainer');
+        if (c) c.innerHTML = '';
+    };
+
+    function _launchConfetti() {
+        const container = document.getElementById('confettiContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        const colors = ['#ff7e5f','#feb47b','#22c55e','#3b82f6','#a855f7','#f59e0b','#ec4899'];
+        for (let i = 0; i < 70; i++) {
+            const dot = document.createElement('div');
+            const size = 5 + Math.random() * 8;
+            const isRect = Math.random() > 0.5;
+            dot.style.cssText = [
+                'position:absolute',
+                `width:${size}px`,
+                `height:${isRect ? size * 0.4 : size}px`,
+                `background:${colors[Math.floor(Math.random()*colors.length)]}`,
+                `border-radius:${isRect ? '2px' : '50%'}`,
+                `left:${Math.random()*100}%`,
+                'top:-20px',
+                `opacity:${0.7 + Math.random()*0.3}`,
+                `animation:confettiFall ${1.4 + Math.random()*2}s linear ${Math.random()*1.2}s forwards`
+            ].join(';');
+            container.appendChild(dot);
+        }
+    }
+
     window.processPayment = async () => {
         const payBtn = document.getElementById('payBtn');
         const isUpgrade = payBtn.dataset.type === 'subscription';
@@ -1408,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    amount: isUpgrade ? 1900 : 299, // INR prices
+                    amount: isUpgrade ? 1900 : 28, // INR prices
                     image_filename: window.currentImage
                 })
             });
@@ -1438,21 +1486,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: JSON.stringify({
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature
+                            razorpay_signature: response.razorpay_signature,
+                            image_filename: window.currentImage,
+                            format: format,
+                            quality: quality
                         })
                     });
                     const verifyData = await verifyRes.json();
 
                     if (verifyData.success) {
+                        closePayment();
                         if (isUpgrade) {
                             alert("🌟 VIP Upgrade Successful! You now have Unlimited 4K Generations.");
                             location.reload();
                         } else {
-                            alert("💎 Payment Successful! Starting your high-res download...");
-                            const url = `/api/user/download?filename=${window.currentImage}&format=${format}&quality=${quality}`;
-                            window.location.href = url;
+                            showPaySuccess(
+                                verifyData.download_url,
+                                verifyData.payment_id,
+                                verifyData.email,
+                                format,
+                                quality
+                            );
                         }
-                        closePayment();
                     } else {
                         alert("Signature mismatch. Verification failed.");
                     }
@@ -1658,6 +1713,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Session is valid
                 if (loginBtn) loginBtn.style.display = 'none';
                 profileContainer.style.display = 'block';
+                // Mobile hamburger auth links
+                const mobileLoginLink = document.getElementById('mobileLoginLink');
+                const mobileDashLink = document.getElementById('mobileDashLink');
+                const mobileLogoutLink = document.getElementById('mobileLogoutLink');
+                if (mobileLoginLink) mobileLoginLink.style.display = 'none';
+                if (mobileDashLink) mobileDashLink.style.removeProperty('display');
+                if (mobileLogoutLink) mobileLogoutLink.style.removeProperty('display');
 
                 profileBtn.innerHTML = `
                     <img src="/static/images/hero_boy_pixar_1772354102626.png" class="profile-avatar" alt="User ${data.user.username}">
@@ -1706,6 +1768,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('toonify_user');
                 if (loginBtn) loginBtn.style.display = 'block';
                 profileContainer.style.display = 'none';
+                // Mobile hamburger auth links
+                const mobileLoginLink = document.getElementById('mobileLoginLink');
+                const mobileDashLink = document.getElementById('mobileDashLink');
+                const mobileLogoutLink = document.getElementById('mobileLogoutLink');
+                if (mobileLoginLink) mobileLoginLink.style.removeProperty('display');
+                if (mobileDashLink) mobileDashLink.style.display = 'none';
+                if (mobileLogoutLink) mobileLogoutLink.style.display = 'none';
             }
         } catch (err) {
             console.error("Session sync failed:", err);
