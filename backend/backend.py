@@ -581,12 +581,15 @@ def verify_razorpay_payment():
 
         db.log_user_activity(user_id, "payment", "Successful Razorpay transaction")
 
-        # Generate a signed 1-hour download token
+        # Generate a signed 7-day download token for the modal button
         try:
             token = download_serializer.dumps({"u": user_id, "f": filename})
             download_url = f"/api/user/download?filename={filename}&format={format_ext}&quality={quality}&token={token}"
         except Exception:
             download_url = f"/api/user/download?filename={filename}&format={format_ext}&quality={quality}"
+
+        # Permanent download URL for email — based on payment_id, never expires
+        permanent_url = request.host_url.rstrip('/') + f"/api/download/{payment_id}"
 
         # Send payment success email in a background thread
         email_sent = False
@@ -599,7 +602,6 @@ def verify_razorpay_payment():
                 _app = app
                 _email = user_email
                 _username = username
-                _full_url = request.host_url.rstrip('/') + (download_url or '')
                 _pid = payment_id
                 _image_path = str(settings.TEMP_FOLDER / filename) if filename else None
 
@@ -607,7 +609,7 @@ def verify_razorpay_payment():
                     with _app.app_context():
                         try:
                             Authentication.send_payment_success_email(
-                                _email, _username, filename, _full_url, _pid, _image_path
+                                _email, _username, filename, permanent_url, _pid, _image_path
                             )
                         except Exception as e:
                             print(f"Payment email failed: {e}")
@@ -740,6 +742,44 @@ def get_download_token():
     token = download_serializer.dumps({"u": user_id, "f": filename})
     return jsonify({"success": True, "token": token})
 
+
+@app.route('/api/download/<payment_id>')
+def permanent_download(payment_id):
+    """
+    Permanent download endpoint linked to a Razorpay payment ID.
+    No expiry — works as long as the file exists on the server.
+    Sent in payment confirmation emails.
+    """
+    transaction = db.get_transaction_by_id(payment_id)
+    if not transaction or transaction.get('status') != 'completed':
+        return "Payment record not found or not completed.", 404
+
+    filename = transaction.get('image_filename', '')
+    if not filename:
+        return "No image linked to this payment.", 404
+
+    file_path = settings.TEMP_FOLDER / filename
+    if not file_path.exists():
+        return (
+            "<h2 style='font-family:sans-serif;color:#e53e3e;text-align:center;margin-top:60px'>File Not Available</h2>"
+            "<p style='font-family:sans-serif;text-align:center;color:#555'>"
+            "This image was processed on a previous server session and is no longer stored.<br>"
+            "Please re-upload and re-process your image on "
+            "<a href='https://toonify.live'>toonify.live</a> — your payment is recorded."
+            "</p>",
+            410
+        )
+
+    img = cv2.imread(str(file_path))
+    _, img_encoded = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 95])
+    return send_file(
+        io.BytesIO(img_encoded),
+        mimetype='image/jpeg',
+        as_attachment=True,
+        download_name=f"toonify_{filename}"
+    )
+
+
 @app.route('/api/user/download')
 def secure_download():
     """
@@ -756,7 +796,7 @@ def secure_download():
     is_pro = False
     if token:
         try:
-            data = download_serializer.loads(token, max_age=3600) # 1 hour validity
+            data = download_serializer.loads(token, max_age=604800) # 7 day validity
             filename = data['f']
             user_id = data['u']
             is_pro = False  # Token users still need to have paid

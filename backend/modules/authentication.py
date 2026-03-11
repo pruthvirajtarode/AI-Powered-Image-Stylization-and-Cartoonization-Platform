@@ -270,7 +270,7 @@ class Authentication:
                        style="display:inline-block;background:linear-gradient(135deg,#ff7e5f,#feb47b);color:#fff;font-size:1.05rem;font-weight:700;padding:16px 40px;border-radius:50px;text-decoration:none;box-shadow:0 8px 24px rgba(255,126,95,0.35);">
                       ⬇️ &nbsp; Download Your Artwork
                     </a>
-                    <p style="color:#94a3b8;font-size:0.78rem;margin:10px 0 0;">Link expires in 1 hour for your security</p>
+                    <p style="color:#94a3b8;font-size:0.78rem;margin:10px 0 0;">This link does not expire — you can download anytime</p>
                   </div>
                   <!-- Transaction info -->
                   <div style="background:#f8fafc;border-radius:12px;padding:16px 20px;margin-bottom:28px;border:1px solid #e2e8f0;">
