@@ -38,6 +38,16 @@
     <img src="/static/images/hero_pixar_1772353027026.png" class="bg-art art-top-right" alt="">
     <img src="/static/images/hero_boy_pixar_1772354102626.png" class="bg-art art-bottom-left" alt="">
 
+    <!-- Announcement Bar -->
+    <div class="ann-bar" id="annBar">
+        <div class="ann-inner">
+            <span class="ann-pill">🚀 NEW</span>
+            <span class="ann-msg">Introducing <strong>9 AI Art Styles</strong> + Batch Processing + AR Camera — all free to try!</span>
+            <a href="#app" class="ann-btn">Try Now →</a>
+        </div>
+        <button class="ann-close" onclick="document.getElementById('annBar').style.display='none'" aria-label="Close">&times;</button>
+    </div>
+
     <!-- SaaS Navbar -->
     <nav class="navbar"
         style="padding: 12px 5%; height: 75px; display: flex; align-items: center; gap: 32px; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,126,95,0.12); box-shadow: 0 2px 30px rgba(0,0,0,0.06); position: sticky; top:0; z-index:1000;">
@@ -609,6 +619,52 @@
         </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- HOW IT WORKS -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <section class="hiw-section" id="how-it-works">
+        <div class="section-title">
+            <div class="section-eyebrow">Simple Process</div>
+            <h2 style="color:#1e293b;-webkit-text-fill-color:#1e293b;">Transform in <span style="background:linear-gradient(135deg,#ff7e5f,#feb47b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">3 Steps</span></h2>
+            <p style="color:#64748b;-webkit-text-fill-color:#64748b;">No design skills needed. Upload, choose a style, and download your AI masterpiece — in under 10 seconds.</p>
+        </div>
+        <div class="hiw-grid">
+            <div class="hiw-step">
+                <div class="hiw-step-num">01</div>
+                <div class="hiw-icon-wrap" style="background:linear-gradient(135deg,rgba(255,126,95,0.15),rgba(254,180,123,0.1));">
+                    <i class="fas fa-cloud-arrow-up" style="color:#ff7e5f;"></i>
+                </div>
+                <h3>Upload Your Photo</h3>
+                <p>Drag &amp; drop any portrait, landscape, or pet photo. Supports JPG &amp; PNG up to 10MB. Batch upload multiple files at once.</p>
+                <div class="hiw-chip"><i class="fas fa-bolt" style="color:#f59e0b;"></i> Instant preview</div>
+            </div>
+            <div class="hiw-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="hiw-step hiw-step--featured">
+                <div class="hiw-step-num">02</div>
+                <div class="hiw-icon-wrap" style="background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(165,180,252,0.1));">
+                    <i class="fas fa-wand-magic-sparkles" style="color:#6366f1;"></i>
+                </div>
+                <h3>Pick an AI Style</h3>
+                <p>Choose from 9 pro neural styles — 3D Pixar, Anime, Comic Book, Studio Ghibli, Oil Painting and more. Each powered by a dedicated neural model.</p>
+                <div class="hiw-chip"><i class="fas fa-palette" style="color:#6366f1;"></i> 9 unique styles</div>
+            </div>
+            <div class="hiw-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="hiw-step">
+                <div class="hiw-step-num">03</div>
+                <div class="hiw-icon-wrap" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(134,239,172,0.1));">
+                    <i class="fas fa-download" style="color:#22c55e;"></i>
+                </div>
+                <h3>Download Your Art</h3>
+                <p>Export in 4K Ultra-HD as JPG, PNG, or PDF. Your artwork is sent to your email and ready for social media, print, or NFT minting.</p>
+                <div class="hiw-chip"><i class="fas fa-star" style="color:#22c55e;"></i> 4K Ultra-HD</div>
+            </div>
+        </div>
+        <div class="hiw-cta-row">
+            <a href="#app" class="btn-cta-primary"><i class="fas fa-rocket"></i> Start Creating Free</a>
+            <span class="hiw-note"><i class="fas fa-lock" style="color:#94a3b8;font-size:0.85rem;"></i> No credit card required for free plan</span>
+        </div>
+    </section>
+
     <!-- SaaS App Dashboard Section -->
     <section class="app-section" id="app">
         <div class="app-container">
@@ -1064,6 +1120,97 @@
         </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- TESTIMONIALS -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <section class="testi-section" id="reviews">
+        <div class="section-title">
+            <div class="section-eyebrow">Customer Reviews</div>
+            <h2 style="color:#1e293b;-webkit-text-fill-color:#1e293b;">Loved by <span style="background:linear-gradient(135deg,#ff7e5f,#feb47b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">2M+ Creators</span></h2>
+            <p style="color:#64748b;-webkit-text-fill-color:#64748b;">Join photographers, artists, and content creators already transforming their work.</p>
+        </div>
+        <div class="testi-stars-banner">
+            <span class="testi-stars-row">★★★★★</span>
+            <strong>4.9 / 5</strong>
+            <span class="testi-divider">·</span>
+            <span>12,400+ verified reviews</span>
+        </div>
+        <div class="testi-grid">
+            <div class="testi-card">
+                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
+                <div class="testi-rating">★★★★★</div>
+                <p>"Toonify blew my mind. I converted 50 family photos into Pixar-style portraits in under 5 minutes. The quality looks like a professional art studio did it — my clients are OBSESSED."</p>
+                <div class="testi-author-row">
+                    <div class="testi-ava" style="background:linear-gradient(135deg,#ff7e5f,#feb47b);">P</div>
+                    <div>
+                        <strong>Priya S.</strong>
+                        <span>Portrait Photographer · Mumbai</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testi-card testi-card--featured">
+                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
+                <div class="testi-rating">★★★★★</div>
+                <p>"We use Toonify for all our social media content. The anime and comic book styles consistently go viral. Our Instagram engagement went up 340% after switching to AI-stylized posts."</p>
+                <div class="testi-author-row">
+                    <div class="testi-ava" style="background:linear-gradient(135deg,#6366f1,#a855f7);">R</div>
+                    <div>
+                        <strong>Rahul M.</strong>
+                        <span>Content Creator · 2.1M followers</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testi-card">
+                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
+                <div class="testi-rating">★★★★★</div>
+                <p>"The batch processing is a game changer. I process entire wedding albums into cartoon portraits for clients. The download email link makes it so easy — just click and download anytime."</p>
+                <div class="testi-author-row">
+                    <div class="testi-ava" style="background:linear-gradient(135deg,#22c55e,#16a34a);">A</div>
+                    <div>
+                        <strong>Aditya K.</strong>
+                        <span>Wedding Photographer · Pune</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testi-card">
+                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
+                <div class="testi-rating">★★★★★</div>
+                <p>"As a game concept artist, I use Toonify to prototype character styles instantly. The Studio Ghibli and anime modes are phenomenally accurate. Saves me hours every single week."</p>
+                <div class="testi-author-row">
+                    <div class="testi-ava" style="background:linear-gradient(135deg,#f59e0b,#d97706);">S</div>
+                    <div>
+                        <strong>Sneha T.</strong>
+                        <span>Game Concept Artist · Bangalore</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testi-card">
+                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
+                <div class="testi-rating">★★★★★</div>
+                <p>"I gifted my parents cartoon versions of their wedding photos as an anniversary present. They cried. The 3D Pixar style is so heartwarming. Best ₹28 I've ever spent — seriously."</p>
+                <div class="testi-author-row">
+                    <div class="testi-ava" style="background:linear-gradient(135deg,#ec4899,#be185d);">V</div>
+                    <div>
+                        <strong>Vikas P.</strong>
+                        <span>Software Engineer · Delhi</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testi-card">
+                <div class="testi-quote"><i class="fas fa-quote-left"></i></div>
+                <div class="testi-rating">★★★★★</div>
+                <p>"I run an online merch store. Toonify lets me turn customer selfies into custom comic prints. The API integration on the Elite plan streamlined everything. ROI in the first week."</p>
+                <div class="testi-author-row">
+                    <div class="testi-ava" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">N</div>
+                    <div>
+                        <strong>Neha R.</strong>
+                        <span>Merch Store Founder · Hyderabad</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- SaaS Pricing Table -->
     <section class="pricing" id="pricing"
         style="background:linear-gradient(135deg,#ffffff 0%,#f8faff 50%,#ffffff 100%); padding:8rem 8%; position:relative; overflow:hidden;">
@@ -1146,6 +1293,93 @@
                 <button onclick="contactSales()"
                     style="width:100%;padding:1rem;border-radius:14px;background:rgba(99,102,241,0.08);color:#475569;border:1px solid rgba(99,102,241,0.2);font-weight:800;font-size:1rem;cursor:pointer;transition:all 0.3s;">Contact
                     Sales</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- FAQ -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <section class="faq-section" id="faq">
+        <div class="faq-inner">
+            <div class="section-title">
+                <div class="section-eyebrow">Got Questions?</div>
+                <h2 style="color:#1e293b;-webkit-text-fill-color:#1e293b;">Frequently Asked <span style="background:linear-gradient(135deg,#ff7e5f,#feb47b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Questions</span></h2>
+                <p style="color:#64748b;-webkit-text-fill-color:#64748b;">Everything you need to know about Toonify AI.</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        <span>What AI styles does Toonify support?</span>
+                        <i class="fas fa-chevron-down faq-chevron"></i>
+                    </button>
+                    <div class="faq-a">
+                        <p>Toonify offers <strong>9 professional neural styles</strong>: 3D Pixar, Anime, Comic Book, Studio Ghibli, Oil Painting, Watercolor, Digital Sketch, Pop Art, and Vintage. Each style is powered by a dedicated, purpose-trained neural model for the highest quality output.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        <span>How long does it take to process a photo?</span>
+                        <i class="fas fa-chevron-down faq-chevron"></i>
+                    </button>
+                    <div class="faq-a">
+                        <p>Most photos are processed in <strong>under 10 seconds</strong>. Processing time may vary slightly based on image complexity, selected style, and server load. Pro and Elite users get priority GPU queue access for the fastest speeds.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        <span>Is there a free plan? What are the limits?</span>
+                        <i class="fas fa-chevron-down faq-chevron"></i>
+                    </button>
+                    <div class="faq-a">
+                        <p>Yes! The <strong>Starter (free) plan</strong> gives you 5 AI transformations per day with standard quality output. You can preview your result without paying. To download the full watermark-free version, a one-time payment of ₹28 is charged per image. Upgrade to Pro (₹1,900/month) for unlimited generations and 4K export.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        <span>How does the download email link work?</span>
+                        <i class="fas fa-chevron-down faq-chevron"></i>
+                    </button>
+                    <div class="faq-a">
+                        <p>After a successful payment, Toonify automatically sends a <strong>permanent download link</strong> to your registered email address. Unlike many services, this link <strong>never expires</strong> — you can click it days or weeks later to re-download your artwork anytime. The link is tied to your payment ID and is fully secure.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        <span>What image formats can I download?</span>
+                        <i class="fas fa-chevron-down faq-chevron"></i>
+                    </button>
+                    <div class="faq-a">
+                        <p>You can download your artwork as <strong>Standard JPEG (.jpg)</strong>, <strong>Lossless PNG (.png)</strong>, or <strong>Document PDF (.pdf)</strong>. Pro and Elite users can export at up to 4K Ultra-HD resolution (100% quality). Perfect for social media, print, canvas, or NFT minting.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        <span>Is my uploaded photo private and secure?</span>
+                        <i class="fas fa-chevron-down faq-chevron"></i>
+                    </button>
+                    <div class="faq-a">
+                        <p>Absolutely. All uploads are processed over <strong>HTTPS encrypted channels</strong>. We do not train our AI models on your personal photos, and we do not share your images with third parties. Processed files are stored temporarily and not used for any purpose beyond delivering your output.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        <span>Can I batch process multiple photos at once?</span>
+                        <i class="fas fa-chevron-down faq-chevron"></i>
+                    </button>
+                    <div class="faq-a">
+                        <p>Yes! Toonify supports <strong>batch processing</strong> — upload multiple images at once, assign different styles to each, and process them all in one click. The results appear in a grid view for easy comparison. Pro users can batch up to 20 images, Elite users have no batch limit.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        <span>What payment methods are accepted?</span>
+                        <i class="fas fa-chevron-down faq-chevron"></i>
+                    </button>
+                    <div class="faq-a">
+                        <p>We use <strong>Razorpay</strong> for all payments in India. You can pay via UPI (GPay, PhonePe, BHIM, Paytm), debit/credit cards (Visa, Mastercard, RuPay), net banking, and wallets. All transactions are 256-bit SSL secured. We never store your payment details.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -1803,6 +2037,58 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
         })();
+    </script>
+
+    <!-- Social Proof Live Toast -->
+    <div id="spToast" class="sp-toast" aria-live="polite">
+        <div class="sp-avatar" id="spAva"></div>
+        <div class="sp-body">
+            <strong id="spName"></strong>
+            <span id="spMsg"></span>
+        </div>
+    </div>
+
+    <script>
+    // FAQ accordion
+    function toggleFaq(btn) {
+        var item = btn.parentElement;
+        var isOpen = item.classList.contains('faq-open');
+        document.querySelectorAll('.faq-item').forEach(function(i){ i.classList.remove('faq-open'); });
+        if (!isOpen) item.classList.add('faq-open');
+    }
+
+    // Social proof notifications
+    (function(){
+        var proofs = [
+            {name:'Rahul from Mumbai',color:'#ff7e5f',letter:'R',msg:'just created an Anime-style portrait ✨'},
+            {name:'Priya from Delhi',color:'#6366f1',letter:'P',msg:'downloaded a 4K Pixar artwork 🎨'},
+            {name:'Amit from Pune',color:'#22c55e',letter:'A',msg:'batch-processed 8 photos in Comic style 🦸'},
+            {name:'Sneha from Bangalore',color:'#f59e0b',letter:'S',msg:'minted a Studio Ghibli NFT 🌿'},
+            {name:'Vikram from Hyderabad',color:'#ec4899',letter:'V',msg:'just upgraded to Creator Pro ⭐'},
+            {name:'Neha from Chennai',color:'#0ea5e9',letter:'N',msg:'exported an Oil Painting in PDF 🖼️'},
+            {name:'Arjun from Kolkata',color:'#a855f7',letter:'A',msg:'used the AR Camera lens feature 📸'},
+        ];
+        var idx = 0;
+        function showToast(){
+            var p = proofs[idx % proofs.length]; idx++;
+            var toast = document.getElementById('spToast');
+            var ava = document.getElementById('spAva');
+            ava.textContent = p.letter;
+            ava.style.background = p.color;
+            document.getElementById('spName').textContent = p.name;
+            document.getElementById('spMsg').textContent = ' ' + p.msg;
+            toast.classList.add('sp-toast--in');
+            setTimeout(function(){
+                toast.classList.remove('sp-toast--in');
+                toast.classList.add('sp-toast--out');
+                setTimeout(function(){ toast.classList.remove('sp-toast--out'); }, 600);
+            }, 4000);
+        }
+        setTimeout(function(){
+            showToast();
+            setInterval(showToast, 11000);
+        }, 6000);
+    })();
     </script>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
