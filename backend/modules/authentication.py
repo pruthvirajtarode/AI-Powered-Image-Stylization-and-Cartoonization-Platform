@@ -7,8 +7,11 @@ from typing import Optional, Tuple
 from datetime import datetime, timedelta
 import random
 import smtplib
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 from modules.database import db
 import config.settings as settings
 
@@ -230,8 +233,9 @@ class Authentication:
     @staticmethod
     def send_payment_success_email(receiver_email: str, username: str,
                                    filename: str, download_url: str,
-                                   payment_id: str) -> bool:
-        """Send a beautiful payment success email with the download link."""
+                                   payment_id: str,
+                                   image_path: str = None) -> bool:
+        """Send a beautiful payment success email with the download link and image attachment."""
         if not settings.SMTP_USER or not settings.SMTP_PASS:
             print(f"DEBUG: Payment success email would be sent to {receiver_email} (download: {download_url})")
             return False

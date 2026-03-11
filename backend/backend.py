@@ -596,13 +596,14 @@ def verify_razorpay_payment():
             _username = username
             _full_url = request.host_url.rstrip('/') + (download_url or '')
             _pid = payment_id
+            _image_path = str(settings.TEMP_FOLDER / filename) if filename else None
 
             def _send_email_bg():
                 with _app.app_context():
                     try:
                         from modules.authentication import Authentication
                         Authentication.send_payment_success_email(
-                            _email, _username, filename, _full_url, _pid
+                            _email, _username, filename, _full_url, _pid, _image_path
                         )
                     except Exception as e:
                         print(f"Payment email failed: {e}")
