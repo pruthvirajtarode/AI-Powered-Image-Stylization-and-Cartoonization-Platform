@@ -55,7 +55,7 @@ Back in Meta Dashboard, WhatsApp > **Webhook Settings**:
 1. Click **Setup Webhook**
 2. **Callback URL:** 
    ```
-   https://toonify-ai-saas.onrender.com/api/whatsapp/webhook
+   https://toonify.live/api/whatsapp/webhook
    ```
 3. **Verify Token:** 
    ```

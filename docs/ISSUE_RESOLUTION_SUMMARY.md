@@ -21,7 +21,7 @@
 **Problem:** "Access blocked: Authorisation error" when trying to sign in with Google.
 
 **Root Cause:** 
-Your production URL `https://toonify-ai-saas.onrender.com` is not registered as an authorized JavaScript origin in Google Cloud Console.
+Your production URL `https://toonify.live` is not registered as an authorized JavaScript origin in Google Cloud Console.
 
 **What you need to do:**
 Follow the step-by-step guide in `GOOGLE_OAUTH_FIX_GUIDE.md` to:

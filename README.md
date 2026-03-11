@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="https://toonify-ai-saas.onrender.com/"><strong>🚀 Live Demo: toonify-ai-saas.onrender.com</strong></a>
+  <a href="https://toonify.live/"><strong>🚀 Live Demo: toonify.live</strong></a>
 </p>
 
 ---

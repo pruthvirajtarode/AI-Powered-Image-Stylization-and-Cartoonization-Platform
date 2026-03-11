@@ -3,7 +3,7 @@
 ## Issue
 Your Google OAuth is showing: **"Access blocked: Authorisation error"**
 
-This happens because the JavaScript origin `https://toonify-ai-saas.onrender.com` is not registered in your Google Cloud Console.
+This happens because the JavaScript origin `https://toonify.live` is not registered in your Google Cloud Console.
 
 ---
 
@@ -25,7 +25,7 @@ In the **Authorized JavaScript origins** section:
 
 **Add these URLs:**
 ```
-https://toonify-ai-saas.onrender.com
+https://toonify.live
 http://localhost:5000
 ```
 
@@ -34,8 +34,8 @@ In the **Authorized redirect URIs** section:
 
 **Add these URLs:**
 ```
-https://toonify-ai-saas.onrender.com
-https://toonify-ai-saas.onrender.com/
+https://toonify.live
+https://toonify.live/
 http://localhost:5000
 http://localhost:5000/
 ```
@@ -72,7 +72,7 @@ GOOGLE_CLIENT_ID=your_actual_client_id_here.apps.googleusercontent.com
 
 After completing all steps and waiting 5-10 minutes:
 
-1. Visit: https://toonify-ai-saas.onrender.com/
+1. Visit: https://toonify.live/
 2. Click **Login**
 3. Click **"Continue with Google"** button
 4. You should now be able to authenticate successfully! ✅
@@ -96,8 +96,8 @@ After completing all steps and waiting 5-10 minutes:
 ### Issue: Redirect URI mismatch
 **Solution:**
 - Make sure you added BOTH:
-  - `https://toonify-ai-saas.onrender.com`
-  - `https://toonify-ai-saas.onrender.com/`
+  - `https://toonify.live`
+  - `https://toonify.live/`
 - Both versions (with and without trailing slash) are needed
 
 ---
@@ -108,14 +108,14 @@ After completing all steps and waiting 5-10 minutes:
 
 **Authorized JavaScript origins:**
 ```
-https://toonify-ai-saas.onrender.com
+https://toonify.live
 http://localhost:5000
 ```
 
 **Authorized redirect URIs:**
 ```
-https://toonify-ai-saas.onrender.com
-https://toonify-ai-saas.onrender.com/
+https://toonify.live
+https://toonify.live/
 http://localhost:5000
 http://localhost:5000/
 ```

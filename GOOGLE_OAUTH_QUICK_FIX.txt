@@ -15,7 +15,7 @@
 ────────────────────────────────────────────────────────────────
 Copy and paste each line separately:
 
-https://toonify-ai-saas.onrender.com
+https://toonify.live
 http://localhost:5000
 
 ────────────────────────────────────────────────────────────────
@@ -24,8 +24,8 @@ http://localhost:5000
 ────────────────────────────────────────────────────────────────
 Copy and paste each line separately:
 
-https://toonify-ai-saas.onrender.com
-https://toonify-ai-saas.onrender.com/
+https://toonify.live
+https://toonify.live/
 http://localhost:5000
 http://localhost:5000/
 
@@ -63,7 +63,7 @@ Total: ~15-20 minutes
 
 🧪 VERIFY IT WORKS
 ────────────────────────────────────────────────────────────────
-1. Go to: https://toonify-ai-saas.onrender.com/
+1. Go to: https://toonify.live/
 2. Click "Login"
 3. Click "Continue with Google" button
 4. Should redirect to Google sign-in

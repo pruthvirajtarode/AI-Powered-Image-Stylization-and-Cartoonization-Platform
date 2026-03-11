@@ -251,7 +251,7 @@ class WhatsAppProcessor:
 
 🚀 Powered by AI Image Stylization Technology
 
-Need help? Visit: https://toonify-ai-saas.onrender.com"""
+Need help? Visit: https://toonify.live"""
                 
                 self.send_message(sender_phone, help_text)
                 
@@ -299,7 +299,7 @@ Need help? Visit: https://toonify-ai-saas.onrender.com"""
                 return None
             
             # Send the image with caption
-            caption = f"✨ Your {style_name} Style Photo\n\n🎨 Powered by Toonify AI\n📱 Download high quality: https://toonify-ai-saas.onrender.com"
+            caption = f"✨ Your {style_name} Style Photo\n\n🎨 Powered by Toonify AI\n📱 Download high quality: https://toonify.live"
             
             # WhatsApp doesn't support captions for images in the media object,
             # so send text message first, then image

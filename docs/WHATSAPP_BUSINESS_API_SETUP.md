@@ -71,7 +71,7 @@ After phone number verification:
    ```
    https://your-app-domain.onrender.com/api/whatsapp/webhook
    ```
-   Example: `https://toonify-ai-saas.onrender.com/api/whatsapp/webhook`
+   Example: `https://toonify.live/api/whatsapp/webhook`
 
 4. Enter Callback Verify Token:
    ```
@@ -145,7 +145,7 @@ test_challenge
 After deploying to Render:
 
 ```bash
-curl -X GET "https://toonify-ai-saas.onrender.com/api/whatsapp/webhook?hub.mode=subscribe&hub.challenge=test_challenge&hub.verify_token=toonify_webhook_token"
+curl -X GET "https://toonify.live/api/whatsapp/webhook?hub.mode=subscribe&hub.challenge=test_challenge&hub.verify_token=toonify_webhook_token"
 ```
 
 ---
