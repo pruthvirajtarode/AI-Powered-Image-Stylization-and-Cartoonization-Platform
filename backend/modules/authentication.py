@@ -307,6 +307,15 @@ class Authentication:
             """
             msg.attach(MIMEText(body, 'html'))
 
+            # Attach processed image file if path provided and exists
+            if image_path and os.path.exists(image_path):
+                with open(image_path, 'rb') as f:
+                    part = MIMEBase('application', 'octet-stream')
+                    part.set_payload(f.read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', f'attachment; filename="{os.path.basename(image_path)}"')
+                msg.attach(part)
+
             server = smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT)
             server.starttls()
             server.login(settings.SMTP_USER, settings.SMTP_PASS)
