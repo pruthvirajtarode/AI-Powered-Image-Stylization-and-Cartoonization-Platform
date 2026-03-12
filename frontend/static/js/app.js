@@ -1725,7 +1725,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const profileBtn = document.getElementById('profilePillBtn');
         const profileDropdown = document.getElementById('profileDropdown');
 
-        if (!localUser || !profileContainer) return;
+        if (!localUser || !profileContainer) {
+            // Not logged in — make sure Login button is visible
+            if (loginBtn) { loginBtn.classList.remove('hidden'); loginBtn.style.display = 'inline-flex'; }
+            if (profileContainer) profileContainer.style.display = 'none';
+            return;
+        }
 
         try {
             // Verify session with server
