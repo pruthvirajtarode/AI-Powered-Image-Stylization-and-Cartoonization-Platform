@@ -32,13 +32,114 @@
             height: 100vh;
             left: 0;
             top: 0;
-            z-index: 100;
+            z-index: 300;
+            transition: transform 0.3s ease;
         }
 
         .dash-main {
             margin-left: var(--sidebar-width);
             flex: 1;
             padding: 40px 5%;
+        }
+
+        /* ── Sidebar close btn (always visible inside sidebar) ── */
+        .sidebar-close-btn {
+            display: none;
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 1rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: .2s;
+        }
+        .sidebar-close-btn:hover { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
+
+        /* ── Hamburger button in main header ── */
+        .sidebar-toggle-btn {
+            display: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            color: #374151;
+            font-size: 1.1rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            flex-shrink: 0;
+            transition: .2s;
+        }
+        .sidebar-toggle-btn:hover { background: #fff1ec; color: #ff7e5f; border-color: #ffd0c0; }
+
+        /* ── Overlay ── */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 200;
+            backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.active { display: block; }
+
+        /* ── Mobile responsive ── */
+        @media (max-width: 768px) {
+            .dash-sidebar {
+                transform: translateX(-100%);
+            }
+            .dash-sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-close-btn { display: flex; }
+            .sidebar-toggle-btn { display: flex; }
+            .dash-main {
+                margin-left: 0;
+                padding: 20px 16px;
+            }
+            .dash-header {
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+            .user-meta h1 {
+                font-size: 1.5rem;
+            }
+            .stat-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+            }
+            .stat-card {
+                padding: 18px;
+                gap: 12px;
+            }
+            .stat-icon {
+                width: 46px;
+                height: 46px;
+                font-size: 1.1rem;
+            }
+            .history-section {
+                padding: 20px 14px;
+                border-radius: 20px;
+            }
+            .history-table th:nth-child(3),
+            .history-table td:nth-child(3),
+            .history-table th:nth-child(4),
+            .history-table td:nth-child(4) {
+                display: none;
+            }
+        }
+        @media (max-width: 420px) {
+            .stat-grid { grid-template-columns: 1fr; }
         }
 
         .nav-group {
@@ -168,7 +269,14 @@
 </head>
 
 <body>
-    <aside class="dash-sidebar">
+    <!-- Sidebar overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <aside class="dash-sidebar" id="dashSidebar">
+        <!-- Close button inside sidebar -->
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" onclick="closeSidebar()" aria-label="Close menu">
+            <i class="fas fa-times"></i>
+        </button>
         <a href="/" class="logo" style="text-decoration: none; margin-bottom: 20px;">
             <i class="fas fa-magic" style="color: var(--primary); font-size: 1.5rem;"></i>
             <span class="logo-text" style="font-family: 'Baloo 2'; font-size: 1.6rem; color: #1e293b;">Toonify<span
@@ -205,6 +313,10 @@
 
     <main class="dash-main">
         <header class="dash-header">
+            <!-- Hamburger button — mobile only -->
+            <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="openSidebar()" aria-label="Open menu">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="user-meta animate-fade">
                 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
                     <div id="userAvatar"
@@ -362,6 +474,17 @@
         }
 
         document.addEventListener('DOMContentLoaded', loadDashboard);
+
+        function openSidebar() {
+            document.getElementById('dashSidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeSidebar() {
+            document.getElementById('dashSidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
     </script>
     <script src="/static/js/app.js?v=300"></script>
 
