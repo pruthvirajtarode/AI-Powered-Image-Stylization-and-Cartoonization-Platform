@@ -523,8 +523,9 @@ def process_batch():
         except Exception as e:
             return {"success": False, "original_filename": file.filename, "message": str(e)}
 
-    # Launch parallel neural tasks
-    max_workers = min(os.cpu_count() or 4, len(files))
+    # Launch parallel neural tasks with a cap to avoid CPU oversubscription.
+    configured_workers = max(1, int(getattr(settings, 'BATCH_MAX_WORKERS', 4)))
+    max_workers = min(configured_workers, os.cpu_count() or 4, len(files))
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         for i, file in enumerate(files):

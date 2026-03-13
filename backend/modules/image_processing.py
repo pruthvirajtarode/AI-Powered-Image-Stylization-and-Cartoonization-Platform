@@ -2,6 +2,7 @@
 Image processing module using OpenCV
 Implements various cartoon and artistic effects
 """
+import os
 import cv2
 import numpy as np
 from PIL import Image
@@ -19,6 +20,9 @@ class ImageProcessor:
         self.params = settings.CARTOON_PARAMS
         self.fast_processing = getattr(settings, "FAST_PROCESSING", True)
         self.fast_style_max_width = max(480, int(getattr(settings, "FAST_STYLE_MAX_WIDTH", 960)))
+        # OpenCV global runtime tuning for low-latency processing.
+        cv2.setUseOptimized(True)
+        cv2.setNumThreads(max(1, int(getattr(settings, "OPENCV_NUM_THREADS", 4))))
     
     @staticmethod
     def load_image(image_file) -> Optional[np.ndarray]:
@@ -67,15 +71,12 @@ class ImageProcessor:
     def get_image_stats(image: np.ndarray) -> dict:
         """Calculate basic image statistics for Task 13"""
         try:
-            # Convert to grayscale for brightness/contrast
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            brightness = np.mean(gray)
-            contrast = np.std(gray)
-            
-            # Color Distribution (B, G, R)
-            b_mean = np.mean(image[:, :, 0])
-            g_mean = np.mean(image[:, :, 1])
-            r_mean = np.mean(image[:, :, 2])
+            gray_mean, gray_std = cv2.meanStdDev(gray)
+            brightness = float(gray_mean[0][0])
+            contrast = float(gray_std[0][0])
+
+            b_mean, g_mean, r_mean, _ = cv2.mean(image)
             total = b_mean + g_mean + r_mean or 1
             
             return {
@@ -476,18 +477,10 @@ class ImageProcessor:
         Part of Task 13 requirements.
         """
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
-        # 1. Brightness (Mean)
-        brightness = np.mean(gray)
-        
-        # 2. Contrast (Standard Deviation)
-        contrast = np.std(gray)
-        
-        # 3. Color distribution (Mean of each channel)
-        # BGR channels
-        blue_avg = np.mean(image[:, :, 0])
-        green_avg = np.mean(image[:, :, 1])
-        red_avg = np.mean(image[:, :, 2])
+        gray_mean, gray_std = cv2.meanStdDev(gray)
+        brightness = float(gray_mean[0][0])
+        contrast = float(gray_std[0][0])
+        blue_avg, green_avg, red_avg, _ = cv2.mean(image)
         
         return {
             "brightness": round(float(brightness), 2),
