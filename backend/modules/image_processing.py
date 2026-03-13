@@ -17,6 +17,8 @@ class ImageProcessor:
     def __init__(self):
         """Initialize image processor with default parameters"""
         self.params = settings.CARTOON_PARAMS
+        self.fast_processing = getattr(settings, "FAST_PROCESSING", True)
+        self.fast_style_max_width = max(480, int(getattr(settings, "FAST_STYLE_MAX_WIDTH", 960)))
     
     @staticmethod
     def load_image(image_file) -> Optional[np.ndarray]:
@@ -386,9 +388,16 @@ class ImageProcessor:
     
     def _quantize_colors(self, image: np.ndarray, num_colors: int = 8) -> np.ndarray:
         """
-        ULTRA-OPTIMIZED: Reduce colors using K-means directly on the image 
-        with limited iterations for maximum speed.
+        Reduce colors for stylization.
+        In fast mode, use deterministic channel posterization (much faster than K-means).
         """
+        if self.fast_processing:
+            # Approximate palette size with evenly spaced channel bins.
+            levels = int(np.clip(round(num_colors ** (1.0 / 3.0)), 2, 8))
+            step = max(1, 256 // levels)
+            quantized = (image // step) * step + step // 2
+            return np.clip(quantized, 0, 255).astype(np.uint8)
+
         pixels = image.reshape((-1, 3))
         pixels = np.float32(pixels)
         
@@ -402,48 +411,62 @@ class ImageProcessor:
         centers = np.uint8(centers)
         quantized = centers[labels.flatten()]
         return quantized.reshape(image.shape)
+
+    def _apply_with_internal_scaling(self, image: np.ndarray, style_func) -> np.ndarray:
+        """
+        Speed optimization: run expensive style transforms on a smaller internal frame
+        and upscale to the requested output size.
+        """
+        h, w = image.shape[:2]
+        if not self.fast_processing or w <= self.fast_style_max_width:
+            return style_func(image)
+
+        scaled = self.resize_image(image, max_width=self.fast_style_max_width, max_height=2160)
+        processed_small = style_func(scaled)
+        return cv2.resize(processed_small, (w, h), interpolation=cv2.INTER_LINEAR)
     
     def process_image(self, image: np.ndarray, style: str, is_premium: bool = False) -> Tuple[np.ndarray, float]:
         """
         Process image with selected style
         Returns: (processed_image, processing_time)
         """
-        start_time = time.time()
+        start_time = time.perf_counter()
         
         # Resize based on plan
         if is_premium:
-            # 4K / Ultra-HD Processing for Premium Users
-            image = self.resize_image(image, max_width=3840, max_height=2160)
+            image = self.resize_image(
+                image,
+                max_width=int(getattr(settings, "PREMIUM_MAX_WIDTH", 2560)),
+                max_height=2160
+            )
         else:
-            # Standard 720p for Free Users
-            image = self.resize_image(image, max_width=1280, max_height=720)
-        
-        # Apply selected style
-        if style == "cartoon":
-            processed = self.apply_classic_cartoon(image)
-        elif style == "sketch":
-            processed = self.apply_sketch_effect(image)
-        elif style == "pencil_color":
-            processed = self.apply_pencil_color(image)
-        elif style == "oil_painting":
-            processed = self.apply_oil_painting(image)
-        elif style == "watercolor":
-            processed = self.apply_watercolor(image)
-        elif style == "pop_art":
-            processed = self.apply_pop_art(image)
-        elif style == "vintage":
-            processed = self.apply_vintage(image)
-        elif style == "anime":
-            processed = self.apply_anime(image)
-        elif style == "ghibli":
-            processed = self.apply_ghibli(image)
-        elif style == "comic_book":
-            processed = self.apply_comic_book(image)
+            image = self.resize_image(
+                image,
+                max_width=int(getattr(settings, "FREE_MAX_WIDTH", 1024)),
+                max_height=720
+            )
+
+        style_handlers = {
+            "cartoon": self.apply_classic_cartoon,
+            "sketch": self.apply_sketch_effect,
+            "pencil_color": self.apply_pencil_color,
+            "oil_painting": self.apply_oil_painting,
+            "watercolor": self.apply_watercolor,
+            "pop_art": self.apply_pop_art,
+            "vintage": self.apply_vintage,
+            "anime": self.apply_anime,
+            "ghibli": self.apply_ghibli,
+            "comic_book": self.apply_comic_book,
+        }
+        heavy_styles = {"cartoon", "oil_painting", "watercolor", "anime", "ghibli", "comic_book"}
+        style_func = style_handlers.get(style, self.apply_classic_cartoon)
+
+        if style in heavy_styles:
+            processed = self._apply_with_internal_scaling(image, style_func)
         else:
-            # Default to cartoon
-            processed = self.apply_classic_cartoon(image)
+            processed = style_func(image)
         
-        processing_time = time.time() - start_time
+        processing_time = max(time.perf_counter() - start_time, 1e-6)
         
         return processed, processing_time
 

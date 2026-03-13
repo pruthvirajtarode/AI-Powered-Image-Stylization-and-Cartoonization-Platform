@@ -36,6 +36,10 @@ ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"]
 PROCESSED_IMAGE_QUALITY = int(os.getenv("PROCESSED_IMAGE_QUALITY", "95"))
 TEMP_FOLDER = Path(os.getenv("TEMP_FOLDER", str(BASE_DIR / "data" / "processed_images")))
 CACHE_FOLDER = Path(os.getenv("CACHE_FOLDER", str(BASE_DIR / "data" / "cache")))
+FAST_PROCESSING = os.getenv("FAST_PROCESSING", "true").lower() == "true"
+FAST_STYLE_MAX_WIDTH = int(os.getenv("FAST_STYLE_MAX_WIDTH", "960"))
+FREE_MAX_WIDTH = int(os.getenv("FREE_MAX_WIDTH", "1024"))
+PREMIUM_MAX_WIDTH = int(os.getenv("PREMIUM_MAX_WIDTH", "2560"))
 
 # Create necessary directories
 TEMP_FOLDER.mkdir(parents=True, exist_ok=True)
