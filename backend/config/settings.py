@@ -42,6 +42,11 @@ FREE_MAX_WIDTH = int(os.getenv("FREE_MAX_WIDTH", "1024"))
 PREMIUM_MAX_WIDTH = int(os.getenv("PREMIUM_MAX_WIDTH", "2560"))
 OPENCV_NUM_THREADS = int(os.getenv("OPENCV_NUM_THREADS", "4"))
 BATCH_MAX_WORKERS = int(os.getenv("BATCH_MAX_WORKERS", "4"))
+MAX_VIDEO_SIZE = int(os.getenv("MAX_VIDEO_SIZE", str(100 * 1024 * 1024)))  # 100MB
+MAX_VIDEO_DURATION_SECONDS = int(os.getenv("MAX_VIDEO_DURATION_SECONDS", "90"))
+VIDEO_PROCESS_EVERY_N_FRAMES = int(os.getenv("VIDEO_PROCESS_EVERY_N_FRAMES", "2"))
+VIDEO_FREE_MAX_WIDTH = int(os.getenv("VIDEO_FREE_MAX_WIDTH", "854"))
+VIDEO_PREMIUM_MAX_WIDTH = int(os.getenv("VIDEO_PREMIUM_MAX_WIDTH", "1280"))
 
 # Create necessary directories
 TEMP_FOLDER.mkdir(parents=True, exist_ok=True)

@@ -471,6 +471,73 @@ class ImageProcessor:
         
         return processed, processing_time
 
+    def process_video_file(self, input_path: str, output_path: str, style: str,
+                          is_premium: bool = False) -> Tuple[bool, float, int, str]:
+        """
+        Process a video by stylizing key frames and reusing them for intermediate frames.
+        Returns: (success, processing_time, output_frames, message)
+        """
+        start_time = time.perf_counter()
+        cap = cv2.VideoCapture(input_path)
+        if not cap.isOpened():
+            return False, 0.0, 0, "Unable to open uploaded video"
+
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        if not fps or fps <= 0:
+            fps = 24.0
+
+        src_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0)
+        src_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
+        if src_w <= 0 or src_h <= 0:
+            cap.release()
+            return False, 0.0, 0, "Invalid video dimensions"
+
+        max_w = int(getattr(settings, "VIDEO_PREMIUM_MAX_WIDTH", 1280) if is_premium
+                    else getattr(settings, "VIDEO_FREE_MAX_WIDTH", 854))
+        if src_w > max_w:
+            scale = max_w / float(src_w)
+            out_w = int(src_w * scale)
+            out_h = int(src_h * scale)
+        else:
+            out_w, out_h = src_w, src_h
+
+        out_w += out_w % 2
+        out_h += out_h % 2
+
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        writer = cv2.VideoWriter(output_path, fourcc, fps, (out_w, out_h))
+        if not writer.isOpened():
+            cap.release()
+            return False, 0.0, 0, "Unable to create output video"
+
+        n = max(1, int(getattr(settings, "VIDEO_PROCESS_EVERY_N_FRAMES", 2)))
+        frame_index = 0
+        written = 0
+        last_processed = None
+
+        while True:
+            ok, frame = cap.read()
+            if not ok:
+                break
+
+            if (frame.shape[1], frame.shape[0]) != (out_w, out_h):
+                frame = cv2.resize(frame, (out_w, out_h), interpolation=cv2.INTER_AREA)
+
+            if frame_index % n == 0 or last_processed is None:
+                last_processed, _ = self.process_image(frame, style, is_premium=is_premium)
+
+            writer.write(last_processed)
+            written += 1
+            frame_index += 1
+
+        cap.release()
+        writer.release()
+
+        if written == 0:
+            return False, 0.0, 0, "No frames were processed"
+
+        return True, max(time.perf_counter() - start_time, 1e-6), written, "Video processed"
+
     def get_image_statistics(self, image: np.ndarray) -> dict:
         """
         Calculate image statistics: brightness, contrast, and color distribution.

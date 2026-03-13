@@ -748,7 +748,7 @@
                 <div class="sidebar-group">
                     <h3><i class="fas fa-file-import"></i> Media Asset</h3>
                     <div class="upload-card" id="dropZone">
-                        <input type="file" id="fileInput" hidden accept="image/*" multiple>
+                        <input type="file" id="fileInput" hidden accept="image/*,video/*" multiple>
                         <div id="uploadText">
                             <i class="fas fa-cloud-arrow-up"></i>
                             <p><strong>Upload Photo(s)</strong></p>
@@ -862,6 +862,25 @@
                             <div class="slider-handle">
                                 <i class="fas fa-arrows-left-right"></i>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Video Result View -->
+                    <div id="videoResultView" style="display:none; margin-top: 1rem;">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden;">
+                                <div style="padding:10px 12px; border-bottom:1px solid #e2e8f0; font-weight:700; color:#64748b; font-size:0.8rem;">ORIGINAL VIDEO</div>
+                                <video id="videoOriginal" controls muted playsinline style="width:100%; max-height:420px; background:#000;"></video>
+                            </div>
+                            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden;">
+                                <div style="padding:10px 12px; border-bottom:1px solid #e2e8f0; font-weight:700; color:var(--primary); font-size:0.8rem;">STYLIZED VIDEO</div>
+                                <video id="videoProcessed" controls playsinline style="width:100%; max-height:420px; background:#000;"></video>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+                            <a id="downloadVideoBtn" class="btn-auth" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:10px 14px; height:auto; border-radius:10px; font-size:0.9rem;">
+                                <i class="fas fa-download"></i> Download Stylized Video
+                            </a>
                         </div>
                     </div>
 
@@ -2140,7 +2159,7 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="/static/js/ar-engine.js?v=303"></script>
     <script src="/static/js/lenses.js?v=300"></script>
-    <script src="/static/js/app.js?v=502"></script>
+    <script src="/static/js/app.js?v=503"></script>
 </body>
 
 </html>

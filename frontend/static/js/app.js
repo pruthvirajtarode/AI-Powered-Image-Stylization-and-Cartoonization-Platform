@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedFile = null;
     let selectedStyle = 'cartoon';
     let batchQueue = [];
+    let selectedVideoItem = null;
     let selectedBatchItemId = null;
     window.originalPreviewMap = {}; // Global map for original previews
 
@@ -403,6 +404,25 @@ document.addEventListener('DOMContentLoaded', () => {
             filesArray = input;
         }
 
+        const videoFile = filesArray.find(f => f.type && f.type.startsWith('video/'));
+        if (videoFile) {
+            batchQueue = [];
+            selectedBatchItemId = null;
+            selectedVideoItem = {
+                file: videoFile,
+                preview: URL.createObjectURL(videoFile),
+                style: selectedStyle,
+                id: Math.random().toString(36).substr(2, 9)
+            };
+            updateBatchUI();
+            return;
+        }
+
+        if (selectedVideoItem && selectedVideoItem.preview) {
+            URL.revokeObjectURL(selectedVideoItem.preview);
+        }
+        selectedVideoItem = null;
+
         filesArray.forEach(file => {
             if (file.type && !file.type.startsWith('image/')) return;
 
@@ -434,6 +454,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.clearBatch = () => {
         batchQueue = [];
+        if (selectedVideoItem && selectedVideoItem.preview) {
+            URL.revokeObjectURL(selectedVideoItem.preview);
+        }
+        selectedVideoItem = null;
         updateBatchUI();
     };
 
@@ -465,6 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 placeholder.style.display = 'none';
                 resultView.style.display = 'none';
                 sliderView.style.display = 'none';
+                const videoResultView = document.getElementById('videoResultView');
+                if (videoResultView) videoResultView.style.display = 'none';
                 cropBoxView.style.display = 'flex';
 
                 // Reset crop box state and create default crop box
@@ -509,7 +535,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const uploadPreview = document.getElementById('uploadPreview');
         const processBtn = document.getElementById('processBtn');
 
-        if (batchQueue.length > 0) {
+        if (selectedVideoItem) {
+            batchList.style.display = 'none';
+            uploadPreview.style.display = 'none';
+            uploadText.innerHTML = `
+                <div style="padding: 10px; border: 2px dashed var(--primary); border-radius: 12px; background: var(--primary-soft); color: var(--primary);">
+                    <i class="fas fa-video" style="font-size: 1.5rem; margin-bottom: 5px; display: block;"></i>
+                    <strong style="font-size: 0.8rem;">${selectedVideoItem.file.name}</strong>
+                    <div style="font-size:0.7rem; opacity:0.8; margin-top:4px;">Video ready for stylization</div>
+                </div>
+            `;
+            uploadText.style.display = 'block';
+            processBtn.disabled = false;
+            processBtn.innerHTML = `Transform Video <span style="font-size:0.75rem; opacity:0.8; font-weight:400; display:block;">Recording Effect Enabled</span>`;
+        } else if (batchQueue.length > 0) {
             batchList.style.display = 'block';
             batchCount.innerText = batchQueue.length;
 
@@ -799,6 +838,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // AI SaaS Processing Logic
     if (processBtn) {
         processBtn.onclick = async () => {
+            if (selectedVideoItem) {
+                await processUploadedVideo();
+                return;
+            }
             if (batchQueue.length === 0) return;
 
             const batchQueue_at_start = [...batchQueue];
@@ -865,6 +908,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (document.getElementById('cropBoxView')) document.getElementById('cropBoxView').style.display = 'none';
                     if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'none';
                     if (document.getElementById('sliderView')) document.getElementById('sliderView').style.display = 'none';
+                    if (document.getElementById('videoResultView')) document.getElementById('videoResultView').style.display = 'none';
                     if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'none';
                     if (document.getElementById('statsPanel')) document.getElementById('statsPanel').style.display = 'none';
 
@@ -926,6 +970,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         resetAdjustments();
                         if (batchResultsView) batchResultsView.style.display = 'none';
                         if (document.getElementById('cropBoxView')) document.getElementById('cropBoxView').style.display = 'none';
+                        if (document.getElementById('videoResultView')) document.getElementById('videoResultView').style.display = 'none';
                         const isDynamic = document.getElementById('tabDynamic').classList.contains('active');
                         if (isDynamic) {
                             if (sliderView) sliderView.style.display = 'block';
@@ -1247,6 +1292,65 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Google Auth Initialized and Button Rendered.");
         } catch (err) {
             console.error("Neural Handshake Failed: Unable to load Google Config.");
+        }
+    }
+
+    async function processUploadedVideo() {
+        if (!selectedVideoItem) return;
+
+        if (loader) {
+            loader.style.display = 'flex';
+            const statusTxt = loader.querySelector('h3');
+            if (statusTxt) statusTxt.innerText = 'Stylizing your recording...';
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('video', selectedVideoItem.file);
+            formData.append('style', selectedStyle);
+
+            const response = await fetch('/api/process/video', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Video processing failed');
+            }
+
+            const timestamp = Date.now();
+            const processedUrl = `${data.processed_url}?t=${timestamp}`;
+
+            if (document.getElementById('placeholder')) document.getElementById('placeholder').style.display = 'none';
+            if (document.getElementById('cropBoxView')) document.getElementById('cropBoxView').style.display = 'none';
+            if (document.getElementById('resultView')) document.getElementById('resultView').style.display = 'none';
+            if (document.getElementById('sliderView')) document.getElementById('sliderView').style.display = 'none';
+            if (document.getElementById('batchResultsView')) document.getElementById('batchResultsView').style.display = 'none';
+            if (document.getElementById('statsPanel')) document.getElementById('statsPanel').style.display = 'none';
+            if (document.getElementById('downloadArea')) document.getElementById('downloadArea').style.display = 'none';
+
+            const videoResultView = document.getElementById('videoResultView');
+            const videoOriginal = document.getElementById('videoOriginal');
+            const videoProcessed = document.getElementById('videoProcessed');
+            const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+
+            if (videoResultView && videoOriginal && videoProcessed && downloadVideoBtn) {
+                videoResultView.style.display = 'block';
+                videoOriginal.src = selectedVideoItem.preview;
+                videoProcessed.src = processedUrl;
+                downloadVideoBtn.href = processedUrl;
+                downloadVideoBtn.download = `toonify_video_${Date.now()}.mp4`;
+                videoOriginal.load();
+                videoProcessed.load();
+            }
+
+            alert(`✅ Video stylized in ${data.proc_time.toFixed(2)}s`);
+        } catch (err) {
+            console.error(err);
+            alert(`❌ ${err.message}`);
+        } finally {
+            if (loader) loader.style.display = 'none';
         }
     }
     initGoogleAuth();

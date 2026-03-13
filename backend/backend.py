@@ -450,6 +450,100 @@ def process():
         }
     })
 
+@app.route('/api/process/video', methods=['POST'])
+def process_video():
+    if 'user' not in session and not app.debug:
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    if 'video' not in request.files:
+        return jsonify({"success": False, "message": "No video uploaded"}), 400
+
+    file = request.files['video']
+    style = request.form.get('style', 'cartoon')
+    user = session.get('user', {})
+    user_id = user.get('id', 0)
+    user_plan = user.get('plan', 'starter')
+    user_role = user.get('role', 'user')
+    is_premium = user_role == 'admin' or user_plan in ['pro', 'elite', 'pro_member']
+
+    # Starter plan quota check (1 video counts as 1 processing unit)
+    if user_id and user_role != 'admin' and user_plan == 'starter':
+        usage_today = db.get_user_usage_24h(user_id)
+        if (usage_today + 1) > 5:
+            return jsonify({
+                "success": False,
+                "message": f"Daily limit reached (5 edits/day for Starter). You have processed {usage_today} items today. Upgrade to Pro for unlimited access!",
+                "limit_reached": True
+            }), 402
+
+    raw_name = sanitize_filename(file.filename or 'uploaded_video.mp4')
+    ext = Path(raw_name).suffix.lower()
+    allowed_video_ext = {'.mp4', '.mov', '.avi', '.mkv', '.webm'}
+    if ext not in allowed_video_ext:
+        return jsonify({"success": False, "message": "Unsupported video format"}), 400
+
+    # Compute upload size safely
+    file.stream.seek(0, os.SEEK_END)
+    size_bytes = file.stream.tell()
+    file.stream.seek(0)
+    if size_bytes > int(getattr(settings, 'MAX_VIDEO_SIZE', 100 * 1024 * 1024)):
+        return jsonify({"success": False, "message": "Video file is too large"}), 413
+
+    input_name = f"video_input_{uuid.uuid4().hex}{ext}"
+    output_name = f"processed_video_{uuid.uuid4().hex}.mp4"
+    input_path = settings.TEMP_FOLDER / input_name
+    output_path = settings.TEMP_FOLDER / output_name
+
+    try:
+        file.save(str(input_path))
+
+        # Validate duration before heavy processing
+        cap = cv2.VideoCapture(str(input_path))
+        if not cap.isOpened():
+            return jsonify({"success": False, "message": "Invalid video"}), 400
+
+        fps = cap.get(cv2.CAP_PROP_FPS) or 24.0
+        total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
+        duration_sec = float(total_frames / fps) if fps > 0 else 0.0
+        cap.release()
+
+        max_duration = int(getattr(settings, 'MAX_VIDEO_DURATION_SECONDS', 90))
+        if duration_sec and duration_sec > max_duration:
+            return jsonify({
+                "success": False,
+                "message": f"Video too long. Maximum allowed duration is {max_duration} seconds."
+            }), 400
+
+        success, proc_time, frames_out, message = image_processor.process_video_file(
+            str(input_path), str(output_path), style, is_premium=is_premium
+        )
+
+        if not success:
+            return jsonify({"success": False, "message": message}), 500
+
+        if user_id:
+            db.add_processing_history(user_id, raw_name, output_name, f"video_{style}", proc_time)
+            db.log_user_activity(user_id, "stylize_video", f"Created {style} video in {proc_time:.2f}s")
+
+        return jsonify({
+            "success": True,
+            "is_video": True,
+            "processed_url": f"/data/processed/{output_name}",
+            "video_filename": output_name,
+            "style": style,
+            "proc_time": proc_time,
+            "frames": frames_out,
+            "duration": round(duration_sec, 2)
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        try:
+            if input_path.exists():
+                input_path.unlink()
+        except Exception:
+            pass
+
 @app.route('/api/process/batch', methods=['POST'])
 def process_batch():
     if 'user' not in session and not app.debug:
