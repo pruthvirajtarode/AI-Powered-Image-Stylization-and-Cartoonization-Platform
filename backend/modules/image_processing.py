@@ -504,8 +504,24 @@ class ImageProcessor:
         out_w += out_w % 2
         out_h += out_h % 2
 
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(output_path, fourcc, fps, (out_w, out_h))
+        out_ext = os.path.splitext(output_path)[1].lower()
+        codec_candidates = ['mp4v']
+        if out_ext == '.webm':
+            codec_candidates = ['VP80', 'VP90', 'mp4v']
+        elif out_ext == '.mp4':
+            codec_candidates = ['avc1', 'H264', 'mp4v']
+
+        writer = None
+        for codec in codec_candidates:
+            fourcc = cv2.VideoWriter_fourcc(*codec)
+            test_writer = cv2.VideoWriter(output_path, fourcc, fps, (out_w, out_h))
+            if test_writer.isOpened():
+                writer = test_writer
+                break
+            test_writer.release()
+
+        if writer is None:
+            writer = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (out_w, out_h))
         if not writer.isOpened():
             cap.release()
             return False, 0.0, 0, "Unable to create output video"

@@ -1339,8 +1339,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 videoResultView.style.display = 'block';
                 videoOriginal.src = selectedVideoItem.preview;
                 videoProcessed.src = processedUrl;
-                downloadVideoBtn.href = processedUrl;
-                downloadVideoBtn.download = `toonify_video_${Date.now()}.mp4`;
+                window.currentImage = data.video_filename;
+
+                downloadVideoBtn.href = '#';
+                downloadVideoBtn.removeAttribute('download');
+                downloadVideoBtn.onclick = async (ev) => {
+                    ev.preventDefault();
+
+                    const user = JSON.parse(localStorage.getItem('toonify_user'));
+                    if (!user) { openAuth(); return; }
+
+                    const isPro = user.role === 'admin' || user.role === 'pro_member' || user.plan === 'pro' || user.plan === 'elite';
+                    if (!isPro) {
+                        try {
+                            const checkRes = await fetch(`/api/user/check-payment?filename=${window.currentImage}`);
+                            const checkData = await checkRes.json();
+                            if (!checkData.has_paid) {
+                                openPayment('mp4', '95');
+                                return;
+                            }
+                        } catch (err) {
+                            alert('Unable to verify payment status. Please try again.');
+                            return;
+                        }
+                    }
+
+                    window.location.href = `/api/user/download?filename=${encodeURIComponent(window.currentImage)}&format=mp4&quality=95`;
+                };
+
                 videoOriginal.load();
                 videoProcessed.load();
             }

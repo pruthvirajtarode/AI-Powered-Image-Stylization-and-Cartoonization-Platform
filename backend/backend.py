@@ -490,7 +490,8 @@ def process_video():
         return jsonify({"success": False, "message": "Video file is too large"}), 413
 
     input_name = f"video_input_{uuid.uuid4().hex}{ext}"
-    output_name = f"processed_video_{uuid.uuid4().hex}.mp4"
+    output_ext = '.webm' if ext == '.webm' else '.mp4'
+    output_name = f"processed_video_{uuid.uuid4().hex}{output_ext}"
     input_path = settings.TEMP_FOLDER / input_name
     output_path = settings.TEMP_FOLDER / output_name
 
@@ -821,7 +822,7 @@ download_serializer = URLSafeTimedSerializer(app.secret_key)
 
 @app.route('/api/user/check-payment')
 def check_payment_status():
-    """Check if user has paid for a specific image"""
+    """Check if user has paid for a specific processed asset."""
     if 'user' not in session:
         return jsonify({"success": False, "message": "Unauthorized", "has_paid": False}), 401
     
@@ -833,7 +834,7 @@ def check_payment_status():
     if is_premium:
         return jsonify({"success": True, "has_paid": True, "message": "Premium user (Unlimited Access)"})
     
-    # Check if payment exists for this image
+    # Check if payment exists for this processed asset
     transaction = db.get_transaction_by_filename(user_id, filename)
     
     if transaction and transaction['status'] == 'completed':
@@ -935,13 +936,29 @@ def secure_download():
         transaction = db.get_transaction_by_filename(user_id, filename)
         if not transaction or transaction['status'] != 'completed':
             # Return 402 Payment Required status
-            return jsonify({"success": False, "message": "Payment required to download this image"}), 402
+            return jsonify({"success": False, "message": "Payment required to download this file"}), 402
         
     # Process Format Conversion (Task 14)
     file_path = settings.TEMP_FOLDER / filename
     if not file_path.exists():
         return "File not found", 404
         
+    is_video = file_path.suffix.lower() in {'.mp4', '.webm', '.mov', '.avi', '.mkv'}
+    if is_video:
+        video_mime = {
+            '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.mov': 'video/quicktime',
+            '.avi': 'video/x-msvideo',
+            '.mkv': 'video/x-matroska'
+        }.get(file_path.suffix.lower(), 'application/octet-stream')
+        return send_file(
+            str(file_path),
+            mimetype=video_mime,
+            as_attachment=True,
+            download_name=f"toonify_{filename}"
+        )
+
     img = cv2.imread(str(file_path))
     
     import io
@@ -986,8 +1003,13 @@ def get_processed_image(filename):
         if is_pro or (transaction and transaction['status'] == 'completed'):
             should_watermark = False
             
+    is_video_asset = file_path.suffix.lower() in {'.mp4', '.webm', '.mov', '.avi', '.mkv'}
+
     if not should_watermark:
         # Paid users get the real deal immediately
+        if is_video_asset:
+            return send_from_directory(settings.TEMP_FOLDER, filename)
+
         if is_thumb:
             thumb_path = settings.CACHE_FOLDER / "thumbnails" / f"thumb_{filename}"
             if not thumb_path.exists():
@@ -1004,6 +1026,10 @@ def get_processed_image(filename):
         
         return send_from_directory(settings.TEMP_FOLDER, filename)
     
+    # Video preview is allowed inline in app; paid download is enforced via /api/user/download.
+    if is_video_asset:
+        return send_from_directory(settings.TEMP_FOLDER, filename)
+
     # Caching Logic for Watermarked results
     cache_subdir = "thumbnails" if is_thumb else "watermarked"
     prefix = "thumb_wm_" if is_thumb else "wm_"
