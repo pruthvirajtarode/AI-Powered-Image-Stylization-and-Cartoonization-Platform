@@ -685,7 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
         recordBtn.onclick = async () => {
             if (!arEngine) return;
             if (!arEngine.isRecording) {
-                arEngine.startRecording(facingMode);
+                arEngine.startRecording();
                 recordBtn.classList.add('recording');
                 recordBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Recording';
             } else {

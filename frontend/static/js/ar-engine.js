@@ -17,6 +17,10 @@ class AREngine {
         this.segMask = null;
         this._tmpCanvas = null;
         this._tmpCtx = null;
+        this._maskCanvas = null;
+        this._maskCtx = null;
+        this._refinedMaskCanvas = null;
+        this._refinedMaskCtx = null;
         this._segLoading = false;   // prevents duplicate init calls
         this._segFailed = false;   // stops retrying after hard fail
         this.animFrame = null;
@@ -31,7 +35,12 @@ class AREngine {
         this.isRecording = false;
         this.mediaRecorder = null;
         this.recordedChunks = [];
-        this._recordAF = null;
+        this._recCanvas = null;
+        this._recCtx = null;
+
+        // Snapshot of current video frame captured before any async work
+        this._videoSnap = null;
+        this._videoSnapCtx = null;
 
         this._onFaceResults = this._onFaceResults.bind(this);
         this._onSegResults = this._onSegResults.bind(this);
@@ -62,7 +71,8 @@ class AREngine {
             this.segmenter = new SelfieSegmentation({
                 locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${f}`
             });
-            this.segmenter.setOptions({ modelSelection: 1 });
+            // modelSelection: 0 is tuned for close selfie subjects and cleaner face boundaries.
+            this.segmenter.setOptions({ modelSelection: 0 });
             this.segmenter.onResults(this._onSegResults);
             await this.segmenter.initialize();
             const W = this.video.videoWidth || 640;
@@ -70,6 +80,12 @@ class AREngine {
             this._tmpCanvas = document.createElement('canvas');
             this._tmpCanvas.width = W; this._tmpCanvas.height = H;
             this._tmpCtx = this._tmpCanvas.getContext('2d');
+            this._maskCanvas = document.createElement('canvas');
+            this._maskCanvas.width = W; this._maskCanvas.height = H;
+            this._maskCtx = this._maskCanvas.getContext('2d', { willReadFrequently: true });
+            this._refinedMaskCanvas = document.createElement('canvas');
+            this._refinedMaskCanvas.width = W; this._refinedMaskCanvas.height = H;
+            this._refinedMaskCtx = this._refinedMaskCanvas.getContext('2d');
             this._segLoading = false;
         } catch (e) {
             console.warn('[AREngine] SelfieSegmentation failed:', e);
@@ -135,6 +151,48 @@ class AREngine {
     /* ── Segmentation results ───────────────────────── */
     _onSegResults(r) { this.segMask = r.segmentationMask; }
 
+    _getCompositeSourceFrame() {
+        if (this.video && this.video.readyState >= 2) return this.video;
+        return this._videoSnap || null;
+    }
+
+    _getRefinedSegMask(W, H) {
+        if (!this.segMask || !this._maskCanvas || !this._maskCtx || !this._refinedMaskCanvas || !this._refinedMaskCtx) {
+            return this.segMask || null;
+        }
+
+        if (this._maskCanvas.width !== W || this._maskCanvas.height !== H) {
+            this._maskCanvas.width = W; this._maskCanvas.height = H;
+            this._refinedMaskCanvas.width = W; this._refinedMaskCanvas.height = H;
+        }
+
+        this._maskCtx.clearRect(0, 0, W, H);
+        this._maskCtx.drawImage(this.segMask, 0, 0, W, H);
+
+        const img = this._maskCtx.getImageData(0, 0, W, H);
+        const px = img.data;
+
+        // Confidence remap: removes halo noise and keeps face/body opaque.
+        for (let i = 0; i < px.length; i += 4) {
+            const m = px[i];
+            let a = 0;
+            if (m >= 168) a = 255;
+            else if (m > 96) a = ((m - 96) * 255) / 72;
+            px[i] = 255;
+            px[i + 1] = 255;
+            px[i + 2] = 255;
+            px[i + 3] = a;
+        }
+        this._maskCtx.putImageData(img, 0, 0);
+
+        this._refinedMaskCtx.clearRect(0, 0, W, H);
+        this._refinedMaskCtx.filter = 'blur(2px)';
+        this._refinedMaskCtx.drawImage(this._maskCanvas, 0, 0, W, H);
+        this._refinedMaskCtx.filter = 'none';
+
+        return this._refinedMaskCanvas;
+    }
+
     _ear(sm, t, b, l, r) {
         return Math.hypot(sm[t].x - sm[b].x, sm[t].y - sm[b].y) /
             Math.max(Math.hypot(sm[l].x - sm[r].x, sm[l].y - sm[r].y), 1);
@@ -150,6 +208,18 @@ class AREngine {
         if (W > 0 && this.canvas.width !== W) {
             this.canvas.width = W; this.canvas.height = H;
             if (this._tmpCanvas) { this._tmpCanvas.width = W; this._tmpCanvas.height = H; }
+            if (this._maskCanvas) { this._maskCanvas.width = W; this._maskCanvas.height = H; }
+            if (this._refinedMaskCanvas) { this._refinedMaskCanvas.width = W; this._refinedMaskCanvas.height = H; }
+        }
+
+        // ── Snapshot NOW before any await — GPU frame guaranteed readable here ──
+        if (this.video.readyState >= 2 && W > 0) {
+            if (!this._videoSnap || this._videoSnap.width !== W) {
+                this._videoSnap = document.createElement('canvas');
+                this._videoSnap.width = W; this._videoSnap.height = H;
+                this._videoSnapCtx = this._videoSnap.getContext('2d');
+            }
+            this._videoSnapCtx.drawImage(this.video, 0, 0, W, H);
         }
 
         const isBgLens = this.activeLens && this.activeLens.startsWith('bg_');
@@ -178,12 +248,14 @@ class AREngine {
                     this._tmpCanvas.height = this.canvas.height;
                 }
                 this._tmpCtx.clearRect(0, 0, this._tmpCanvas.width, this._tmpCanvas.height);
-                // Draw raw video (unmirrored) — CSS scaleX(-1) handles the flip
-                this._tmpCtx.drawImage(this.video, 0, 0, this._tmpCanvas.width, this._tmpCanvas.height);
+                // Use live frame when available; fallback to last readable snapshot.
+                const srcFrame = this._getCompositeSourceFrame();
+                if (srcFrame) this._tmpCtx.drawImage(srcFrame, 0, 0, this._tmpCanvas.width, this._tmpCanvas.height);
                 // Mask out background → only person pixels remain
                 this._tmpCtx.save();
                 this._tmpCtx.globalCompositeOperation = 'destination-in';
-                this._tmpCtx.drawImage(this.segMask, 0, 0, this._tmpCanvas.width, this._tmpCanvas.height);
+                const refinedMask = this._getRefinedSegMask(this._tmpCanvas.width, this._tmpCanvas.height);
+                if (refinedMask) this._tmpCtx.drawImage(refinedMask, 0, 0, this._tmpCanvas.width, this._tmpCanvas.height);
                 this._tmpCtx.restore();
                 // Composite person over background
                 this.ctx.drawImage(this._tmpCanvas, 0, 0);
@@ -191,7 +263,8 @@ class AREngine {
             } else {
                 /* ── Fallback: blend background at low opacity over live video ── */
                 // Show the real video so person is always visible
-                this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+                const snapFb = this._getCompositeSourceFrame();
+                if (snapFb) this.ctx.drawImage(snapFb, 0, 0, this.canvas.width, this.canvas.height);
 
                 // Blend the background artistically on top
                 this.ctx.save();
@@ -220,6 +293,29 @@ class AREngine {
             });
         }
 
+        // ── Recording composite — uses pre-snapped frame so pixels are always readable ──
+        if (this.isRecording && this._recCanvas && this._recCtx) {
+            // Keep rec canvas dims in sync with live video
+            if (this._recCanvas.width !== W || this._recCanvas.height !== H) {
+                this._recCanvas.width = W; this._recCanvas.height = H;
+            }
+            this._recCtx.clearRect(0, 0, W, H);
+            this._recCtx.save();
+            this._recCtx.scale(-1, 1); // mirror for front-camera selfie output
+            const recSrc = this._getCompositeSourceFrame();
+            if (isBgLens) {
+                // canvas already has full composite (bg + segmented person)
+                this._recCtx.drawImage(this.canvas, -W, 0);
+            } else {
+                // draw snapped video frame first, then AR overlay on top
+                if (recSrc) this._recCtx.drawImage(recSrc, -W, 0, W, H);
+                if (this.activeLens !== 'none') {
+                    this._recCtx.drawImage(this.canvas, -W, 0);
+                }
+            }
+            this._recCtx.restore();
+        }
+
         // FPS counter
         this._fpsCount++;
         const now = performance.now();
@@ -243,9 +339,18 @@ class AREngine {
 
     stop() {
         this.isRunning = false;
+        this.isRecording = false;
         if (this.animFrame) { cancelAnimationFrame(this.animFrame); this.animFrame = null; }
         this.smoothedFaces = [];
         this.segMask = null;
+        this._recCanvas = null;
+        this._recCtx = null;
+        this._videoSnap = null;
+        this._videoSnapCtx = null;
+        this._maskCanvas = null;
+        this._maskCtx = null;
+        this._refinedMaskCanvas = null;
+        this._refinedMaskCtx = null;
         if (window.ARLenses) window.ARLenses.reset();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
@@ -263,48 +368,48 @@ class AREngine {
         oc.height = this.video.videoHeight;
         const oc2 = oc.getContext('2d');
         const isBg = this.activeLens && this.activeLens.startsWith('bg_');
+        const mirror = facingMode === 'user'; // only front camera needs mirror
+        const src = this._getCompositeSourceFrame() || this.video;
 
-        if (isBg || facingMode !== 'user') {
-            oc2.save(); oc2.scale(-1, 1);
-            oc2.drawImage(this.canvas, -oc.width, 0);
-            oc2.restore();
+        oc2.save();
+        if (mirror) { oc2.scale(-1, 1); }
+        const dx = mirror ? -oc.width : 0;
+
+        if (isBg) {
+            // canvas already has full composite (background + segmented person)
+            oc2.drawImage(this.canvas, dx, 0);
         } else {
-            oc2.save(); oc2.scale(-1, 1);
-            oc2.drawImage(this.video, -oc.width, 0);
-            if (this.activeLens !== 'none') oc2.drawImage(this.canvas, -oc.width, 0);
-            oc2.restore();
+            // face/no lens: draw video first, then AR overlay on top
+            oc2.drawImage(src, dx, 0, oc.width, oc.height);
+            if (this.activeLens !== 'none') {
+                oc2.drawImage(this.canvas, dx, 0);
+            }
         }
+        oc2.restore();
         oc.toBlob(callback, 'image/jpeg', 0.95);
     }
 
     /* ── Recording ──────────────────────────────────── */
-    startRecording(facingMode) {
-        const rc = document.createElement('canvas');
-        rc.width = this.video.videoWidth; rc.height = this.video.videoHeight;
-        const rctx = rc.getContext('2d');
+    startRecording() {
+        const W = this.video.videoWidth || this.canvas.width || 640;
+        const H = this.video.videoHeight || this.canvas.height || 480;
+        this._recCanvas = document.createElement('canvas');
+        this._recCanvas.width = W;
+        this._recCanvas.height = H;
+        this._recCtx = this._recCanvas.getContext('2d');
         this.recordedChunks = [];
 
-        const draw = () => {
-            if (!this.isRecording) return;
-            rctx.save(); rctx.scale(-1, 1);
-            rctx.drawImage(this.canvas, -rc.width, 0);
-            rctx.restore();
-            this._recordAF = requestAnimationFrame(draw);
-        };
-
         const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
-        this.mediaRecorder = new MediaRecorder(rc.captureStream(30), { mimeType: mime });
+        this.mediaRecorder = new MediaRecorder(this._recCanvas.captureStream(30), { mimeType: mime });
         this.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) this.recordedChunks.push(e.data); };
         this.mediaRecorder.start(100);
         this.isRecording = true;
-        draw();
     }
 
     stopRecording() {
         return new Promise(resolve => {
             this.mediaRecorder.onstop = () => {
                 this.isRecording = false;
-                if (this._recordAF) { cancelAnimationFrame(this._recordAF); this._recordAF = null; }
                 resolve(new Blob(this.recordedChunks, { type: 'video/webm' }));
             };
             this.mediaRecorder.stop();
