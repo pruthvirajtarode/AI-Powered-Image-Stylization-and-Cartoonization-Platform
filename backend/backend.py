@@ -822,6 +822,14 @@ def admin_users():
     users = db.get_all_users_admin()
     return jsonify({"success": True, "users": users})
 
+@app.route('/api/admin/user/<int:user_id>/activities')
+@admin_required
+def admin_user_activities(user_id):
+    limit = request.args.get('limit', default=30, type=int)
+    limit = max(1, min(limit, 200))
+    logs = db.get_user_activity_logs_admin(user_id, limit=limit)
+    return jsonify({"success": True, "logs": logs})
+
 @app.route('/api/admin/transactions')
 @admin_required
 def admin_transactions():

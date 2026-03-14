@@ -346,6 +346,43 @@ class Database:
         trans_id = cursor.lastrowid
         conn.close()
         return trans_id
+
+    def repair_legacy_razorpay_amounts(self) -> Dict:
+        """
+        Repair legacy Razorpay rows saved with 0.33 and normalize currency.
+        Safe to call repeatedly.
+        """
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        fixed_amount = 0
+        fixed_currency = 0
+        try:
+            cursor.execute(f"""
+                UPDATE transactions
+                SET amount = {self.placeholder}
+                WHERE payment_method = 'razorpay'
+                  AND status = 'completed'
+                  AND amount < 1
+            """, (float(settings.DOWNLOAD_PRICE),))
+            fixed_amount = cursor.rowcount if cursor.rowcount is not None else 0
+
+            cursor.execute("""
+                UPDATE transactions
+                SET currency = 'inr'
+                WHERE payment_method = 'razorpay'
+                  AND (currency IS NULL OR LOWER(currency) != 'inr')
+            """)
+            fixed_currency = cursor.rowcount if cursor.rowcount is not None else 0
+
+            conn.commit()
+        finally:
+            conn.close()
+
+        return {
+            "fixed_amount_rows": fixed_amount,
+            "fixed_currency_rows": fixed_currency
+        }
     
     def update_transaction_status(self, transaction_id: str, status: str):
         """Update transaction status"""
@@ -360,11 +397,13 @@ class Database:
     
     def get_user_transactions(self, user_id: int) -> List[Dict]:
         """Get all transactions for a user"""
+        self.repair_legacy_razorpay_amounts()
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute(f"""
             SELECT * FROM transactions 
-            WHERE user_id = {self.placeholder} 
+            WHERE user_id = {self.placeholder}
+              AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')
             ORDER BY created_at DESC
         """, (user_id,))
         transactions = [dict(row) for row in cursor.fetchall()]
@@ -375,7 +414,12 @@ class Database:
         """Verify if a user has paid for a specific image"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM transactions WHERE user_id = {self.placeholder} AND image_filename = {self.placeholder}", (user_id, filename))
+        cursor.execute(f"""
+            SELECT * FROM transactions
+            WHERE user_id = {self.placeholder} AND image_filename = {self.placeholder}
+            ORDER BY CASE WHEN status = 'completed' THEN 0 ELSE 1 END, created_at DESC
+            LIMIT 1
+        """, (user_id, filename))
         row = cursor.fetchone()
         conn.close()
         return dict(row) if row else None
@@ -498,6 +542,7 @@ class Database:
     # Statistics
     def get_user_stats(self, user_id: int) -> Dict:
         """Get user statistics (High performance optimized)"""
+        self.repair_legacy_razorpay_amounts()
         conn = self.get_connection()
         cursor = conn.cursor()
         
@@ -505,8 +550,8 @@ class Database:
         cursor.execute(f"""
             SELECT 
                 (SELECT COUNT(*) FROM processing_history WHERE user_id = {self.placeholder}) as total_processed,
-                (SELECT COUNT(*) FROM transactions WHERE user_id = {self.placeholder} AND status = 'completed') as total_transactions,
-                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = {self.placeholder} AND status = 'completed') as total_spent,
+                (SELECT COUNT(*) FROM transactions WHERE user_id = {self.placeholder} AND status = 'completed' AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')) as total_transactions,
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = {self.placeholder} AND status = 'completed' AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')) as total_spent,
                 (SELECT style FROM processing_history WHERE user_id = {self.placeholder} GROUP BY style ORDER BY COUNT(*) DESC LIMIT 1) as favorite_style
         """, (user_id, user_id, user_id, user_id))
         
@@ -603,6 +648,7 @@ class Database:
     # --- ADMIN DASHBOARD OPERATIONS ---
     def get_admin_dashboard_stats(self) -> Dict:
         """Get global stats for admin dashboard"""
+        self.repair_legacy_razorpay_amounts()
         conn = self.get_connection()
         cursor = conn.cursor()
         
@@ -612,7 +658,12 @@ class Database:
         cursor.execute("SELECT COUNT(*) as total FROM processing_history")
         total_creations = cursor.fetchone()['total']
         
-        cursor.execute("SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE status = 'completed'")
+                cursor.execute("""
+                        SELECT COALESCE(SUM(amount), 0) as total
+                        FROM transactions
+                        WHERE status = 'completed'
+                            AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')
+                """)
         total_revenue = cursor.fetchone()['total']
         
         interval_sql = "NOW() - INTERVAL '24 HOURS'" if self.is_postgres else "datetime('now', '-24 hours')"
@@ -642,14 +693,32 @@ class Database:
         conn.close()
         return logs
 
+    def get_user_activity_logs_admin(self, user_id: int, limit: int = 50) -> List[Dict]:
+        """Get activity logs for a specific user (admin-only usage)."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT l.*, u.username, u.email
+            FROM user_logs l
+            JOIN users u ON l.user_id = u.id
+            WHERE l.user_id = {self.placeholder}
+            ORDER BY l.created_at DESC
+            LIMIT {self.placeholder}
+        """, (user_id, limit))
+        logs = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return logs
+
     def get_all_transactions_admin(self) -> List[Dict]:
         """Get all transactions with user details"""
+        self.repair_legacy_razorpay_amounts()
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute("""
             SELECT t.*, u.username, u.email 
             FROM transactions t
             JOIN users u ON t.user_id = u.id
+            WHERE (t.payment_method != 'razorpay' OR t.payment_method IS NULL OR t.transaction_id LIKE 'pay_%')
             ORDER BY t.created_at DESC
         """)
         transactions = [dict(row) for row in cursor.fetchall()]
@@ -658,12 +727,13 @@ class Database:
 
     def get_all_users_admin(self) -> List[Dict]:
         """Get all users with their summary stats"""
+        self.repair_legacy_razorpay_amounts()
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute("""
             SELECT u.*, 
                    (SELECT COUNT(*) FROM processing_history WHERE user_id = u.id) as total_creations,
-                   (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND status = 'completed') as total_spent
+                   (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND status = 'completed' AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')) as total_spent
             FROM users u
             ORDER BY u.created_at DESC
         """)
