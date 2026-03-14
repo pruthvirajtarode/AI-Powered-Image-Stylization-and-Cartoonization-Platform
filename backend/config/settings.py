@@ -23,8 +23,8 @@ DATABASE_PATH = os.getenv("DATABASE_PATH", str(BASE_DIR / "data" / "users.db"))
 # Payment Configuration
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY", "")
-PAYMENT_AMOUNT = int(os.getenv("PAYMENT_AMOUNT", "33"))  # in cents
-PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY", "usd")
+PAYMENT_AMOUNT = int(os.getenv("PAYMENT_AMOUNT", "2800"))  # in paise (₹28)
+PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY", "inr")
 
 # Razorpay Configuration (Alternative)
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
@@ -83,8 +83,8 @@ IMAGE_STYLES = {
     "Comic Book": "comic_book"
 }
 
-# Price per download (in dollars)
-DOWNLOAD_PRICE = PAYMENT_AMOUNT / 100  # Convert cents to dollars
+# Price per download in INR rupees (PAYMENT_AMOUNT is in paise, divide by 100)
+DOWNLOAD_PRICE = PAYMENT_AMOUNT / 100  # e.g. 2800 paise → ₹28
 
 # SMTP Configuration for Real Emails
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")

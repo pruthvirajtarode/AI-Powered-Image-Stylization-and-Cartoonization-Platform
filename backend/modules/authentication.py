@@ -282,7 +282,7 @@ class Authentication:
                       </tr>
                       <tr>
                         <td style="color:#94a3b8;font-size:0.85rem;padding:4px 0;">Amount</td>
-                        <td style="color:#22c55e;font-size:0.85rem;font-weight:700;text-align:right;">$0.33</td>
+                        <td style="color:#22c55e;font-size:0.85rem;font-weight:700;text-align:right;">&#8377;28</td>
                       </tr>
                       <tr>
                         <td style="color:#94a3b8;font-size:0.85rem;padding:4px 0;">Status</td>

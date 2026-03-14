@@ -677,19 +677,30 @@ def verify_razorpay_payment():
         filename = data.get('image_filename', '')
         format_ext = data.get('format', 'jpg')
         quality  = data.get('quality', 95)
-        amount   = data.get('amount', settings.DOWNLOAD_PRICE)
+        amount   = data.get('amount')
 
         db.log_user_activity(user_id, "payment", "Successful Razorpay transaction")
 
-        # --- FIX: also store a row keyed by the real payment_id (pay_XXXX) ---
-        # The order record (order_XXXX) was already created at order-creation time.
-        # We need a second row with transaction_id = pay_XXXX so the permanent
-        # download route (/api/download/<payment_id>) can look it up.
+        # Also store a row keyed by payment_id (pay_XXXX) so permanent
+        # download links (/api/download/<payment_id>) can resolve the file.
+        order_tx = db.get_transaction_by_id(razorpay_order_id) if razorpay_order_id else None
+
+        normalized_amount = None
+        if order_tx and order_tx.get('amount') is not None:
+            normalized_amount = float(order_tx['amount'])
+        elif amount is not None:
+            raw_amount = float(amount)
+            # If the client sends paise (e.g. 2800), convert to INR.
+            # If client sends INR directly (e.g. 28), keep as-is.
+            normalized_amount = raw_amount / 100 if raw_amount >= 1000 else raw_amount
+        else:
+            normalized_amount = float(settings.DOWNLOAD_PRICE)
+
         try:
             db.create_transaction(
                 user_id=user_id,
                 transaction_id=payment_id,
-                amount=float(amount) if float(amount) < 1000 else float(amount) / 100,
+                amount=normalized_amount,
                 image_filename=filename,
                 payment_method="razorpay"
             )

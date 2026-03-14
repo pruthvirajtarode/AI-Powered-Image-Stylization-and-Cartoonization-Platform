@@ -202,7 +202,7 @@
                         <tr>
                             <td><code>${t.transaction_id}</code></td>
                             <td><i class="fas fa-credit-card" style="margin-right: 8px;"></i> ${t.payment_method || 'Razorpay'}</td>
-                            <td style="color: #1e293b; font-weight: 700;">${t.amount.toFixed(2)} ${t.currency.toUpperCase()}</td>
+                            <td style="color: #1e293b; font-weight: 700;">&#x20b9;${parseFloat(t.amount).toFixed(2)}</td>
                             <td><span class="status-pill status-${t.status.toLowerCase()}">${t.status}</span></td>
                             <td>${new Date(t.created_at).toLocaleDateString()}</td>
                         </tr>

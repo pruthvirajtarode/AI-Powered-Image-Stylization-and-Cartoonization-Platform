@@ -483,7 +483,7 @@
                 if (stats.success) {
                     document.getElementById('stat-users').innerText = stats.stats.total_users;
                     document.getElementById('stat-creations').innerText = stats.stats.total_creations;
-                    document.getElementById('stat-revenue').innerText = '₹' + stats.stats.total_revenue;
+                    document.getElementById('stat-revenue').innerText = '₹' + parseFloat(stats.stats.total_revenue || 0).toFixed(2);
                     document.getElementById('stat-active').innerText = stats.stats.active_today;
                 }
 
@@ -499,7 +499,7 @@
                         const row = `
                             <tr>
                                 <td><strong>@${t.username}</strong></td>
-                                <td>₹${t.amount}</td>
+                                <td>&#x20b9;${parseFloat(t.amount).toFixed(2)}</td>
                                 <td><span class="badge ${t.status === 'completed' ? 'badge-success' : 'badge-warning'}">${t.status}</span></td>
                                 <td>${new Date(t.created_at).toLocaleDateString()}</td>
                             </tr>
@@ -510,7 +510,7 @@
                             <tr>
                                 <td style="font-family: monospace; font-size: 0.8rem; color: var(--admin-primary);">${t.transaction_id}</td>
                                 <td>${t.username}</td>
-                                <td>₹${t.amount}</td>
+                                <td>&#x20b9;${parseFloat(t.amount).toFixed(2)}</td>
                                 <td>${t.payment_method}</td>
                                 <td><span class="badge ${t.status === 'completed' ? 'badge-success' : 'badge-warning'}">${t.status}</span></td>
                                 <td>${new Date(t.created_at).toLocaleString()}</td>
@@ -590,7 +590,7 @@
                                     </div>
                                 </td>
                                 <td><span class="badge badge-info">${u.total_creations}</span></td>
-                                <td>₹${u.total_spent}</td>
+                                <td>&#x20b9;${parseFloat(u.total_spent || 0).toFixed(2)}</td>
                                 <td>
                                     <button class="btn-auth" style="padding:5px 12px; font-size:0.75rem; background:var(--slate);" onclick="showUserDetails(${u.id})">
                                         <i class="fas fa-search"></i> Audit
