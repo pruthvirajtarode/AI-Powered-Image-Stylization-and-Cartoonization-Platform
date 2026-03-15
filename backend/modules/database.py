@@ -657,13 +657,13 @@ class Database:
         
         cursor.execute("SELECT COUNT(*) as total FROM processing_history")
         total_creations = cursor.fetchone()['total']
-        
-                cursor.execute("""
-                        SELECT COALESCE(SUM(amount), 0) as total
-                        FROM transactions
-                        WHERE status = 'completed'
-                            AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')
-                """)
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(amount), 0) as total
+            FROM transactions
+            WHERE status = 'completed'
+              AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')
+        """)
         total_revenue = cursor.fetchone()['total']
         
         interval_sql = "NOW() - INTERVAL '24 HOURS'" if self.is_postgres else "datetime('now', '-24 hours')"

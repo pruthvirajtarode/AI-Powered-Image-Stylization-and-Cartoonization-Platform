@@ -26,6 +26,10 @@ app = Flask(__name__,
 app.secret_key = settings.SECRET_KEY or os.urandom(24)
 CORS(app)
 
+
+def is_premium_user(user: dict) -> bool:
+    return user.get('role') == 'admin' or user.get('plan') in ['pro', 'elite', 'pro_member']
+
 # --- LIVE HEARTBEAT ---
 @app.before_request
 def update_user_heartbeat():
@@ -409,9 +413,10 @@ def process():
     if 'image' not in request.files:
         return jsonify({"success": False, "message": "No image uploaded"}), 400
     
+    user = session.get('user', {})
     file = request.files['image']
     style = request.form.get('style', 'cartoon')
-    user_id = session['user'].get('id', 0) if 'user' in session else 0
+    user_id = user.get('id', 0)
     
     # Load image
     nparr = np.frombuffer(file.read(), np.uint8)
@@ -421,7 +426,7 @@ def process():
         return jsonify({"success": False, "message": "Invalid image"}), 400
     
     # Process
-    is_premium = session['user'].get('role') == 'admin' or session['user'].get('plan') in ['pro', 'elite']
+    is_premium = is_premium_user(user)
     processed_img, proc_time = image_processor.process_image(img, style, is_premium=is_premium)
     
     # Save processed image
@@ -464,7 +469,7 @@ def process_video():
     user_id = user.get('id', 0)
     user_plan = user.get('plan', 'starter')
     user_role = user.get('role', 'user')
-    is_premium = user_role == 'admin' or user_plan in ['pro', 'elite', 'pro_member']
+    is_premium = is_premium_user(user)
 
     # Starter plan quota check (1 video counts as 1 processing unit)
     if user_id and user_role != 'admin' and user_plan == 'starter':
@@ -587,7 +592,7 @@ def process_batch():
             # Stylize
             user_plan = user.get('plan', 'starter')
             user_role = user.get('role', 'user')
-            is_premium = user_role == 'admin' or user_plan in ['pro', 'elite']
+            is_premium = is_premium_user(user)
             processed_img, proc_time = image_processor.process_image(img, style, is_premium=is_premium)
             
             # Sub-Task 13: Analysis Stats
@@ -849,7 +854,7 @@ def check_payment_status():
     user_id = session['user']['id']
     
     # Pro/Elite/Admin users don't need to pay for single downloads
-    is_premium = session['user'].get('role') == 'admin' or session['user'].get('plan') in ['pro', 'elite']
+    is_premium = is_premium_user(session['user'])
     if is_premium:
         return jsonify({"success": True, "has_paid": True, "message": "Premium user (Unlimited Access)"})
     
@@ -871,7 +876,7 @@ def get_download_token():
     user_id = session['user']['id']
     
     # Verify payment / Premium status
-    is_premium = session['user'].get('role') == 'admin' or session['user'].get('plan') in ['pro', 'elite']
+    is_premium = is_premium_user(session['user'])
     transaction = db.get_transaction_by_filename(user_id, filename)
     
     if not is_premium and (not transaction or transaction['status'] != 'completed'):

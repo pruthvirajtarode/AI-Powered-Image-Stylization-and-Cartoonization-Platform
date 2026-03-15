@@ -559,21 +559,7 @@ class ImageProcessor:
         Calculate image statistics: brightness, contrast, and color distribution.
         Part of Task 13 requirements.
         """
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        gray_mean, gray_std = cv2.meanStdDev(gray)
-        brightness = float(gray_mean[0][0])
-        contrast = float(gray_std[0][0])
-        blue_avg, green_avg, red_avg, _ = cv2.mean(image)
-        
-        return {
-            "brightness": round(float(brightness), 2),
-            "contrast": round(float(contrast), 2),
-            "colors": {
-                "red": round(float(red_avg), 2),
-                "green": round(float(green_avg), 2),
-                "blue": round(float(blue_avg), 2)
-            }
-        }
+        return self.get_image_stats(image)
     
     @staticmethod
     def create_comparison(original: np.ndarray, processed: np.ndarray) -> np.ndarray:
