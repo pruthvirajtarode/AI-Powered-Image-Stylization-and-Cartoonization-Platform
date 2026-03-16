@@ -10,7 +10,7 @@
 ---
 
 <p align="center">
-  <img src="assets/images/hero.png" alt="Toonify AI Banner" width="100%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_collage.png" alt="Toonify AI Banner" width="100%">
 </p>
 
 <p align="center">
@@ -35,8 +35,8 @@
 ## 📸 Visual Preview
 
 <p align="center">
-  <img src="assets/images/editor.png" alt="Neural Production Stage" width="45%">
-  <img src="assets/images/styles.png" alt="Artistic Styles" width="45%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/cartoon_effect.png" alt="Neural Production Stage" width="45%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/stroke_style.png" alt="Artistic Styles" width="45%">
 </p>
 
 <p align="center">
@@ -129,7 +129,7 @@ See the detailed [System Flowchart](docs/FLOWCHART.md) for a technical breakdown
 ## 🎨 Dashboard Tour
 
 <p align="center">
-  <img src="assets/images/login.png" alt="Neural Vault Login" width="80%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/assets/images/login.png" alt="Neural Vault Login" width="80%">
 </p>
 
 *   **Home**: Upload directly via Drag-and-Drop or Camera Capture.
@@ -142,7 +142,7 @@ See the detailed [System Flowchart](docs/FLOWCHART.md) for a technical breakdown
 ## 📚 Learning & Resources
 
 <p align="center">
-  <img src="assets/images/tutorials.png" alt="Video Tutorials" width="80%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/assets/images/tutorials.png" alt="Video Tutorials" width="80%">
 </p>
 
 *   Detailed [User Guide](docs/user_guide.md) for getting started.
