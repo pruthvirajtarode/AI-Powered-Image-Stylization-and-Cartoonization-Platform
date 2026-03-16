@@ -1,196 +1,133 @@
-# <p align="center">Toonify AI</p>
-
-<p align="center"><strong>Professional image stylization platform with live AI art styles, batch processing, AR camera support, secure payments, and a full creator dashboard.</strong></p>
+# <p align="center">🎨 Toonify AI</p>
 
 <p align="center">
-  <a href="https://toonify.live/"><strong>Live Demo</strong></a>
-  |
-  <a href="docs/user_guide.md"><strong>User Guide</strong></a>
-  |
-  <a href="docs/developer_guide.md"><strong>Developer Guide</strong></a>
+  <strong>Transforming Reality into Art with AI-Powered Stylization</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Live-29c55e?style=for-the-badge" alt="Status">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_collage.png" alt="Toonify AI Banner" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://toonify.live/"><strong>✨ Live Demo</strong></a>
+  •
+  <a href="docs/user_guide.md"><strong>📖 User Guide</strong></a>
+  •
+  <a href="docs/developer_guide.md"><strong>💻 Dev Guide</strong></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Live-29c55e?style=for-the-badge&logo=statuspage&logoColor=white" alt="Status">
   <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/Framework-Flask-111827?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
-  <img src="https://img.shields.io/badge/Frontend-HTML%20%2F%20CSS%20%2F%20JS-f97316?style=for-the-badge" alt="Frontend">
-  <img src="https://img.shields.io/badge/Payments-Razorpay-2563eb?style=for-the-badge" alt="Payments">
+  <img src="https://img.shields.io/badge/Flask-Framework-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
+  <img src="https://img.shields.io/badge/Razorpay-Payments-2563eb?style=for-the-badge&logo=razorpay&logoColor=white" alt="Payments">
   <img src="https://img.shields.io/badge/License-MIT-0f172a?style=for-the-badge" alt="License">
 </p>
 
 ---
 
-## Product Snapshot
+## 🚀 The Product
 
-Toonify AI turns ordinary photos into polished AI artwork through a modern creator workflow. The project combines a public landing page, neural editor, payment system, gallery, documentation hub, and creator dashboard in one production-ready Flask application.
+**Toonify AI** is a professional-grade image stylization platform that bridges the gap between raw photography and AI-generated art. Designed for creators, it provides a seamless workflow from local uploads to high-fidelity artistic renders.
 
----
-
-## Actual Homepage UI
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_pixar_1772354102626.png" alt="Live homepage AI hero artwork" width="58%">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_original_1772354038120.png" alt="Live homepage original preview" width="20%">
-</p>
-
-<p align="center"><em>The real homepage flow: original preview card plus the main AI-generated artwork panel.</em></p>
+### 🌟 Key Highlights
+- **9+ Unique AI Styles**: From Pixar-style 3D to Classic Anime and Comic Book aesthetics.
+- **Batch Processing**: Stylize entire collections in one go with optimized backend workers.
+- **Creator Dashboard**: Real-time analytics, spend tracking, and style preferences at your fingertips.
+- **Secure Payments**: Industry-standard integration with Razorpay for premium features.
+- **AR & Social Ready**: Support for AR camera filters and social-media-ready exports.
 
 ---
 
-## Style Preview
+## 🎭 Style Showcase
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_original_1772354038120.png" alt="Original portrait" width="22%">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_pixar_1772354102626.png" alt="Pixar style" width="22%">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_anime_1772354129553.png" alt="Anime style" width="22%">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_comic_1772354167736.png" alt="Comic style" width="22%">
-</p>
+<table align="center">
+  <tr>
+    <td align="center"><b>Original</b></td>
+    <td align="center"><b>Pixar Style</b></td>
+    <td align="center"><b>Anime Style</b></td>
+    <td align="center"><b>Comic Style</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_original_1772354038120.png" width="200"></td>
+    <td><img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_pixar_1772354102626.png" width="200"></td>
+    <td><img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_anime_1772354129553.png" width="200"></td>
+    <td><img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_comic_1772354167736.png" width="200"></td>
+  </tr>
+</table>
 
-<p align="center"><em>One original image transformed across multiple styles that are visible in the live product.</em></p>
-
----
-
-## UI Gallery
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/cartoon_effect.png" alt="Cartoon effect" width="45%">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/stroke_style.png" alt="Stroke style" width="45%">
-</p>
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/gallery_3d_cartoon.png" alt="Gallery preview" width="72%">
-</p>
+<p align="center"><em>Experience high-fidelity transformations with consistent character retention.</em></p>
 
 ---
 
-## Core Features
+## 🛠️ Performance & Modules
 
-| Area | What It Includes |
+| Feature | Description |
 | :--- | :--- |
-| AI generation | 9 art styles, single-image flow, batch processing, creator-friendly output pipeline |
-| Product UI | Landing page, neural editor, gallery, docs, billing, profile, and creator dashboard |
-| Dashboard | Stylization stats, favorite style, spend tracking, and recent production history |
-| Payments | Razorpay integration, secure access flow, payment history, and premium purchase support |
-| Extended channels | AR camera support, WhatsApp-related backend modules, and social-content workflows |
-| Reliability | Session-aware dashboard behavior and graceful unauthorized handling |
+| **Neural Editor** | Interactive playground providing real-time filters and granular control. |
+| **Batch Pipeline** | Process massive datasets with our high-throughput backend architecture. |
+| **Creator Analytics** | Detailed insights into stylization stats, favorites, and usage history. |
+| **Secure Billing** | Fully transparent payment history and premium access management. |
+| **Documentation Hub** | Extensive guides for both end-users and technical architects. |
 
 ---
 
-## Why This Project Stands Out
+## 💻 Tech Stack & Architecture
 
-- Modern creator-facing UI with a polished landing page and a production-ready feel.
-- Real image transformation previews integrated directly into the public product experience.
-- Full-stack workflow covering authentication, payments, gallery history, and dashboard analytics.
-- Clear separation of frontend, backend, docs, assets, and tests for maintainability.
+- **Core Engine**: Python 🐍, Flask 🔥, OpenCV 👁️
+- **Frontend**: Modern HTML5, Responsive CSS3 (Glassmorphism), Vanilla JavaScript
+- **Data Layer**: PostgreSQL (Production) / SQLite (Development)
+- **Deployment**: Docker 🐳, Gunicorn, Render CI/CD
+- **Security**: Bcrypt Hashing, OAuth 2.0, Session-based Auth
 
----
-
-## Tech Stack
-
-| Layer | Stack |
-| :--- | :--- |
-| Backend | Python, Flask, OpenCV |
-| Frontend | HTML5, CSS3, JavaScript |
-| Database and auth | PostgreSQL, Bcrypt, session-based authentication |
-| Payments | Razorpay |
-| Deployment | Render, Docker, Procfile-based startup |
-
----
-
-## Project Structure
-
-```text
-frontend/
-  static/
-    css/
-    images/
-    js/
-  templates/
-backend/
-  config/
-  modules/
-  scripts/
-  tests/
-  utils/
-docs/
-assets/
-data/
+```mermaid
+graph LR
+    A[User Image] --> B(Flask Backend)
+    B --> C{AI Engine}
+    C -->|Pixar| D[3D Render]
+    C -->|Anime| E[2D Art]
+    C -->|Comic| F[Graphic Novel]
+    D & E & F --> G(Gallery/Download)
 ```
 
 ---
 
-## Getting Started
+## ⚡ Quick Start
 
-1. Clone the repository.
-
+### 1. Clone & Initialize
 ```bash
 git clone https://github.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform.git
 cd AI-Powered-Image-Stylization-and-Cartoonization-Platform
 ```
 
-2. Install dependencies.
-
+### 2. Integrated Setup
+Run the automated setup script to configure dependencies, virtual environment, and initial data:
 ```powershell
 ./setup.bat
 ```
 
-Manual alternative:
-
-```bash
-pip install -r backend/requirements.txt
-```
-
-3. Configure environment variables in `backend/` for Google OAuth, Razorpay, database access, and deployment secrets.
-
-4. Start the application.
-
+### 3. Launch App
 ```bash
 python backend/backend.py
 ```
-
-5. Open the app at `http://localhost:5000`.
-
----
-
-## Main User Flows
-
-1. Upload a photo from the homepage or editor.
-2. Apply a style and preview the transformed output.
-3. Download, save, or continue processing additional images.
-4. Review previous creations in the gallery.
-5. Track usage, favorite style, and spend from the dashboard.
+> **Note**: Access your local instance at `http://localhost:5000`. Ensure your `.env` is configured with valid API keys for Google OAuth and Razorpay.
 
 ---
 
-## Documentation
+## 🤝 Contributing & Community
 
-- [User Guide](docs/user_guide.md)
-- [Developer Guide](docs/developer_guide.md)
-- [Flowchart](docs/FLOWCHART.md)
-- [Project Report](docs/PROJECT_REPORT.md)
-- [Issue Resolution Summary](docs/ISSUE_RESOLUTION_SUMMARY.md)
-- [New Features Guide](docs/NEW_FEATURES_GUIDE.md)
+We believe in the power of open-source! Whether you're fixing a bug or suggesting a new AI style, your input is welcome.
+- 🐛 **Bugs**: Open an [Issue](https://github.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/issues).
+- ✨ **Features**: Start a [Discussion](https://github.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/discussions).
+- 🛠️ **PRs**: Keep them scoped and document any UI changes with screenshots.
 
 ---
 
-## Recent Improvements
+<p align="center">
+  <strong>Crafted with ❤️ by Pruthviraj Tarode</strong>
+</p>
 
-- Dashboard session flow improved to redirect cleanly when login state expires.
-- Unauthorized dashboard responses now fail more gracefully.
-- README visuals aligned with the actual live product UI.
-
----
-
-## Contributing
-
-1. Fork the repository.
-2. Create a focused feature branch.
-3. Keep changes scoped and documented.
-4. Open a pull request with a clear summary and screenshots when UI changes are involved.
-
-For bug reports, open a GitHub issue with reproduction steps, expected behavior, and screenshots when relevant.
-
----
-
-<p align="center"><strong>Built by Pruthviraj Tarode</strong></p>
+<p align="center">
+  <a href="https://github.com/pruthvirajtarode"><img src="https://img.shields.io/badge/GitHub-Profile-181717?style=flat&logo=github" alt="GitHub"></a>
+  <a href="https://www.linkedin.com/in/pruthviraj-tarode/"><img src="https://img.shields.io/badge/LinkedIn-Profile-0a66c2?style=flat&logo=linkedin" alt="LinkedIn"></a>
+</p>
