@@ -18,14 +18,15 @@
 
 ---
 
-## Actual Homepage UI
+## Actual Homepage Hero UI
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_collage.png" alt="Actual Toonify Homepage UI" width="100%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_pixar_1772354102626.png" alt="Toonify live homepage hero result" width="58%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_original_1772354038120.png" alt="Toonify live homepage original preview" width="20%">
 </p>
 
 <p align="center">
-  <em>Live homepage look with announcement bar, top navigation, creator profile pill, and hero artwork preview.</em>
+  <em>This matches the live homepage hero style flow: original preview card plus main AI artwork panel.</em>
 </p>
 
 ---
@@ -199,4 +200,5 @@ For bug reports, open a GitHub issue with steps, screenshots, and expected behav
 <p align="center">
   Built by <strong>Pruthviraj Tarode</strong>
 </p>
+
 
