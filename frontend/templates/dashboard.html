@@ -428,6 +428,12 @@
                 const response = await fetch('/api/user/history');
                 const data = await response.json();
 
+                // Handle unauthorized session
+                if (!data.success && data.message === "Unauthorized") {
+                    window.location.href = '/?auth=login';
+                    return;
+                }
+
                 if (data.success) {
                     const stats = data.stats;
                     document.getElementById('statTotal').innerText = stats.total_processed;
