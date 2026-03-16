@@ -1,156 +1,187 @@
-# <p align="center">🎨 Toonify AI - Professional Image Stylization Platform 🤖</p>
-
----
-
-## 🆕 Recent Updates
-
-- Improved dashboard session handling: Users are now automatically redirected to login if their session expires, ensuring a seamless and secure experience.
-- Enhanced error handling for unauthorized access on the dashboard.
-
----
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_collage.png" alt="Toonify AI Banner" width="100%">
-</p>
+# <p align="center">Toonify AI - Professional Image Stylization Platform</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Live-brightgreen?style=for-the-badge" alt="Status">
   <img src="https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python" alt="Python">
   <img src="https://img.shields.io/badge/Framework-Flask-lightgrey?style=for-the-badge&logo=flask" alt="Flask">
-  <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" alt="License">
-</p>
-
----
-
-<p align="center">
-  <strong>Transform your photos into stunning artistic masterpieces using advanced neural calculations and high-performance OpenCV algorithms.</strong>
+  <img src="https://img.shields.io/badge/Frontend-HTML%20%2F%20CSS%20%2F%20JS-orange?style=for-the-badge" alt="Frontend">
+  <img src="https://img.shields.io/badge/License-MIT-black?style=for-the-badge" alt="License">
 </p>
 
 <p align="center">
-  <a href="https://toonify.live/"><strong>🚀 Live Demo: toonify.live</strong></a>
-</p>
-
----
-
-## 📸 Visual Preview
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/cartoon_effect.png" alt="Neural Production Stage" width="45%">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/stroke_style.png" alt="Artistic Styles" width="45%">
+  <strong>Transform your photos into AI artwork with 9 art styles, batch processing, AR camera support, secure payments, and a full creator dashboard.</strong>
 </p>
 
 <p align="center">
-  <em>The Neural Production Stage and available Artistic Stylization effects.</em>
+  <a href="https://toonify.live/"><strong>Live Demo</strong></a>
 </p>
 
 ---
 
-## ✨ Key Features
+## Live Product Preview
 
-### ⚡ 1. Neural Batch System
-*   **Parallel Processing**: Upload multiple images and apply different styles to each in a single batch.
-*   **Dynamic Queue**: Real-time management of your processing queue with individual style selection.
-*   **Real-time Feedback**: Visual status tracking for every image in the batch.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_original_1772354038120.png" alt="Original Portrait" width="22%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_pixar_1772354102626.png" alt="3D Pixar Style" width="22%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_anime_1772354129553.png" alt="Anime Style" width="22%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_boy_comic_1772354167736.png" alt="Comic Style" width="22%">
+</p>
 
-### 🧠 2. Neural Stylization Engine
-*   **High-Fidelity Engine**: Optimized recursive edge-preserving filters for stunning, sharp artistic results.
-*   **A/B Comparison**: Dynamic slider and side-by-side view to witness the artistic evolution.
-*   **Neural Statistics**: In-depth analysis of **Brightness, Contrast, and Color Distribution** for every generation.
-
-### 💰 3. Premium Monetization
-*   **Instant Exports**: Integrated **Razorpay** for HD exports and Pro subscriptions.
-*   **Multi-Format Exports**: Save your art in **JPG, PNG, or professional PDF**.
-*   **Secure Access**: Temporary signed download links and server-side caching for instant delivery.
-
-### 🔒 4. Personal Creative Vault
-*   **Neural History**: A comprehensive, paginated gallery of all your past creations.
-*   **Secure Privacy**: "Neural Burn" (Danger Zone) for permanent data wiping.
-*   **Smart Management**: Bulk recovery and automated cleanup settings.
-*   **Session-Aware Dashboard**: Automatic login redirect if your session expires, for improved security and user experience.
----
-
-## 🤝 Contributing & Support
-
-We welcome contributions! To contribute:
-
-1. Fork this repository and create a new branch for your feature or bugfix.
-2. Make your changes and submit a pull request with a clear description.
-3. For major changes, please open an issue first to discuss what you would like to change.
-
-**Found a bug or need help?**
-- Open an issue on GitHub with details and screenshots if possible.
-- For security issues, please contact the maintainer directly.
+<p align="center">
+  <em>The same style preview sequence used in the live landing-page hero: original upload plus 3D Pixar, Anime, and Comic variants.</em>
+</p>
 
 ---
 
+## What The Platform Includes
+
+### 1. AI Art Generation
+- 9 AI art styles highlighted on the live homepage.
+- Fast single-image and batch image processing workflows.
+- Portrait, landscape, pet, and creator-friendly outputs.
+
+### 2. Modern Creator UI
+- Live landing page with interactive hero preview and style switching.
+- Neural editor flow with upload, stylization, and export actions.
+- Gallery, docs, billing, dashboard, and profile screens.
+
+### 3. Creator Account System
+- Login and profile management.
+- Personal dashboard with total stylizations, favorite style, spend, and recent history.
+- Session-aware dashboard behavior for expired logins.
+
+### 4. Payments And Delivery
+- Razorpay integration for premium purchases and exports.
+- Secure access to processed results.
+- Download and billing history support.
+
+### 5. Extended Features
+- AR camera support.
+- WhatsApp and social workflow support in the backend.
+- Documentation pages, tutorials, and project guides.
+
 ---
 
-## 🛠️ Tech Stack
+## Current UI Screens
 
-| Backend | Frontend | Database & Security |
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/cartoon_effect.png" alt="Cartoon Effect UI" width="45%">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/stroke_style.png" alt="Stroke Style UI" width="45%">
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/gallery_3d_cartoon.png" alt="Gallery Preview" width="70%">
+</p>
+
+<p align="center">
+  <em>Current production visuals used by the landing page and gallery experience.</em>
+</p>
+
+---
+
+## Recent Updates
+
+- Dashboard handling improved so expired sessions redirect cleanly to login.
+- Unauthorized dashboard access now fails gracefully instead of leaving empty stats panels.
+- README visuals updated to reflect the current live product UI instead of older placeholder screenshots.
+
+---
+
+## Tech Stack
+
+| Backend | Frontend | Database And Security |
 | :--- | :--- | :--- |
-| ![Python](https://img.shields.io/badge/-Python-3776AB?style=flat&logo=python&logoColor=white) | ![JS](https://img.shields.io/badge/-JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black) | ![Postgres](https://img.shields.io/badge/-PostgreSQL-336791?style=flat&logo=postgresql&logoColor=white) |
-| ![Flask](https://img.shields.io/badge/-Flask-000000?style=flat&logo=flask&logoColor=white) | ![HTML](https://img.shields.io/badge/-HTML5-E34F26?style=flat&logo=html5&logoColor=white) | ![Bcrypt](https://img.shields.io/badge/-Bcrypt-blue?style=flat) |
-| ![OpenCV](https://img.shields.io/badge/-OpenCV-5C3EE8?style=flat&logo=opencv&logoColor=white) | ![CSS](https://img.shields.io/badge/-CSS3-1572B6?style=flat&logo=css3&logoColor=white) | ![JWT](https://img.shields.io/badge/-JWT-white?style=flat&logo=json-web-tokens&logoColor=black) |
+| Python | HTML5 | PostgreSQL |
+| Flask | CSS3 | Bcrypt |
+| OpenCV | JavaScript | Session-based authentication |
+| Razorpay integration | Responsive UI | Secure payment tracking |
 
 ---
 
-## 🚀 Installation & Setup
+## Project Structure
 
-1️⃣ **Clone the repository**
+```text
+frontend/
+  static/
+    css/
+    images/
+    js/
+  templates/
+backend/
+  modules/
+  scripts/
+  tests/
+docs/
+assets/
+```
+
+---
+
+## Installation And Setup
+
+1. Clone the repository.
+
 ```bash
 git clone https://github.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform.git
 cd AI-Powered-Image-Stylization-and-Cartoonization-Platform
 ```
 
-2️⃣ **Configure Environment**
-*   Create a `.env` file in the `backend/` directory from `.env.example`.
-*   Update your API keys (Google, Razorpay, etc.).
+2. Install dependencies.
 
-3️⃣ **Run Automated Setup (Windows)**
 ```powershell
 ./setup.bat
 ```
-*Manual Setup:* `pip install -r backend/requirements.txt`
 
-4️⃣ **Launch the Platform**
+Manual alternative:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+3. Configure environment variables in `backend/` for Google OAuth, Razorpay, and deployment secrets.
+
+4. Start the app.
+
 ```bash
 python backend/backend.py
 ```
-*Dashboards will be live at `http://localhost:5000`*
+
+5. Open the app at `http://localhost:5000`.
 
 ---
 
-## 🎨 System Architecture
-See the detailed [System Flowchart](docs/FLOWCHART.md) for a technical breakdown of the processing pipeline.
+## Main User Flows
+
+- Upload a photo and apply a style from the editor.
+- Preview style output and compare creative variations.
+- Save or download processed images.
+- Review account usage in the dashboard.
+- Browse previous outputs in the gallery.
+- Track purchases from billing and payment history.
 
 ---
 
-## 🎨 Dashboard Tour
+## Docs And Guides
+
+- [User Guide](docs/user_guide.md)
+- [Developer Guide](docs/developer_guide.md)
+- [Flowchart](docs/FLOWCHART.md)
+- [Project Report](docs/PROJECT_REPORT.md)
+- [Issue Resolution Summary](docs/ISSUE_RESOLUTION_SUMMARY.md)
+
+---
+
+## Contributing And Support
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make focused changes.
+4. Open a pull request with a clear summary.
+
+For bug reports, open a GitHub issue with steps, screenshots, and expected behavior.
+
+---
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/assets/images/login.png" alt="Neural Vault Login" width="80%">
-</p>
-
-*   **Home**: Upload directly via Drag-and-Drop or Camera Capture.
-*   **Dashboard**: View your Account Statistics, Favorite Styles, and Lifetime Spend.
-*   **Vault**: Search through your historical art pieces and manage your exports.
-*   **Profile**: Multi-layer security settings including Password Rotations.
-
----
-
-## 📚 Learning & Resources
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/assets/images/tutorials.png" alt="Video Tutorials" width="80%">
-</p>
-
-*   Detailed [User Guide](docs/user_guide.md) for getting started.
-*   Technical [Developer Guide](docs/developer_guide.md) for contributors.
-*   [Flowchart](docs/FLOWCHART.md) for deep-dive into the AI pipeline.
-
----
-
-<p align="center">
-  Made with ❤️ by <strong>Pruthviraj Tarode</strong>
+  Built by <strong>Pruthviraj Tarode</strong>
 </p>
