@@ -1,5 +1,14 @@
 # <p align="center">🎨 Toonify AI - Professional Image Stylization Platform 🤖</p>
 
+---
+
+## 🆕 Recent Updates
+
+- Improved dashboard session handling: Users are now automatically redirected to login if their session expires, ensuring a seamless and secure experience.
+- Enhanced error handling for unauthorized access on the dashboard.
+
+---
+
 <p align="center">
   <img src="assets/images/hero.png" alt="Toonify AI Banner" width="100%">
 </p>
@@ -57,6 +66,22 @@
 *   **Neural History**: A comprehensive, paginated gallery of all your past creations.
 *   **Secure Privacy**: "Neural Burn" (Danger Zone) for permanent data wiping.
 *   **Smart Management**: Bulk recovery and automated cleanup settings.
+*   **Session-Aware Dashboard**: Automatic login redirect if your session expires, for improved security and user experience.
+---
+
+## 🤝 Contributing & Support
+
+We welcome contributions! To contribute:
+
+1. Fork this repository and create a new branch for your feature or bugfix.
+2. Make your changes and submit a pull request with a clear description.
+3. For major changes, please open an issue first to discuss what you would like to change.
+
+**Found a bug or need help?**
+- Open an issue on GitHub with details and screenshots if possible.
+- For security issues, please contact the maintainer directly.
+
+---
 
 ---
 
