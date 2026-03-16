@@ -18,6 +18,18 @@
 
 ---
 
+## Actual Homepage UI
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pruthvirajtarode/AI-Powered-Image-Stylization-and-Cartoonization-Platform/main/frontend/static/images/hero_collage.png" alt="Actual Toonify Homepage UI" width="100%">
+</p>
+
+<p align="center">
+  <em>Live homepage look with announcement bar, top navigation, creator profile pill, and hero artwork preview.</em>
+</p>
+
+---
+
 ## Live Product Preview
 
 <p align="center">
@@ -42,6 +54,8 @@
 
 ### 2. Modern Creator UI
 - Live landing page with interactive hero preview and style switching.
+- Top banner with "9 AI Art Styles + Batch Processing + AR Camera" announcement.
+- Navigation matching production UI: Home, Neural Editor, Gallery, AI Styles, and Docs.
 - Neural editor flow with upload, stylization, and export actions.
 - Gallery, docs, billing, dashboard, and profile screens.
 
@@ -83,7 +97,7 @@
 
 - Dashboard handling improved so expired sessions redirect cleanly to login.
 - Unauthorized dashboard access now fails gracefully instead of leaving empty stats panels.
-- README visuals updated to reflect the current live product UI instead of older placeholder screenshots.
+- README visuals updated to reflect the current live product UI.
 
 ---
 
@@ -138,7 +152,7 @@ Manual alternative:
 pip install -r backend/requirements.txt
 ```
 
-3. Configure environment variables in `backend/` for Google OAuth, Razorpay, and deployment secrets.
+3. Configure environment variables in backend/ for Google OAuth, Razorpay, and deployment secrets.
 
 4. Start the app.
 
@@ -146,7 +160,7 @@ pip install -r backend/requirements.txt
 python backend/backend.py
 ```
 
-5. Open the app at `http://localhost:5000`.
+5. Open the app at http://localhost:5000.
 
 ---
 
@@ -185,3 +199,4 @@ For bug reports, open a GitHub issue with steps, screenshots, and expected behav
 <p align="center">
   Built by <strong>Pruthviraj Tarode</strong>
 </p>
+
