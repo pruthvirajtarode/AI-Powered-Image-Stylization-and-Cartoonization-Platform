@@ -134,10 +134,19 @@ def get_user_performance():
     history = db.get_user_history(user_id, limit=10) # Recent 10
     stats = db.get_user_stats(user_id)
     stats['usage_24h'] = db.get_user_usage_24h(user_id)
+    stats['total_spent'] = float(stats.get('total_spent') or 0)
     
     # We no longer check .exists() on every file here, as it slows down the API significantly.
     # The frontend handles missing images via the 'onerror' event for better performance.
     for item in history:
+        created_at = item.get('created_at')
+        if hasattr(created_at, 'isoformat'):
+            item['created_at'] = created_at.isoformat()
+
+        item['processing_time'] = float(item.get('processing_time') or 0)
+        item['original_filename'] = item.get('original_filename') or 'Untitled upload'
+        item['processed_filename'] = item.get('processed_filename') or ''
+        item['style'] = item.get('style') or 'Unknown'
         item['is_missing'] = False 
     
     return jsonify({
