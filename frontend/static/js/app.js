@@ -618,6 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cameraModal) {
             cameraModal.style.display = 'flex';
             cameraModal.classList.add('is-open');
+            document.body.classList.add('camera-modal-open');
             setTimeout(startCamera, 200);
         }
     };
@@ -627,6 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cameraModal.classList.remove('is-open');
             cameraModal.style.display = 'none';
         }
+        document.body.classList.remove('camera-modal-open');
         stopCamera();
     };
 
@@ -636,7 +638,11 @@ document.addEventListener('DOMContentLoaded', () => {
             stopCamera();
 
             cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+                video: {
+                    facingMode,
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                },
                 audio: false
             });
 

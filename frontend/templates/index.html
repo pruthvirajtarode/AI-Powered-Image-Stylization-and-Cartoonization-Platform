@@ -60,7 +60,7 @@
         },
       };
     </script>
-    <link rel="stylesheet" href="/static/css/styles.css?v=1002">
+    <link rel="stylesheet" href="/static/css/styles.css?v=1003">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link
@@ -1829,52 +1829,34 @@
     </div>
 
     <!-- Camera Capture Modal -->
-    <div id="cameraModal" class="loader-overlay" style="display: none; z-index: 9999;">
+    <div id="cameraModal" class="loader-overlay camera-modal-fullscreen" style="display: none; z-index: 9999;">
         <div class="cam-modal-card">
-
-            <!-- Header -->
-            <div class="cam-modal-header">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <h2 style="margin:0;font-size:1.5rem;color:#1e293b;"><i class="fas fa-camera"></i> AR Camera
-                    </h2>
-                    <span id="arFpsCounter"
-                        style="font-size:0.72rem;background:#0f172a;color:#22d3ee;padding:2px 8px;border-radius:20px;font-family:monospace;">--
-                        FPS</span>
-                    <span id="arFaceCount"
-                        style="font-size:0.72rem;background:#0f172a;color:#a78bfa;padding:2px 8px;border-radius:20px;font-family:monospace;">0
-                        faces</span>
-                </div>
-                <button onclick="closeCameraModal()"
-                    style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;"><i
-                        class="fas fa-times"></i></button>
-            </div>
 
             <!-- Video + AR Canvas -->
             <div class="cam-viewport">
-                <video id="cameraStream" style="width:100%;display:block;background:#000;border-radius:12px;"
-                    playsinline></video>
-                <canvas id="arCanvas"
-                    style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+                <video id="cameraStream" class="cam-video" playsinline></video>
+                <canvas id="arCanvas" class="cam-ar-canvas"></canvas>
                 <!-- Hidden offscreen canvas for capture -->
                 <canvas id="cameraCanvas" style="display:none;"></canvas>
                 <!-- Capture flash -->
-                <div id="cameraFlash"
-                    style="position:absolute;inset:0;background:white;opacity:0;pointer-events:none;border-radius:12px;transition:opacity 0.15s;">
-                </div>
-                <!-- Active lens badge -->
-                <div
-                    style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:white;font-size:0.78rem;padding:3px 14px;border-radius:20px;backdrop-filter:blur(6px);">
-                    <span id="activeLensLabel">None</span>
-                </div>
-            </div>
+                <div id="cameraFlash" class="camera-flash"></div>
 
+                <!-- Header -->
+                <div class="cam-modal-header">
+                    <div class="cam-header-left">
+                        <h2 class="cam-title"><i class="fas fa-camera"></i> AR Camera</h2>
+                        <span id="arFpsCounter" class="cam-stat-pill">-- FPS</span>
+                        <span id="arFaceCount" class="cam-stat-pill">0 faces</span>
+                    </div>
+                    <button onclick="closeCameraModal()" class="cam-close-btn" aria-label="Close camera">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
 
-            <!-- Lens Carousel -->
-            <div class="lens-carousel-container">
-                <p
-                    style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:10px;text-align:center;letter-spacing:0.06em;">
-                    Choose AR Lens</p>
-                <div class="lens-carousel" id="lensCarousel">
+                <!-- Lens Carousel -->
+                <div class="lens-carousel-container cam-lens-overlay">
+                    <p class="cam-lens-title">Choose AR Lens</p>
+                    <div class="lens-carousel" id="lensCarousel">
                     <div class="lens-item active" data-lens="none">
                         <div class="lens-icon"><i class="fas fa-ban"></i></div><span>None</span>
                     </div>
@@ -1924,26 +1906,29 @@
                     <div class="lens-item lens-bg" data-lens="bg_neon">
                         <div class="lens-icon">🔮</div><span>Neon</span>
                     </div>
+                    </div>
+                </div>
+
+                <!-- Active lens badge -->
+                <div class="cam-active-lens-badge">
+                    <span id="activeLensLabel">None</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="cam-action-bar">
+                    <div class="cam-action-row">
+                        <button id="captureCameraBtn" class="btn-convert cam-action-btn cam-capture-btn">
+                            <i class="fas fa-camera"></i> Capture
+                        </button>
+                        <button id="switchCameraBtn" class="btn-auth cam-action-btn cam-flip-btn">
+                            <i class="fas fa-repeat"></i> Flip
+                        </button>
+                    </div>
+                    <button id="recordBtn" class="cam-record-btn">
+                        <i class="fas fa-video"></i> Record Video
+                    </button>
                 </div>
             </div>
-
-            <!-- Action Buttons -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-                <button id="captureCameraBtn" class="btn-convert"
-                    style="border-radius:12px;padding:15px;font-size:1rem;">
-                    <i class="fas fa-camera"></i> Capture
-                </button>
-                <button id="switchCameraBtn" class="btn-auth"
-                    style="border-radius:12px;padding:15px;background:var(--slate);color:white;">
-                    <i class="fas fa-repeat"></i> Flip
-                </button>
-            </div>
-            <button id="recordBtn"
-                style="width:100%;border-radius:12px;padding:13px;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;font-weight:700;cursor:pointer;margin-bottom:10px;font-size:0.95rem;transition:0.2s;">
-                <i class="fas fa-video"></i> Record Video
-            </button>
-            <button onclick="closeCameraModal()" class="btn-auth"
-                style="width:100%;border-radius:12px;padding:13px;background:transparent;color:var(--slate);border:1px solid #e2e8f0;">Cancel</button>
         </div>
     </div>
 
@@ -2166,7 +2151,7 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="/static/js/ar-engine.js?v=303"></script>
     <script src="/static/js/lenses.js?v=300"></script>
-    <script src="/static/js/app.js?v=504"></script>
+    <script src="/static/js/app.js?v=505"></script>
 </body>
 
 </html>
