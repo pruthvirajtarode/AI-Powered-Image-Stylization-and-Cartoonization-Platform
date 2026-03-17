@@ -184,32 +184,57 @@
     </main>
 
     <script>
+        function renderTransactionMessage(message) {
+            const tbody = document.getElementById('transBody');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">${message}</td></tr>`;
+        }
+
+        function formatTransactionAmount(value) {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed.toFixed(2) : '0.00';
+        }
+
+        function formatTransactionDate(value) {
+            if (!value) return 'N/A';
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleDateString();
+        }
+
         async function loadTransactions() {
             try {
                 const response = await fetch('/api/user/transactions');
+                if (!response.ok) {
+                    renderTransactionMessage('Unable to load your transaction history right now.');
+                    return;
+                }
+
                 const data = await response.json();
 
                 if (data.success) {
-                    const trans = data.transactions;
+                    const trans = Array.isArray(data.transactions) ? data.transactions : [];
                     const tbody = document.getElementById('transBody');
 
                     if (trans.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">No transactions found. Go Pro to see history here!</td></tr>';
+                        renderTransactionMessage('No transactions found. Go Pro to see history here!');
                         return;
                     }
 
                     tbody.innerHTML = trans.map(t => `
                         <tr>
-                            <td><code>${t.transaction_id}</code></td>
+                            <td><code>${t.transaction_id || 'N/A'}</code></td>
                             <td><i class="fas fa-credit-card" style="margin-right: 8px;"></i> ${t.payment_method || 'Razorpay'}</td>
-                            <td style="color: #1e293b; font-weight: 700;">&#x20b9;${parseFloat(t.amount).toFixed(2)}</td>
-                            <td><span class="status-pill status-${t.status.toLowerCase()}">${t.status}</span></td>
-                            <td>${new Date(t.created_at).toLocaleDateString()}</td>
+                            <td style="color: #1e293b; font-weight: 700;">&#x20b9;${formatTransactionAmount(t.amount)}</td>
+                            <td><span class="status-pill status-${String(t.status || 'pending').toLowerCase()}">${t.status || 'pending'}</span></td>
+                            <td>${formatTransactionDate(t.created_at)}</td>
                         </tr>
                     `).join('');
+                } else {
+                    renderTransactionMessage(data.message || 'Unable to load your transaction history right now.');
                 }
             } catch (err) {
                 console.error("Trans error:", err);
+                renderTransactionMessage('Unable to load your transaction history right now.');
             }
         }
 

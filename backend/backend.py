@@ -162,6 +162,16 @@ def get_user_transactions():
     
     user_id = session['user']['id']
     transactions = db.get_user_transactions(user_id)
+    for item in transactions:
+        created_at = item.get('created_at')
+        if hasattr(created_at, 'isoformat'):
+            item['created_at'] = created_at.isoformat()
+
+        item['amount'] = float(item.get('amount') or 0)
+        item['transaction_id'] = item.get('transaction_id') or 'N/A'
+        item['payment_method'] = item.get('payment_method') or 'Razorpay'
+        item['status'] = item.get('status') or 'pending'
+
     return jsonify({
         "success": True,
         "transactions": transactions
@@ -236,6 +246,13 @@ def get_advanced_history():
     # We no longer check .exists() on every file here, as it slows down the API significantly.
     # The frontend handles missing images via the 'onerror' event for better performance.
     for item in history_data.get('items', []):
+        created_at = item.get('created_at')
+        if hasattr(created_at, 'isoformat'):
+            item['created_at'] = created_at.isoformat()
+
+        item['processing_time'] = float(item.get('processing_time') or 0)
+        item['processed_filename'] = item.get('processed_filename') or ''
+        item['style'] = item.get('style') or 'Unknown'
         item['is_missing'] = False 
         
     return jsonify({"success": True, "data": history_data})

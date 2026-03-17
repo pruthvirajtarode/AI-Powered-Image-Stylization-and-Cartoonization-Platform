@@ -200,6 +200,12 @@
         let currentOffset = 0;
         const limit = 12;
 
+        function formatGalleryDate(value) {
+            if (!value) return 'N/A';
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleDateString();
+        }
+
         async function loadGallery(offset = 0) {
             currentOffset = offset;
             const style = document.getElementById('filterStyle').value;
@@ -211,11 +217,15 @@
 
             try {
                 const response = await fetch(`/api/user/history/advanced?style=${style}&sort_by=${sortBy}&limit=${limit}&offset=${offset}`);
+                if (!response.ok) {
+                    throw new Error('Unable to load gallery');
+                }
+
                 const data = await response.json();
 
                 if (data.success) {
-                    const items = data.data.items;
-                    const total = data.data.total;
+                    const items = Array.isArray(data.data?.items) ? data.data.items : [];
+                    const total = Number(data.data?.total || 0);
 
                     if (items.length === 0) {
                         grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 100px;"><i class="fas fa-ghost fa-3x" style="color: #cbd5e1;"></i><p style="margin-top: 20px; color: #64748b;">No masterpieces found in this category.</p></div>';
@@ -251,8 +261,8 @@
                                     ${badgeText}
                                 </div>
                                 <div class="art-overlay" style="opacity: 1; background: linear-gradient(transparent, rgba(0,0,0,0.9));">
-                                    <span class="style-tag">${item.style}</span>
-                                    <h3 style="font-size: 0.9rem; font-weight: 500;">${new Date(item.created_at).toLocaleDateString()}</h3>
+                                    <span class="style-tag">${item.style || 'Unknown'}</span>
+                                    <h3 style="font-size: 0.9rem; font-weight: 500;">${formatGalleryDate(item.created_at)}</h3>
                                     <div style="display: flex; gap: 10px; margin-top: 15px;">
                                         <button onclick="galleryDownload(event, '${item.processed_filename}')" 
                                            class="btn-auth ${item.is_missing ? 'disabled' : ''}" 
