@@ -408,6 +408,23 @@
     </main>
 
     <script>
+        function renderHistoryMessage(message) {
+            const tbody = document.getElementById('historyBody');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">${message}</td></tr>`;
+        }
+
+        function formatHistoryDate(value) {
+            if (!value) return 'N/A';
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleDateString();
+        }
+
+        function formatProcessingTime(value) {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? `${parsed.toFixed(2)}s` : '0.00s';
+        }
+
         async function loadDashboard() {
             try {
                 // Fetch basic user info
@@ -426,6 +443,11 @@
 
                 // Fetch history from API
                 const response = await fetch('/api/user/history');
+                if (!response.ok) {
+                    renderHistoryMessage('Unable to load your production history right now.');
+                    return;
+                }
+
                 const data = await response.json();
 
                 // Handle unauthorized session
@@ -435,17 +457,17 @@
                 }
 
                 if (data.success) {
-                    const stats = data.stats;
+                    const stats = data.stats || {};
                     document.getElementById('statTotal').innerText = stats.total_processed;
                     document.getElementById('statToday').innerText = (user.role === 'admin' || user.plan === 'pro' || user.plan === 'elite') ? '∞' : Math.max(0, 5 - stats.usage_24h);
                     document.getElementById('favStyle').innerText = stats.favorite_style || 'None';
                     document.getElementById('statSpent').innerText = `₹${parseFloat(stats.total_spent || 0).toFixed(2)}`;
 
-                    const history = data.history;
+                    const history = Array.isArray(data.history) ? data.history : [];
                     const tbody = document.getElementById('historyBody');
 
                     if (history.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">No art created yet. Start your first project!</td></tr>';
+                        renderHistoryMessage('No art created yet. Start your first project!');
                         return;
                     }
 
@@ -467,15 +489,18 @@
                                     </div>`
                         }
                             </td>
-                            <td>${item.original_filename}</td>
-                            <td><span class="badge-style" style="background: var(--primary-soft); color: var(--primary);">${item.style}</span></td>
-                            <td>${item.processing_time.toFixed(2)}s</td>
-                            <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                            <td>${item.original_filename || 'Untitled upload'}</td>
+                            <td><span class="badge-style" style="background: var(--primary-soft); color: var(--primary);">${item.style || 'Unknown'}</span></td>
+                            <td>${formatProcessingTime(item.processing_time)}</td>
+                            <td>${formatHistoryDate(item.created_at)}</td>
                         </tr>
                     `).join('');
+                } else {
+                    renderHistoryMessage(data.message || 'Unable to load your production history right now.');
                 }
             } catch (err) {
                 console.error("Dashboard error:", err);
+                renderHistoryMessage('Unable to load your production history right now.');
             }
         }
 
