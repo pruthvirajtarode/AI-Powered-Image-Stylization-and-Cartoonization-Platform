@@ -2739,6 +2739,57 @@ h3 {
     }
 }
 
+@media (max-width: 768px) {
+    .feature-demo-row {
+        gap: 24px !important;
+    }
+
+    .feature-demo-row > div {
+        min-width: 0 !important;
+        flex: 1 1 100% !important;
+    }
+
+    .feature-demo-row h3 {
+        font-size: 2rem !important;
+    }
+
+    .feature-demo-row p,
+    .feature-demo-row ul {
+        font-size: 0.95rem !important;
+    }
+
+    .video-compare-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .stats-two-col-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .download-select-row {
+        flex-direction: column !important;
+    }
+
+    .bg-options-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    #scrollTopBtn {
+        right: 14px !important;
+        bottom: 18px !important;
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 18px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .feature-demo-row h3 {
+        font-size: 1.7rem !important;
+    }
+}
+
 /* =============================================
    UI POLISH — HERO ANNOUNCEMENT BADGE
    ============================================= */
