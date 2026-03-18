@@ -30,12 +30,51 @@ CORS(app)
 def is_premium_user(user: dict) -> bool:
     return user.get('role') == 'admin' or user.get('plan') in ['pro', 'elite', 'pro_member']
 
+
+def get_valid_session_user_id():
+    """Return a DB-safe user_id from session, repairing legacy session payloads when possible."""
+    user = session.get('user')
+    if not isinstance(user, dict):
+        return None
+
+    raw_id = user.get('id')
+    if isinstance(raw_id, int):
+        return raw_id
+
+    if isinstance(raw_id, str):
+        numeric = raw_id.strip()
+        if numeric.isdigit():
+            user['id'] = int(numeric)
+            session['user'] = user
+            return user['id']
+
+    # Legacy fallback: resolve by email and refresh session with canonical DB record.
+    email = (user.get('email') or '').strip().lower()
+    if not email:
+        return None
+
+    db_user = db.get_user_by_email(email)
+    if not db_user:
+        return None
+
+    session['user'] = {
+        "id": db_user['id'],
+        "username": db_user['username'],
+        "email": db_user['email'],
+        "fullname": db_user.get('full_name') or user.get('fullname') or db_user['username'],
+        "role": db_user.get('role', 'user'),
+        "plan": db_user.get('plan', 'starter'),
+        "created_at": db_user['created_at'].isoformat() if hasattr(db_user.get('created_at'), 'isoformat') else db_user.get('created_at')
+    }
+    return db_user['id']
+
 # --- LIVE HEARTBEAT ---
 @app.before_request
 def update_user_heartbeat():
-    if 'user' in session and session['user'].get('id'):
+    user_id = get_valid_session_user_id()
+    if user_id:
         try:
-            db.update_last_active(session['user']['id'])
+            db.update_last_active(user_id)
         except:
             pass # Fail silently if DB is locked or busy during heartbeat
 
@@ -130,7 +169,11 @@ def get_user_performance():
     if 'user' not in session:
         return jsonify({"success": False, "message": "Unauthorized"}), 401
     
-    user_id = session['user']['id']
+    user_id = get_valid_session_user_id()
+    if not user_id:
+        session.pop('user', None)
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
     history = db.get_user_history(user_id, limit=10) # Recent 10
     stats = db.get_user_stats(user_id)
     stats['usage_24h'] = db.get_user_usage_24h(user_id)
