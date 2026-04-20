@@ -47,20 +47,44 @@ class Database:
             if url.startswith("postgres://"):
                 url = url.replace("postgres://", "postgresql://", 1)
             
-            try:
-                # Attempt standard connection with SSL for production
-                if "?" in url:
-                    ssl_url = f"{url}&sslmode=require" if "sslmode" not in url else url
-                else:
-                    ssl_url = f"{url}?sslmode=require"
-                
-                conn = psycopg2.connect(ssl_url, cursor_factory=RealDictCursor)
-                return conn
-            except Exception as e:
-                print(f"⚠️ Initial Postgres connection failed: {e}")
-                # Fallback to original URL if SSL tweak fails
-                conn = psycopg2.connect(url, cursor_factory=RealDictCursor)
-                return conn
+            # Helper to try connection
+            def try_connect(current_url):
+                try:
+                    # Attempt connection with SSL for production
+                    if "?" in current_url:
+                        ssl_url = f"{current_url}&sslmode=require" if "sslmode" not in current_url else current_url
+                    else:
+                        ssl_url = f"{current_url}?sslmode=require"
+                    return psycopg2.connect(ssl_url, cursor_factory=RealDictCursor)
+                except Exception as e:
+                    if "does not exist" in str(e) or "role" in str(e):
+                        raise e # Don't retry if it's an auth error
+                    return None
+
+            conn = try_connect(url)
+            if conn: return conn
+
+            # Fallback: If internal hostname fails to resolve, try external format if it's a standard Render dpg- URL
+            # Format: dpg-xxx-a -> dpg-xxx-a.oregon-postgres.render.com (adjusting for common region)
+            if "dpg-" in url and "@dpg-" in url and ".render.com" not in url:
+                print("🔄 DNS Error? Attempting Render External Hostname fallback...")
+                ext_url = url.replace("@dpg-", "@dpg-") # Identify pos
+                parts = url.split("@")
+                if len(parts) == 2:
+                    cred, host_path = parts[0], parts[1]
+                    host = host_path.split("/")[0]
+                    path = host_path.split("/")[1] if "/" in host_path else ""
+                    # Try appending the most common Render RDS suffix
+                    for region in ['oregon', 'frankfurt', 'ohio', 'singapore']:
+                        fallback_host = f"{host}.{region}-postgres.render.com"
+                        fallback_url = f"{cred}@{fallback_host}/{path}"
+                        conn = try_connect(fallback_url)
+                        if conn: 
+                            print(f"✅ Failover Success: Connected via {region} external gateway.")
+                            return conn
+            
+            # Final attempt without SSL tweak if nothing else worked
+            return psycopg2.connect(url, cursor_factory=RealDictCursor)
         else:
             conn = sqlite3.connect(self.db_path)
             conn.row_factory = sqlite3.Row
