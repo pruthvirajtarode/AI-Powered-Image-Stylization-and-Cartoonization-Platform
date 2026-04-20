@@ -229,7 +229,12 @@ def get_user_performance():
                 
                 row['processing_time'] = float(row.get('processing_time') or 0)
                 row['original_filename'] = row.get('original_filename') or 'Untitled upload'
-                row['is_missing'] = False 
+                
+                # SMART CHECK: Verify if file still exists on Render ephemeral storage
+                filename = row.get('processed_filename', '')
+                file_path = settings.TEMP_FOLDER / filename
+                row['is_missing'] = not file_path.exists()
+                
                 sanitized_history.append(row)
             except Exception as row_err:
                 print(f"HISTORY ROW ERROR: {row_err}")
