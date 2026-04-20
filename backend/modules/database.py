@@ -23,14 +23,19 @@ class Database:
     def __init__(self, db_path: str = None):
         """Initialize database connection"""
         self.db_path = db_path or settings.DATABASE_PATH
-        self.db_url = os.getenv("DATABASE_URL")
+        # Render may inject either DATABASE_URL or DATABASE_URI depending on the integration type.
+        # Support both so the app works regardless of which one is set in the dashboard.
+        self.db_url = os.getenv("DATABASE_URL") or os.getenv("DATABASE_URI")
         self.is_postgres = self.db_url is not None and HAS_POSTGRES
         self.placeholder = "%s" if self.is_postgres else "?"
         self.bool_true = "TRUE" if self.is_postgres else "1"
         self.bool_false = "FALSE" if self.is_postgres else "0"
-        # Ensure the SQLite data directory exists before connecting
-        if not self.is_postgres:
+        if self.is_postgres:
+            print(f"✅ Database: PostgreSQL (Render)")
+        else:
+            # Ensure the SQLite data directory exists before connecting
             Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
+            print(f"⚠️  Database: SQLite fallback at {self.db_path} — set DATABASE_URL or DATABASE_URI for production!")
         self.init_database()
 
 
