@@ -574,32 +574,50 @@ class Database:
     
     # Statistics
     def get_user_stats(self, user_id: int) -> Dict:
-        """Get user statistics (High performance optimized)"""
-        self.repair_legacy_razorpay_amounts()
+        """Get user statistics (High precision aggregate version)"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
-        # Combined stats query using subqueries for maximum efficiency
-        cursor.execute(f"""
-            SELECT 
-                (SELECT COUNT(*) FROM processing_history WHERE user_id = {self.placeholder}) as total_processed,
-                (SELECT COUNT(*) FROM transactions WHERE user_id = {self.placeholder} AND status = 'completed' AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')) as total_transactions,
-                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = {self.placeholder} AND status = 'completed' AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')) as total_spent,
-                (SELECT style FROM processing_history WHERE user_id = {self.placeholder} GROUP BY style ORDER BY COUNT(*) DESC LIMIT 1) as favorite_style
-        """, (user_id, user_id, user_id, user_id))
-        
-        row = cursor.fetchone()
-        conn.close()
-        
-        if not row:
-            return {'total_processed': 0, 'total_transactions': 0, 'total_spent': 0, 'favorite_style': "None"}
-
-        return {
-            'total_processed': row['total_processed'] if self.is_postgres else row[0],
-            'total_transactions': row['total_transactions'] if self.is_postgres else row[1],
-            'total_spent': row['total_spent'] if self.is_postgres else row[2],
-            'favorite_style': (row['favorite_style'] if self.is_postgres else row[3]) or "None"
+        stats = {
+            'total_processed': 0,
+            'total_transactions': 0,
+            'total_spent': 0.0,
+            'favorite_style': "None"
         }
+
+        try:
+            # 1. Total Processed count
+            cursor.execute(f"SELECT COUNT(*) FROM processing_history WHERE user_id = {self.placeholder}", (user_id,))
+            res = cursor.fetchone()
+            stats['total_processed'] = (res['count'] if self.is_postgres else res[0]) if res else 0
+
+            # 2. Transaction Stats (Completed only)
+            cursor.execute(f"""
+                SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total 
+                FROM transactions 
+                WHERE user_id = {self.placeholder} AND status = 'completed'
+            """, (user_id,))
+            res = cursor.fetchone()
+            if res:
+                stats['total_transactions'] = res['count'] if self.is_postgres else res[0]
+                stats['total_spent'] = float(res['total'] if self.is_postgres else res[1])
+
+            # 3. Favorite Style
+            cursor.execute(f"""
+                SELECT style FROM processing_history 
+                WHERE user_id = {self.placeholder} 
+                GROUP BY style ORDER BY COUNT(*) DESC LIMIT 1
+            """, (user_id,))
+            res = cursor.fetchone()
+            if res:
+                stats['favorite_style'] = res['style'] if self.is_postgres else res[0]
+
+        except Exception as e:
+            print(f"ERROR calculating user stats: {e}")
+        finally:
+            conn.close()
+
+        return stats
 
     def get_user_usage_24h(self, user_id: int) -> int:
         """Count how many images a user processed in the last 24 hours"""
