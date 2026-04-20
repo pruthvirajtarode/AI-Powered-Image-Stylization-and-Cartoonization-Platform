@@ -198,19 +198,23 @@ def get_user_performance():
             history = []
 
         try:
-            stats = db.get_user_stats(user_id) or {}
+            stats_raw = db.get_user_stats(user_id) or {}
+            stats = {
+                'total_processed': stats_raw.get('total_processed', 0),
+                'total_transactions': stats_raw.get('total_transactions', 0),
+                'total_spent': float(stats_raw.get('total_spent', 0)),
+                'favorite_style': str(stats_raw.get('favorite_style', 'None')).replace('_', ' ').title()
+            }
         except Exception as e:
             print(f"STATS FETCH ERROR: {str(e)}")
-            stats = {}
+            stats = {
+                'total_processed': 0, 
+                'total_transactions': 0, 
+                'total_spent': 0.0, 
+                'favorite_style': 'None'
+            }
         
-        # Ensure stats has all required keys for frontend to prevent JS breakage
-        default_stats = {
-            'total_processed': 0, 
-            'total_spent': 0, 
-            'favorite_style': 'None', 
-            'usage_24h': 0
-        }
-        full_stats = {**default_stats, **stats}
+        full_stats = {**stats}
         
         # Recalculate 24h usage precisely
         try:
@@ -229,6 +233,10 @@ def get_user_performance():
                 
                 row['processing_time'] = float(row.get('processing_time') or 0)
                 row['original_filename'] = row.get('original_filename') or 'Untitled upload'
+                
+                # Format style name for UI (e.g. anime_girl -> Anime Girl)
+                style_raw = row.get('style', 'Unknown')
+                row['style'] = style_raw.replace('_', ' ').title()
                 
                 # SMART CHECK: Verify if file still exists on Render ephemeral storage
                 filename = row.get('processed_filename', '')
