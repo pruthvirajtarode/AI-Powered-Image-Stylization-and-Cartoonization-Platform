@@ -186,31 +186,39 @@ def get_user_performance():
     user_id = get_valid_session_user_id()
     if not user_id:
         session.pop('user', None)
-        return jsonify({"success": False, "message": "Unauthorized"}), 401
+        return jsonify({"success": False, "message": "Unauthorized", "action": "relogin"}), 401
 
-    history = db.get_user_history(user_id, limit=10) # Recent 10
-    stats = db.get_user_stats(user_id)
-    stats['usage_24h'] = db.get_user_usage_24h(user_id)
-    stats['total_spent'] = float(stats.get('total_spent') or 0)
-    
-    # We no longer check .exists() on every file here, as it slows down the API significantly.
-    # The frontend handles missing images via the 'onerror' event for better performance.
-    for item in history:
-        created_at = item.get('created_at')
-        if hasattr(created_at, 'isoformat'):
-            item['created_at'] = created_at.isoformat()
-
-        item['processing_time'] = float(item.get('processing_time') or 0)
-        item['original_filename'] = item.get('original_filename') or 'Untitled upload'
-        item['processed_filename'] = item.get('processed_filename') or ''
-        item['style'] = item.get('style') or 'Unknown'
-        item['is_missing'] = False 
-    
-    return jsonify({
-        "success": True, 
-        "history": history,
-        "stats": stats
-    })
+    try:
+        history = db.get_user_history(user_id, limit=10) or []
+        stats = db.get_user_stats(user_id) or {}
+        
+        # Ensure stats has all required keys for frontend
+        default_stats = {'total_processed': 0, 'total_spent': 0, 'favorite_style': 'None', 'usage_24h': 0}
+        full_stats = {**default_stats, **stats}
+        
+        # Add usage stats
+        try:
+            full_stats['usage_24h'] = db.get_user_usage_24h(user_id)
+        except:
+            full_stats['usage_24h'] = 0
+            
+        # Format for JSON
+        for item in history:
+            created_at = item.get('created_at')
+            if hasattr(created_at, 'isoformat'):
+                item['created_at'] = created_at.isoformat()
+            item['processing_time'] = float(item.get('processing_time') or 0)
+            item['original_filename'] = item.get('original_filename') or 'Untitled upload'
+            item['is_missing'] = False 
+        
+        return jsonify({
+            "success": True, 
+            "history": history,
+            "stats": full_stats
+        })
+    except Exception as e:
+        print(f"DASHBOARD ERROR: {str(e)}")
+        return jsonify({"success": False, "message": "Neural engine statistics are still initializing. Please process your first image to activate.", "error": str(e)}), 500
 
 @app.route('/api/user/transactions')
 def get_user_transactions():
