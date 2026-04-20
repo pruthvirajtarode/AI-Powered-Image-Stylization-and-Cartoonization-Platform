@@ -24,7 +24,21 @@ app = Flask(__name__,
             template_folder='../frontend/templates',
             static_folder='../frontend/static')
 app.secret_key = settings.SECRET_KEY or os.urandom(24)
-CORS(app)
+
+# Production session cookie settings — critical for HTTPS (Render/toonify.live)
+# Without SECURE=True, browsers drop the cookie on HTTPS and every login silently fails.
+is_production = not settings.DEBUG
+app.config['SESSION_COOKIE_SECURE'] = is_production        # HTTPS only in production
+app.config['SESSION_COOKIE_HTTPONLY'] = True               # JS cannot read session cookie
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'             # CSRF protection + Google OAuth compat
+app.config['SESSION_COOKIE_NAME'] = 'toonify_session'
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600            # 1 hour
+
+CORS(app, supports_credentials=True, origins=[
+    "https://toonify.live",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000"
+])
 
 
 def is_premium_user(user: dict) -> bool:
