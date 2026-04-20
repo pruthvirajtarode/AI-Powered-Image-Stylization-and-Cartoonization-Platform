@@ -185,40 +185,71 @@ def get_user_performance():
     
     user_id = get_valid_session_user_id()
     if not user_id:
+        print("DASHBOARD: No valid user_id found in session. Triggering re-login.")
         session.pop('user', None)
-        return jsonify({"success": False, "message": "Unauthorized", "action": "relogin"}), 401
+        return jsonify({"success": False, "message": "Session expired", "action": "relogin"}), 401
 
     try:
-        history = db.get_user_history(user_id, limit=10) or []
-        stats = db.get_user_stats(user_id) or {}
+        # Fetch stats and history separately for stability
+        try:
+            history = db.get_user_history(user_id, limit=10) or []
+        except Exception as e:
+            print(f"HISTORY FETCH ERROR: {str(e)}")
+            history = []
+
+        try:
+            stats = db.get_user_stats(user_id) or {}
+        except Exception as e:
+            print(f"STATS FETCH ERROR: {str(e)}")
+            stats = {}
         
-        # Ensure stats has all required keys for frontend
-        default_stats = {'total_processed': 0, 'total_spent': 0, 'favorite_style': 'None', 'usage_24h': 0}
+        # Ensure stats has all required keys for frontend to prevent JS breakage
+        default_stats = {
+            'total_processed': 0, 
+            'total_spent': 0, 
+            'favorite_style': 'None', 
+            'usage_24h': 0
+        }
         full_stats = {**default_stats, **stats}
         
-        # Add usage stats
+        # Recalculate 24h usage precisely
         try:
             full_stats['usage_24h'] = db.get_user_usage_24h(user_id)
         except:
             full_stats['usage_24h'] = 0
             
-        # Format for JSON
+        # Format for JSON — sanitize data types for high-performance frontend rendering
+        sanitized_history = []
         for item in history:
-            created_at = item.get('created_at')
-            if hasattr(created_at, 'isoformat'):
-                item['created_at'] = created_at.isoformat()
-            item['processing_time'] = float(item.get('processing_time') or 0)
-            item['original_filename'] = item.get('original_filename') or 'Untitled upload'
-            item['is_missing'] = False 
+            try:
+                row = dict(item)
+                created_at = row.get('created_at')
+                if hasattr(created_at, 'isoformat'):
+                    row['created_at'] = created_at.isoformat()
+                
+                row['processing_time'] = float(row.get('processing_time') or 0)
+                row['original_filename'] = row.get('original_filename') or 'Untitled upload'
+                row['is_missing'] = False 
+                sanitized_history.append(row)
+            except Exception as row_err:
+                print(f"HISTORY ROW ERROR: {row_err}")
+                continue
         
         return jsonify({
             "success": True, 
-            "history": history,
+            "history": sanitized_history,
             "stats": full_stats
         })
     except Exception as e:
-        print(f"DASHBOARD ERROR: {str(e)}")
-        return jsonify({"success": False, "message": "Neural engine statistics are still initializing. Please process your first image to activate.", "error": str(e)}), 500
+        import traceback
+        print(f"DASHBOARD CRITICAL ERROR for User {user_id}: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({
+            "success": False, 
+            "message": "Neural engine statistics are synchronizing. Give us a moment!", 
+            "stats": default_stats,
+            "history": []
+        }), 200 # Return 200 with empty state rather than 500 to keep UI alive
 
 @app.route('/api/user/transactions')
 def get_user_transactions():
