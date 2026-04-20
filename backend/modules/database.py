@@ -28,8 +28,12 @@ class Database:
         self.placeholder = "%s" if self.is_postgres else "?"
         self.bool_true = "TRUE" if self.is_postgres else "1"
         self.bool_false = "FALSE" if self.is_postgres else "0"
+        # Ensure the SQLite data directory exists before connecting
+        if not self.is_postgres:
+            Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         self.init_database()
-    
+
+
     def get_connection(self):
         """Get database connection (PostgreSQL or SQLite) with production safety"""
         if self.is_postgres:
@@ -748,5 +752,6 @@ try:
 except Exception as _db_init_err:
     import sys
     print(f"CRITICAL: Database failed to initialize: {_db_init_err}", file=sys.stderr)
-    # Create a stub so imports don't break; app routes that require DB will fail gracefully
-    db = None
+    # Re-raise so the app fails loudly at startup rather than silently setting db=None,
+    # which causes misleading 'NoneType has no attribute get_user_by_email' errors.
+    raise RuntimeError(f"Database initialization failed: {_db_init_err}") from _db_init_err

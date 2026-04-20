@@ -393,21 +393,35 @@ def login():
 
 @app.route('/api/auth/google/verify', methods=['POST'])
 def verify_google_token():
+    # Guard: database must be available
+    if db is None:
+        return jsonify({"success": False, "message": "Service temporarily unavailable. Database is offline. Please try again later."}), 503
+
     try:
         data = request.json
         token = data.get('token')
-        
+
+        if not token:
+            return jsonify({"success": False, "message": "No Google token provided."}), 400
+
+        # Validate GOOGLE_CLIENT_ID is configured
+        if not settings.GOOGLE_CLIENT_ID or settings.GOOGLE_CLIENT_ID == "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com":
+            return jsonify({"success": False, "message": "Google Sign-In is not configured on this server. Please contact support."}), 500
+
         # Verify the REAL token from Google
         idinfo = id_token.verify_oauth2_token(
-            token, 
-            requests.Request(), 
+            token,
+            requests.Request(),
             settings.GOOGLE_CLIENT_ID
         )
 
         # Token is valid. Get user details from Google's verified response
-        user_email = idinfo['email']
+        user_email = idinfo.get('email')
+        if not user_email:
+            return jsonify({"success": False, "message": "Google did not return an email address."}), 400
+
         user_name = idinfo.get('name', user_email.split('@')[0])
-        
+
         # Check if user exists in our DB or create them
         user = db.get_user_by_email(user_email)
         if not user:
@@ -418,40 +432,53 @@ def verify_google_token():
                 password_hash="GOOGLE_AUTH_EXTERNAL",
                 full_name=user_name
             )
-            
+
             if not user_id:
                 return jsonify({"success": False, "message": "Failed to create your account in our database. Please contact support."})
-                
-            db.verify_user_email(user_email) # Google users are pre-verified
+
+            db.verify_user_email(user_email)  # Google users are pre-verified
             user = db.get_user_by_id(user_id)
-            
+
             if not user:
                 return jsonify({"success": False, "message": "Account created but could not be retrieved. Handshake failed."})
-                
+
             # Send Welcome Email
             try:
                 auth.send_welcome_email(user_email, user_name)
             except:
-                pass # Don't block login if welcome email fails
-        
+                pass  # Don't block login if welcome email fails
+
+        # Update last login timestamp
+        try:
+            db.update_last_login(user['id'])
+        except:
+            pass  # Non-critical
+
         # Prepare official user session
         session_user = {
             "id": user['id'],
             "username": user['username'],
             "email": user['email'],
-            "fullname": user['full_name'],
-            "role": user['role'],
-            "created_at": user['created_at'].isoformat() if hasattr(user['created_at'], 'isoformat') else user['created_at']
+            "fullname": user.get('full_name') or user_name,
+            "role": user.get('role', 'user'),
+            "plan": user.get('plan', 'starter'),
+            "created_at": user['created_at'].isoformat() if hasattr(user.get('created_at'), 'isoformat') else user.get('created_at')
         }
-        
+
         session['user'] = session_user
-        return jsonify({"success": True, "user": session_user, "message": "Production Google Login Successful!"})
-        
+        return jsonify({"success": True, "user": session_user, "message": "Google Login Successful!"})
+
+    except ValueError as e:
+        # id_token.verify_oauth2_token raises ValueError for invalid/expired tokens
+        print(f"ERROR: Google token verification failed (invalid token): {str(e)}")
+        return jsonify({"success": False, "message": "Google token is invalid or expired. Please try signing in again."})
     except Exception as e:
         import traceback
         print(f"ERROR: Google Auth Exception: {str(e)}")
         print(traceback.format_exc())
         return jsonify({"success": False, "message": f"Security Handshake Failed: {str(e)}"})
+
+
 
 @app.route('/api/auth/google', methods=['POST'])
 def google_login():
