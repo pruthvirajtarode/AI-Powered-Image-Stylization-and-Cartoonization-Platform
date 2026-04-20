@@ -443,6 +443,11 @@
 
                 // Fetch history from API
                 const response = await fetch('/api/user/history');
+                if (response.status === 401) {
+                    localStorage.removeItem('toonify_user');
+                    window.location.href = '/?auth=login';
+                    return;
+                }
                 if (!response.ok) {
                     renderHistoryMessage('Unable to load your production history right now.');
                     return;

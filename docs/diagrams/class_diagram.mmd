@@ -1,0 +1,110 @@
+classDiagram
+    class Flask_App {
+        -secret_key: str
+        -template_folder: str
+        -static_folder: str
+        +route_upload()
+        +route_process()
+        +route_download()
+        +route_export()
+    }
+    
+    class Authentication {
+        +hash_password(password)
+        +verify_password(password, hash)
+        +validate_email(email)
+        +validate_password(password)
+        +google_login()
+    }
+    
+    class ImageProcessor {
+        -params: dict
+        +load_image(file)
+        +process_style(image, style)
+        +resize_image(image)
+        +save_image(image, path)
+        +apply_cartoon_effect()
+        +apply_pixar_style()
+        +apply_anime_style()
+    }
+    
+    class Database {
+        -db_path: str
+        -db_url: str
+        +init_database()
+        +create_user(email, password)
+        +get_user(user_id)
+        +update_user_plan(user_id, plan)
+        +save_processing_record(user_id, style, image_path)
+        +get_user_analytics(user_id)
+    }
+    
+    class User {
+        -id: int
+        -email: str
+        -password_hash: str
+        -plan: str
+        -created_at: datetime
+        -usage_count: int
+        +get_subscription_status()
+        +upgrade_plan()
+        +get_analytics()
+    }
+    
+    class ProcessingRecord {
+        -id: int
+        -user_id: int
+        -input_image_path: str
+        -output_image_path: str
+        -style_applied: str
+        -quality: str
+        -processing_time: float
+        -created_at: datetime
+        +get_file_size()
+        +get_download_url()
+    }
+    
+    class PaymentProcessor {
+        -api_key: str
+        +create_order(amount, user_id)
+        +verify_payment(order_id, payment_id)
+        +refund_payment(payment_id)
+        +get_payment_history(user_id)
+    }
+    
+    class WhatsAppProcessor {
+        -api_key: str
+        +send_image(phone_number, image_path)
+        +generate_share_link(image_path)
+        +compress_for_whatsapp(image)
+    }
+    
+    class Config {
+        -SECRET_KEY: str
+        -DATABASE_URL: str
+        -RAZORPAY_KEY: str
+        -WHATSAPP_API_KEY: str
+        -CARTOON_PARAMS: dict
+        -STYLES: list
+    }
+    
+    Flask_App --|> Authentication
+    Flask_App --|> ImageProcessor
+    Flask_App --|> Database
+    Flask_App --|> PaymentProcessor
+    Flask_App --|> WhatsAppProcessor
+    
+    Database --|> User
+    Database --|> ProcessingRecord
+    PaymentProcessor --|> User
+    ImageProcessor --|> ProcessingRecord
+    Authentication --|> User
+    WhatsAppProcessor --|> ProcessingRecord
+    
+    Flask_App --|> Config
+    
+    
+    style User fill:#e3f2fd
+    style ProcessingRecord fill:#f3e5f5
+    style Flask_App fill:#fff3e0
+    style Database fill:#e8f5e9

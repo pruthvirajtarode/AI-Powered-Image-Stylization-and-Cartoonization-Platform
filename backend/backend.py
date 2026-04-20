@@ -24,18 +24,71 @@ app = Flask(__name__,
             template_folder='../frontend/templates',
             static_folder='../frontend/static')
 app.secret_key = settings.SECRET_KEY or os.urandom(24)
-CORS(app)
+
+# Production session cookie settings — critical for HTTPS (Render/toonify.live)
+# Without SECURE=True, browsers drop the cookie on HTTPS and every login silently fails.
+is_production = not settings.DEBUG
+app.config['SESSION_COOKIE_SECURE'] = is_production        # HTTPS only in production
+app.config['SESSION_COOKIE_HTTPONLY'] = True               # JS cannot read session cookie
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'             # CSRF protection + Google OAuth compat
+app.config['SESSION_COOKIE_NAME'] = 'toonify_session'
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600            # 1 hour
+
+CORS(app, supports_credentials=True, origins=[
+    "https://toonify.live",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000"
+])
 
 
 def is_premium_user(user: dict) -> bool:
     return user.get('role') == 'admin' or user.get('plan') in ['pro', 'elite', 'pro_member']
 
+
+def get_valid_session_user_id():
+    """Return a DB-safe user_id from session, repairing legacy session payloads when possible."""
+    user = session.get('user')
+    if not isinstance(user, dict):
+        return None
+
+    raw_id = user.get('id')
+    if isinstance(raw_id, int):
+        return raw_id
+
+    if isinstance(raw_id, str):
+        numeric = raw_id.strip()
+        if numeric.isdigit():
+            user['id'] = int(numeric)
+            session['user'] = user
+            return user['id']
+
+    # Legacy fallback: resolve by email and refresh session with canonical DB record.
+    email = (user.get('email') or '').strip().lower()
+    if not email:
+        return None
+
+    db_user = db.get_user_by_email(email)
+    if not db_user:
+        return None
+
+    session['user'] = {
+        "id": db_user['id'],
+        "username": db_user['username'],
+        "email": db_user['email'],
+        "fullname": db_user.get('full_name') or user.get('fullname') or db_user['username'],
+        "role": db_user.get('role', 'user'),
+        "plan": db_user.get('plan', 'starter'),
+        "created_at": db_user['created_at'].isoformat() if hasattr(db_user.get('created_at'), 'isoformat') else db_user.get('created_at')
+    }
+    return db_user['id']
+
 # --- LIVE HEARTBEAT ---
 @app.before_request
 def update_user_heartbeat():
-    if 'user' in session and session['user'].get('id'):
+    user_id = get_valid_session_user_id()
+    if user_id:
         try:
-            db.update_last_active(session['user']['id'])
+            db.update_last_active(user_id)
         except:
             pass # Fail silently if DB is locked or busy during heartbeat
 
@@ -130,7 +183,11 @@ def get_user_performance():
     if 'user' not in session:
         return jsonify({"success": False, "message": "Unauthorized"}), 401
     
-    user_id = session['user']['id']
+    user_id = get_valid_session_user_id()
+    if not user_id:
+        session.pop('user', None)
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
     history = db.get_user_history(user_id, limit=10) # Recent 10
     stats = db.get_user_stats(user_id)
     stats['usage_24h'] = db.get_user_usage_24h(user_id)
@@ -350,21 +407,35 @@ def login():
 
 @app.route('/api/auth/google/verify', methods=['POST'])
 def verify_google_token():
+    # Guard: database must be available
+    if db is None:
+        return jsonify({"success": False, "message": "Service temporarily unavailable. Database is offline. Please try again later."}), 503
+
     try:
         data = request.json
         token = data.get('token')
-        
+
+        if not token:
+            return jsonify({"success": False, "message": "No Google token provided."}), 400
+
+        # Validate GOOGLE_CLIENT_ID is configured
+        if not settings.GOOGLE_CLIENT_ID or settings.GOOGLE_CLIENT_ID == "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com":
+            return jsonify({"success": False, "message": "Google Sign-In is not configured on this server. Please contact support."}), 500
+
         # Verify the REAL token from Google
         idinfo = id_token.verify_oauth2_token(
-            token, 
-            requests.Request(), 
+            token,
+            requests.Request(),
             settings.GOOGLE_CLIENT_ID
         )
 
         # Token is valid. Get user details from Google's verified response
-        user_email = idinfo['email']
+        user_email = idinfo.get('email')
+        if not user_email:
+            return jsonify({"success": False, "message": "Google did not return an email address."}), 400
+
         user_name = idinfo.get('name', user_email.split('@')[0])
-        
+
         # Check if user exists in our DB or create them
         user = db.get_user_by_email(user_email)
         if not user:
@@ -375,40 +446,53 @@ def verify_google_token():
                 password_hash="GOOGLE_AUTH_EXTERNAL",
                 full_name=user_name
             )
-            
+
             if not user_id:
                 return jsonify({"success": False, "message": "Failed to create your account in our database. Please contact support."})
-                
-            db.verify_user_email(user_email) # Google users are pre-verified
+
+            db.verify_user_email(user_email)  # Google users are pre-verified
             user = db.get_user_by_id(user_id)
-            
+
             if not user:
                 return jsonify({"success": False, "message": "Account created but could not be retrieved. Handshake failed."})
-                
+
             # Send Welcome Email
             try:
                 auth.send_welcome_email(user_email, user_name)
             except:
-                pass # Don't block login if welcome email fails
-        
+                pass  # Don't block login if welcome email fails
+
+        # Update last login timestamp
+        try:
+            db.update_last_login(user['id'])
+        except:
+            pass  # Non-critical
+
         # Prepare official user session
         session_user = {
             "id": user['id'],
             "username": user['username'],
             "email": user['email'],
-            "fullname": user['full_name'],
-            "role": user['role'],
-            "created_at": user['created_at'].isoformat() if hasattr(user['created_at'], 'isoformat') else user['created_at']
+            "fullname": user.get('full_name') or user_name,
+            "role": user.get('role', 'user'),
+            "plan": user.get('plan', 'starter'),
+            "created_at": user['created_at'].isoformat() if hasattr(user.get('created_at'), 'isoformat') else user.get('created_at')
         }
-        
+
         session['user'] = session_user
-        return jsonify({"success": True, "user": session_user, "message": "Production Google Login Successful!"})
-        
+        return jsonify({"success": True, "user": session_user, "message": "Google Login Successful!"})
+
+    except ValueError as e:
+        # id_token.verify_oauth2_token raises ValueError for invalid/expired tokens
+        print(f"ERROR: Google token verification failed (invalid token): {str(e)}")
+        return jsonify({"success": False, "message": "Google token is invalid or expired. Please try signing in again."})
     except Exception as e:
         import traceback
         print(f"ERROR: Google Auth Exception: {str(e)}")
         print(traceback.format_exc())
         return jsonify({"success": False, "message": f"Security Handshake Failed: {str(e)}"})
+
+
 
 @app.route('/api/auth/google', methods=['POST'])
 def google_login():

@@ -1,0 +1,23 @@
+flowchart TD
+    A[User Uploads Image] --> B{Authenticated?}
+    B -->|No| C[OAuth 2.0 Login]
+    C --> D[Session Created]
+    B -->|Yes| E[Validate Image]
+    D --> E
+    E -->|Invalid| F[Return Error]
+    E -->|Valid| G{Premium?}
+    G -->|No| H[Standard Quality]
+    G -->|Yes| I[Premium 4K]
+    H --> J[Select Style]
+    I --> J
+    J --> K[Process]
+    K --> L[AI Models]
+    L --> M[Apply Style]
+    M --> N{Success?}
+    N -->|No| O[Log Error]
+    N -->|Yes| P[Cache]
+    P --> Q[Store]
+    Q --> R[Export]
+    R --> S[Download]
+    S --> T[Analytics]
+    T --> U[Complete]

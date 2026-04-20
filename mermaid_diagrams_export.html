@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body { margin: 20px; font-family: Arial, sans-serif; }
+        SVG { max-width: 100%; height: auto; }
+        .diagram-container { page-break-after: always; margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Toonify AI - Architecture Diagrams</h1>
+    <p>Open this HTML file in your browser, then:</p>
+    <ol>
+        <li>Right-click on each diagram</li>
+        <li>Select "Save image as..."</li>
+        <li>Save as PNG in docs/diagrams/output/</li>
+    </ol>
+    
+    <div class="diagram-container">
+        <h2>01 - System Workflow</h2>
+        <div class="mermaid">
+graph TD
+    A["👤 User Uploads Image"] --> B{"Authenticated?"}
+    B -->|No| C["OAuth 2.0 Login"]
+    C --> D["Session Created"]
+    B -->|Yes| E["Validate Image"]
+    D --> E
+    E -->|Invalid| F["Return Error"]
+    E -->|Valid| G{"Premium User?"}
+    G -->|No| H["4K Disabled<br/>Standard Quality"]
+    G -->|Yes| I["4K Enabled<br/>Premium Quality"]
+    H --> J["Select AI Style<br/>(Pixar/Anime/Comic/etc)"]
+    I --> J
+    J --> K["Image Processing<br/>Engine"]
+    K --> L["OpenCV + AI Models"]
+    L --> M["Apply Neural Style<br/>Transformation"]
+    M --> N{"Processing<br/>Successful?"}
+    N -->|Failed| O["Error Logging & Return"]
+    N -->|Success| P["Cache Thumbnail"]
+    P --> Q["Store in DB"]
+    Q --> R{"Export Request?"}
+    R -->|WhatsApp| S["WhatsApp API"]
+    R -->|Instagram| T["Social Media Export"]
+    R -->|Download| U["Send File to User"]
+    S --> V["User Receives<br/>Stylized Image"]
+    T --> V
+    U --> V
+    V --> W["Analytics Tracking"]
+    W --> X["Update Creator Dashboard"]
+    X --> Y["✨ Complete"]
+    O --> Z["Log Event"]
+    Z --> Y
+        </div>
+    </div>
+    
+    <div class="diagram-container">
+        <h2>02 - Use Case Diagram</h2>
+        <div class="mermaid">
+graph TB
+    subgraph Users
+        U1["👤 Free User"]
+        U2["💳 Premium User"]
+        U3["⚙️ Admin"]
+    end
+    
+    subgraph System["🎨 Toonify AI System"]
+        UC1["Upload Image"]
+        UC2["Select Style"]
+        UC3["Process Image"]
+        UC4["Download Result"]
+        UC5["Share on Social"]
+        UC6["Manage Account"]
+        UC7["View Analytics"]
+        UC8["Manage Payment"]
+        UC9["System Admin"]
+    end
+    
+    subgraph External["External Services"]
+        E1["Google OAuth"]
+        E2["Razorpay Payment"]
+        E3["WhatsApp API"]
+        E4["Instagram API"]
+    end
+    
+    U1 --> UC1
+    U1 --> UC2
+    U1 --> UC3
+    U1 --> UC4
+    U1 --> UC6
+    
+    U2 --> UC1
+    U2 --> UC2
+    U2 --> UC3
+    U2 --> UC4
+    U2 --> UC5
+    U2 --> UC6
+    U2 --> UC7
+    U2 --> UC8
+    
+    U3 --> UC9
+    U3 --> UC7
+    U3 --> UC8
+    
+    UC1 --> E1
+    UC3 -.->|AI Processing| System
+    UC4 --> UC1
+    UC5 --> E3
+    UC5 --> E4
+    UC8 --> E2
+    
+    style System fill:#e1f5ff
+    style External fill:#fff3e0
+    style Users fill:#f3e5f5
+        </div>
+    </div>
+    
+    <div class="diagram-container">
+        <h2>03 - Sequence Diagram</h2>
+        <div class="mermaid">
+sequenceDiagram
+    participant User as 👤 User
+    participant Frontend as 🖥️ Frontend
+    participant Flask as 🚀 Flask Backend
+    participant Auth as 🔐 Authentication
+    participant ImageProc as 🎨 Image Processing
+    participant DB as 💾 Database
+    participant Payment as 💳 Payment
+    participant Export as 📤 Export Service
+    
+    User->>Frontend: Upload Image
+    Frontend->>Flask: POST /upload
+    Flask->>Auth: Verify Session
+    Auth->>DB: Check User Plan
+    DB-->>Auth: User Premium?
+    Auth-->>Flask: ✓ Authenticated
+    
+    User->>Frontend: Select Style
+    Frontend->>Flask: POST /process (style='pixar')
+    Flask->>ImageProc: load_image()
+    ImageProc->>ImageProc: Apply OpenCV Filters
+    ImageProc->>ImageProc: Apply Neural Style
+    ImageProc-->>Flask: Processed Image Buffer
+    
+    Flask->>DB: Save Processing Record
+    Flask->>Frontend: Return Preview
+    Frontend-->>User: Display Styled Image
+    
+    User->>Frontend: Download 4K
+    Frontend->>Flask: GET /download?quality=4k
+    Flask->>Payment: Check Premium Access
+    Payment-->>Flask: ✓ Authorized
+    Flask->>ImageProc: Render 4K Quality
+    ImageProc-->>Flask: 4K Image File
+    Flask->>Export: Generate Download Link
+    Export-->>Flask: Download URL Ready
+    Flask-->>Frontend: Send File
+    Frontend-->>User: ⬇️ Download Complete
+    
+    User->>Frontend: Share on WhatsApp
+    Frontend->>Flask: POST /export/whatsapp
+    Flask->>Export: Generate QR & Link
+    Export->>Export: Compress for WhatsApp
+    Export-->>Flask: WhatsApp Link Ready
+    Flask-->>Frontend: ✓ Share Link
+    Frontend-->>User: Open WhatsApp
+        </div>
+    </div>
+    
+    <div class="diagram-container">
+        <h2>04 - Class Diagram</h2>
+        <div class="mermaid">
+classDiagram
+    class Flask_App {
+        -secret_key: str
+        -template_folder: str
+        -static_folder: str
+        +route_upload()
+        +route_process()
+        +route_download()
+        +route_export()
+    }
+    
+    class Authentication {
+        +hash_password(password)
+        +verify_password(password, hash)
+        +validate_email(email)
+        +validate_password(password)
+        +google_login()
+    }
+    
+    class ImageProcessor {
+        -params: dict
+        +load_image(file)
+        +process_style(image, style)
+        +resize_image(image)
+        +save_image(image, path)
+        +apply_cartoon_effect()
+        +apply_pixar_style()
+        +apply_anime_style()
+    }
+    
+    class Database {
+        -db_path: str
+        -db_url: str
+        +init_database()
+        +create_user(email, password)
+        +get_user(user_id)
+        +update_user_plan(user_id, plan)
+        +save_processing_record(user_id, style, image_path)
+        +get_user_analytics(user_id)
+    }
+    
+    class User {
+        -id: int
+        -email: str
+        -password_hash: str
+        -plan: str
+        -created_at: datetime
+        -usage_count: int
+        +get_subscription_status()
+        +upgrade_plan()
+        +get_analytics()
+    }
+    
+    class ProcessingRecord {
+        -id: int
+        -user_id: int
+        -input_image_path: str
+        -output_image_path: str
+        -style_applied: str
+        -quality: str
+        -processing_time: float
+        -created_at: datetime
+        +get_file_size()
+        +get_download_url()
+    }
+    
+    class PaymentProcessor {
+        -api_key: str
+        +create_order(amount, user_id)
+        +verify_payment(order_id, payment_id)
+        +refund_payment(payment_id)
+        +get_payment_history(user_id)
+    }
+    
+    class WhatsAppProcessor {
+        -api_key: str
+        +send_image(phone_number, image_path)
+        +generate_share_link(image_path)
+        +compress_for_whatsapp(image)
+    }
+    
+    class Config {
+        -SECRET_KEY: str
+        -DATABASE_URL: str
+        -RAZORPAY_KEY: str
+        -WHATSAPP_API_KEY: str
+        -CARTOON_PARAMS: dict
+        -STYLES: list
+    }
+    
+    Flask_App --|> Authentication
+    Flask_App --|> ImageProcessor
+    Flask_App --|> Database
+    Flask_App --|> PaymentProcessor
+    Flask_App --|> WhatsAppProcessor
+    
+    Database --|> User
+    Database --|> ProcessingRecord
+    PaymentProcessor --|> User
+    ImageProcessor --|> ProcessingRecord
+    Authentication --|> User
+    WhatsAppProcessor --|> ProcessingRecord
+    
+    Flask_App --|> Config
+    
+    
+    style User fill:#e3f2fd
+    style ProcessingRecord fill:#f3e5f5
+    style Flask_App fill:#fff3e0
+    style Database fill:#e8f5e9
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'default',
+            securityLevel: 'loose'
+        });
+        mermaid.contentLoaded();
+    </script>
+</body>
+</html>
