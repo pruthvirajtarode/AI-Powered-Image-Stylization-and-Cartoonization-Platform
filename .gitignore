@@ -66,3 +66,9 @@ htmlcov/
 
 # Streamlit (if used)
 .streamlit/
+
+# Local diagnostic / dev-only scripts (not needed in production)
+health_check.py
+check_db.py
+check_users.py
+diag.py

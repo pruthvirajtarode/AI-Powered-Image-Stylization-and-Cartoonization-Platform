@@ -31,11 +31,11 @@ class Database:
         self.bool_true = "TRUE" if self.is_postgres else "1"
         self.bool_false = "FALSE" if self.is_postgres else "0"
         if self.is_postgres:
-            print(f"✅ Database: PostgreSQL (Render)")
+            print(f"[OK] Database: PostgreSQL (Render)")
         else:
             # Ensure the SQLite data directory exists before connecting
             Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
-            print(f"⚠️  Database: SQLite fallback at {self.db_path} — set DATABASE_URL or DATABASE_URI for production!")
+            print(f"[WARN] Database: SQLite fallback at {self.db_path} -- set DATABASE_URL or DATABASE_URI for production!")
         self.init_database()
 
 
@@ -67,7 +67,7 @@ class Database:
             # Fallback: If internal hostname fails to resolve, try external format if it's a standard Render dpg- URL
             # Format: dpg-xxx-a -> dpg-xxx-a.oregon-postgres.render.com (adjusting for common region)
             if "dpg-" in url and "@dpg-" in url and ".render.com" not in url:
-                print("🔄 DNS Error? Attempting Render External Hostname fallback...")
+                print("[RETRY] DNS Error? Attempting Render External Hostname fallback...")
                 ext_url = url.replace("@dpg-", "@dpg-") # Identify pos
                 parts = url.split("@")
                 if len(parts) == 2:
@@ -80,7 +80,7 @@ class Database:
                         fallback_url = f"{cred}@{fallback_host}/{path}"
                         conn = try_connect(fallback_url)
                         if conn: 
-                            print(f"✅ Failover Success: Connected via {region} external gateway.")
+                            print(f"[OK] Failover Success: Connected via {region} external gateway.")
                             return conn
             
             # Final attempt without SSL tweak if nothing else worked
@@ -131,7 +131,7 @@ class Database:
                 # Need a rollback if the select failed in Postgres
                 if self.is_postgres:
                     conn.rollback()
-                print(f"🚀 Migrating {table}: Adding '{column}'...")
+                print(f"[MIGRATE] Migrating {table}: Adding '{column}'...")
                 cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {type_def}")
                 conn.commit()
 
@@ -151,7 +151,7 @@ class Database:
             
             if not admin_user:
                 import bcrypt
-                print("👤 Initializing System: Creating default administrator...")
+                print("[INIT] Initializing System: Creating default administrator...")
                 pw = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 cursor.execute(f"""
                     INSERT INTO users (username, email, password_hash, full_name, role, is_verified)
