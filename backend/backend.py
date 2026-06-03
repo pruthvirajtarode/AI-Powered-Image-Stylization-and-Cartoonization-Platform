@@ -106,11 +106,27 @@ def update_user_heartbeat():
 # Ensure directories exist
 create_directories()
 
+# --- RESPONSE HEADERS: Fix Cross-Origin-Opener-Policy for Google OAuth ---
+# Render's reverse proxy sets COOP: same-origin by default.
+# This blocks window.postMessage from the Google OAuth popup, breaking Google Sign-In.
+# We explicitly override it to 'unsafe-none' so popups can communicate freely.
+@app.after_request
+def set_security_headers(response):
+    response.headers['Cross-Origin-Opener-Policy'] = 'unsafe-none'
+    response.headers['Cross-Origin-Embedder-Policy'] = 'unsafe-none'
+    return response
+
 @app.route('/ping')
 def ping():
     """Ultra-fast health check endpoint — no DB, no template rendering.
     Used by Render's health check and the self-ping keep-alive thread."""
     return jsonify({"status": "ok", "service": "toonify"}), 200
+
+@app.route('/favicon.ico')
+def favicon():
+    """Return 204 No Content for favicon requests to suppress 404 console errors.
+    A proper favicon can be served from /static/ if added later."""
+    return '', 204
 
 @app.route('/api/config')
 def get_config():
