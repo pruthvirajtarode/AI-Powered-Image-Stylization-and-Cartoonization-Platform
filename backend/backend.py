@@ -881,37 +881,6 @@ def verify_razorpay_payment():
 
         db.log_user_activity(user_id, "payment", "Successful Razorpay transaction")
 
-        # Also store a row keyed by payment_id (pay_XXXX) so permanent
-        # download links (/api/download/<payment_id>) can resolve the file.
-        order_tx = db.get_transaction_by_id(razorpay_order_id) if razorpay_order_id else None
-
-        normalized_amount = None
-        if order_tx and order_tx.get('amount') is not None:
-            normalized_amount = float(order_tx['amount'])
-        elif amount is not None:
-            raw_amount = float(amount)
-            # If the client sends paise (e.g. 2800), convert to INR.
-            # If client sends INR directly (e.g. 28), keep as-is.
-            normalized_amount = raw_amount / 100 if raw_amount >= 1000 else raw_amount
-        else:
-            normalized_amount = float(settings.DOWNLOAD_PRICE)
-
-        try:
-            db.create_transaction(
-                user_id=user_id,
-                transaction_id=payment_id,
-                amount=normalized_amount,
-                image_filename=filename,
-                payment_method="razorpay"
-            )
-            db.update_transaction_status(payment_id, "completed")
-        except Exception as e:
-            # Row may already exist on retry — just update status
-            try:
-                db.update_transaction_status(payment_id, "completed")
-            except Exception:
-                print(f"Transaction save note: {e}")
-
         # Generate a signed 7-day download token for the modal button
         try:
             token = download_serializer.dumps({"u": user_id, "f": filename})
@@ -919,8 +888,8 @@ def verify_razorpay_payment():
         except Exception:
             download_url = f"/api/user/download?filename={filename}&format={format_ext}&quality={quality}"
 
-        # Permanent download URL for email — based on payment_id, never expires
-        permanent_url = request.host_url.rstrip('/') + f"/api/download/{payment_id}"
+        # Permanent download URL for email — based on razorpay_order_id, never expires
+        permanent_url = request.host_url.rstrip('/') + f"/api/download/{razorpay_order_id}"
 
         # Send payment success email in a background thread
         email_sent = False
