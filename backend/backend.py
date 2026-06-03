@@ -1,6 +1,7 @@
 import os
 import time
 import uuid
+import threading
 from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, send_file
 from flask_cors import CORS
 import cv2
@@ -19,6 +20,9 @@ import config.settings as settings
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from concurrent.futures import ThreadPoolExecutor
+
+# --- HEARTBEAT THROTTLE: track last DB ping time per user (in-memory, per-worker) ---
+_heartbeat_cache: dict = {}
 
 app = Flask(__name__, 
             template_folder='../frontend/templates',
@@ -82,18 +86,31 @@ def get_valid_session_user_id():
     }
     return db_user['id']
 
-# --- LIVE HEARTBEAT ---
+# --- LIVE HEARTBEAT (throttled: max 1 DB write per user per 60 seconds) ---
 @app.before_request
 def update_user_heartbeat():
+    # Skip heartbeat for static files and the ping endpoint to avoid noise
+    if request.path.startswith('/static') or request.path == '/ping':
+        return
     user_id = get_valid_session_user_id()
     if user_id:
-        try:
-            db.update_last_active(user_id)
-        except:
-            pass # Fail silently if DB is locked or busy during heartbeat
+        now = time.time()
+        last_ping = _heartbeat_cache.get(user_id, 0)
+        if now - last_ping >= 60:  # Only write to DB once per minute per user
+            _heartbeat_cache[user_id] = now
+            try:
+                db.update_last_active(user_id)
+            except:
+                pass  # Fail silently if DB is locked or busy during heartbeat
 
 # Ensure directories exist
 create_directories()
+
+@app.route('/ping')
+def ping():
+    """Ultra-fast health check endpoint — no DB, no template rendering.
+    Used by Render's health check and the self-ping keep-alive thread."""
+    return jsonify({"status": "ok", "service": "toonify"}), 200
 
 @app.route('/api/config')
 def get_config():
@@ -1475,6 +1492,23 @@ def process_whatsapp_text(message_data):
     
     except Exception as e:
         print(f"Error in process_whatsapp_text: {str(e)}")
+
+# --- KEEP-ALIVE: Prevent Render free-tier cold starts ---
+# Pings /ping every 10 minutes so the service never sleeps.
+def _keep_alive_loop():
+    import urllib.request
+    port = os.environ.get('PORT', '5000')
+    url = f"http://localhost:{port}/ping"
+    while True:
+        time.sleep(600)  # 10 minutes
+        try:
+            urllib.request.urlopen(url, timeout=10)
+            print("[KEEP-ALIVE] Self-ping OK")
+        except Exception as e:
+            print(f"[KEEP-ALIVE] Self-ping failed (non-critical): {e}")
+
+_ka_thread = threading.Thread(target=_keep_alive_loop, daemon=True, name="keep-alive")
+_ka_thread.start()
 
 if __name__ == "__main__":
     # Flask in Debug mode with watchdog optimization

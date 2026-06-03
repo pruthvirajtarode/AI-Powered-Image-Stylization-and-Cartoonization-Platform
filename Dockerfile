@@ -30,4 +30,4 @@ EXPOSE 5000
 
 # Use $PORT injected by Render; fall back to 5000 locally
 # --preload ensures DB initializes once before workers fork
-CMD gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --timeout 300 --preload --chdir /app/backend backend:app
+CMD gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --timeout 120 --keep-alive 65 --preload --chdir /app/backend backend:app
