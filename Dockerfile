@@ -29,5 +29,5 @@ RUN mkdir -p backend/data/processed_images backend/data/cache
 EXPOSE 5000
 
 # Use $PORT injected by Render; fall back to 5000 locally
-# --preload ensures DB initializes once before workers fork
-CMD gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --timeout 120 --keep-alive 65 --preload --chdir /app/backend backend:app
+# gunicorn.conf.py handles workers/timeout/keepalive/preload and the keep-alive hook
+CMD gunicorn -c /app/backend/gunicorn.conf.py --chdir /app/backend backend:app

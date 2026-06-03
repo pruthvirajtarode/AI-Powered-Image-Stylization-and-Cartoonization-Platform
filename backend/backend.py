@@ -1493,23 +1493,6 @@ def process_whatsapp_text(message_data):
     except Exception as e:
         print(f"Error in process_whatsapp_text: {str(e)}")
 
-# --- KEEP-ALIVE: Prevent Render free-tier cold starts ---
-# Pings /ping every 10 minutes so the service never sleeps.
-def _keep_alive_loop():
-    import urllib.request
-    port = os.environ.get('PORT', '5000')
-    url = f"http://localhost:{port}/ping"
-    while True:
-        time.sleep(600)  # 10 minutes
-        try:
-            urllib.request.urlopen(url, timeout=10)
-            print("[KEEP-ALIVE] Self-ping OK")
-        except Exception as e:
-            print(f"[KEEP-ALIVE] Self-ping failed (non-critical): {e}")
-
-_ka_thread = threading.Thread(target=_keep_alive_loop, daemon=True, name="keep-alive")
-_ka_thread.start()
-
 if __name__ == "__main__":
     # Flask in Debug mode with watchdog optimization
     app.run(debug=True, host='0.0.0.0', port=5000)
