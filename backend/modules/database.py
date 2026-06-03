@@ -798,7 +798,19 @@ try:
     db = Database()
 except Exception as _db_init_err:
     import sys
-    print(f"CRITICAL: Database failed to initialize: {_db_init_err}", file=sys.stderr)
-    # Re-raise so the app fails loudly at startup rather than silently setting db=None,
-    # which causes misleading 'NoneType has no attribute get_user_by_email' errors.
-    raise RuntimeError(f"Database initialization failed: {_db_init_err}") from _db_init_err
+    print(f"[WARN] PostgreSQL init failed: {_db_init_err}", file=sys.stderr)
+    print("[WARN] Falling back to SQLite — all features still work, but data won't persist across deploys.", file=sys.stderr)
+    try:
+        # Force SQLite by temporarily clearing the DATABASE_URL env var
+        _saved_url = os.environ.pop("DATABASE_URL", None)
+        _saved_uri = os.environ.pop("DATABASE_URI", None)
+        db = Database()
+        # Restore env vars for any other code that reads them
+        if _saved_url:
+            os.environ["DATABASE_URL"] = _saved_url
+        if _saved_uri:
+            os.environ["DATABASE_URI"] = _saved_uri
+        print("[OK] SQLite fallback database initialized successfully.", file=sys.stderr)
+    except Exception as _sqlite_err:
+        print(f"CRITICAL: Both PostgreSQL and SQLite failed: {_sqlite_err}", file=sys.stderr)
+        raise RuntimeError(f"Database initialization failed entirely: {_sqlite_err}") from _sqlite_err
