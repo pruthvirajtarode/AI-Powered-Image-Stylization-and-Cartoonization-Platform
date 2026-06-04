@@ -436,7 +436,6 @@ class Database:
         cursor.execute(f"""
             SELECT * FROM transactions 
             WHERE user_id = {self.placeholder}
-              AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')
             ORDER BY created_at DESC
         """, (user_id,))
         transactions = [dict(row) for row in cursor.fetchall()]
@@ -713,7 +712,6 @@ class Database:
             SELECT COALESCE(SUM(amount), 0) as total
             FROM transactions
             WHERE status = 'completed'
-              AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')
         """)
         total_revenue = cursor.fetchone()['total']
         
@@ -769,7 +767,6 @@ class Database:
             SELECT t.*, u.username, u.email 
             FROM transactions t
             JOIN users u ON t.user_id = u.id
-            WHERE (t.payment_method != 'razorpay' OR t.payment_method IS NULL OR t.transaction_id LIKE 'pay_%')
             ORDER BY t.created_at DESC
         """)
         transactions = [dict(row) for row in cursor.fetchall()]
@@ -784,7 +781,7 @@ class Database:
         cursor.execute("""
             SELECT u.*, 
                    (SELECT COUNT(*) FROM processing_history WHERE user_id = u.id) as total_creations,
-                   (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND status = 'completed' AND (payment_method != 'razorpay' OR payment_method IS NULL OR transaction_id LIKE 'pay_%')) as total_spent
+                   (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND status = 'completed') as total_spent
             FROM users u
             ORDER BY u.created_at DESC
         """)

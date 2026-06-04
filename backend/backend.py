@@ -112,7 +112,7 @@ create_directories()
 # We explicitly override it to 'unsafe-none' so popups can communicate freely.
 @app.after_request
 def set_security_headers(response):
-    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin-allow-popups'
+    response.headers['Cross-Origin-Opener-Policy'] = 'unsafe-none'
     response.headers['Cross-Origin-Embedder-Policy'] = 'unsafe-none'
     return response
 
