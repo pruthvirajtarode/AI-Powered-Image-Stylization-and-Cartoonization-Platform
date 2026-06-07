@@ -335,10 +335,39 @@
         }
 
         /* --- Responsive Admin --- */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--slate);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.5);
+            z-index: 90;
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
         @media (max-width: 1024px) {
+            .mobile-menu-btn {
+                display: block;
+            }
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.1);
             }
             .sidebar.active {
                 transform: translateX(0);
@@ -379,6 +408,9 @@
 </head>
 
 <body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
     <!-- User Details Modal -->
     <div id="userModal">
         <div class="modal-content">
@@ -419,12 +451,17 @@
 
     <div class="main-content">
         <div class="header">
-            <h1 id="tabTitle">System Dashboard</h1>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 id="tabTitle">System Dashboard</h1>
+            </div>
             <div style="display: flex; gap: 15px;">
                 <button class="btn-auth"
-                    style="background: white; color: var(--slate); border: 1px solid #e2e8f0; padding: 10px 20px;"
+                    style="background: white; color: var(--slate); border: 1px solid #e2e8f0; padding: 10px 20px; white-space: nowrap; display: flex; align-items: center; gap: 8px; font-weight: 600; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"
                     onclick="refreshData()">
-                    <i class="fas fa-sync-alt" id="refreshIcon"></i> Refresh
+                    <i class="fas fa-sync-alt" id="refreshIcon"></i> <span class="refresh-text">Refresh</span>
                 </button>
             </div>
         </div>
@@ -538,7 +575,39 @@
         </div>
     </div>
 
+    <style>
+        @media (max-width: 640px) {
+            .refresh-text {
+                display: none;
+            }
+            .btn-auth {
+                padding: 10px 15px !important;
+            }
+            .header {
+                margin-bottom: 25px;
+            }
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+
     <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        // Close sidebar when clicking a nav item on mobile
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
         function parseDateSafe(value) {
             if (!value) return null;
             let raw = String(value).trim();
