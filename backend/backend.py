@@ -191,6 +191,9 @@ def dashboard():
     if 'user' not in session:
         return redirect('/?auth=login')
     
+    if session['user'].get('role') == 'admin':
+        return redirect('/admin')
+    
     # Background Cleanup (Simple trigger)
     try:
         filenames = db.cleanup_old_history(session['user']['id'])

@@ -1407,7 +1407,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         if (data.success) {
             localStorage.setItem('toonify_user', JSON.stringify(data.user));
-            location.href = '/dashboard';
+            if (data.user.role === 'admin') {
+                location.href = '/admin';
+            } else {
+                location.href = '/dashboard';
+            }
         } else {
             alert("Google Authentication Failed: " + data.message);
         }
