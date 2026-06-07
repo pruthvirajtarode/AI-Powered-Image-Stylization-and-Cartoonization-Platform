@@ -958,6 +958,39 @@ def subscribe_plan():
     return jsonify({"success": False, "message": "Payment verification failed"}), 400
 
 # --- ADMIN DASHBOARD ROUTES ---
+
+def serialize_utc_ts(value):
+    """
+    Ensure a datetime value is serialized as an ISO-8601 string with explicit
+    UTC timezone (i.e. ending in '+00:00' or 'Z').  This is critical because
+    PostgreSQL returns timezone-aware datetimes but Python's isoformat() may
+    omit the offset, causing JavaScript's Date() to treat the string as LOCAL
+    time instead of UTC — producing a wrong ~5:30 h offset for IST users.
+
+    Accepts: datetime objects, strings, or None.
+    Returns: ISO string with '+00:00' suffix, or None.
+    """
+    if value is None:
+        return None
+    if hasattr(value, 'isoformat'):
+        iso = value.isoformat()
+    else:
+        iso = str(value).strip()
+    # Already has timezone info — leave it alone
+    if iso.endswith('Z') or '+' in iso[10:] or iso.count('-') > 2:
+        return iso
+    # Naive string from DB (no tz suffix) — treat as UTC
+    return iso + '+00:00'
+
+
+def serialize_rows_ts(rows, fields):
+    """Apply serialize_utc_ts to the given timestamp fields in a list of dicts."""
+    for row in rows:
+        for f in fields:
+            if f in row:
+                row[f] = serialize_utc_ts(row[f])
+    return rows
+
 def admin_required(f):
     from functools import wraps
     @wraps(f)
@@ -983,12 +1016,15 @@ def admin_stats():
 @admin_required
 def admin_logs():
     logs = db.get_recent_activity_logs(limit=100)
+    serialize_rows_ts(logs, ['created_at'])
     return jsonify({"success": True, "logs": logs})
 
 @app.route('/api/admin/users')
 @admin_required
 def admin_users():
     users = db.get_all_users_admin()
+    ts_fields = ['created_at', 'last_login', 'last_logout', 'last_active', 'lockout_until']
+    serialize_rows_ts(users, ts_fields)
     return jsonify({"success": True, "users": users})
 
 @app.route('/api/admin/user/<int:user_id>/activities')
@@ -997,12 +1033,14 @@ def admin_user_activities(user_id):
     limit = request.args.get('limit', default=30, type=int)
     limit = max(1, min(limit, 200))
     logs = db.get_user_activity_logs_admin(user_id, limit=limit)
+    serialize_rows_ts(logs, ['created_at'])
     return jsonify({"success": True, "logs": logs})
 
 @app.route('/api/admin/transactions')
 @admin_required
 def admin_transactions():
     transactions = db.get_all_transactions_admin()
+    serialize_rows_ts(transactions, ['created_at'])
     return jsonify({"success": True, "transactions": transactions})
 
 from itsdangerous import URLSafeTimedSerializer

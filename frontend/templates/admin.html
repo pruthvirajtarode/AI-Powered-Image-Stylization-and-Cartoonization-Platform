@@ -541,22 +541,34 @@
     <script>
         function parseDateSafe(value) {
             if (!value) return null;
-            const raw = String(value).trim();
-            let d = new Date(raw);
-            if (!isNaN(d.getTime())) return d;
+            let raw = String(value).trim();
 
-            d = new Date(raw.replace(' ', 'T'));
-            if (!isNaN(d.getTime())) return d;
+            // Normalize space-separated datetime to ISO format
+            raw = raw.replace(' ', 'T');
 
-            d = new Date(raw.replace(' ', 'T') + 'Z');
-            if (!isNaN(d.getTime())) return d;
+            // If the string has NO timezone info (no 'Z', no '+', no trailing offset),
+            // treat it as UTC by appending 'Z'. Without this, JavaScript Date() would
+            // interpret it as LOCAL time — causing a ~5:30h offset for IST users.
+            const hasTimezone = raw.endsWith('Z') ||
+                                /[+-]\d{2}:\d{2}$/.test(raw) ||
+                                /[+-]\d{4}$/.test(raw);
+            if (!hasTimezone && raw.length >= 19) {
+                raw = raw + 'Z';
+            }
 
-            return null;
+            const d = new Date(raw);
+            return isNaN(d.getTime()) ? null : d;
         }
 
         function formatDateTime(value, fallback = 'Never') {
             const d = parseDateSafe(value);
-            return d ? d.toLocaleString() : fallback;
+            if (!d) return fallback;
+            // Display in user's local timezone with a clear, readable format
+            return d.toLocaleString(undefined, {
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: true
+            });
         }
 
         let revenueChartInstance = null;
