@@ -130,6 +130,7 @@ def favicon():
 
 @app.route('/robots.txt')
 @app.route('/sitemap.xml')
+@app.route('/google820b96aea865b931.html')
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
 
