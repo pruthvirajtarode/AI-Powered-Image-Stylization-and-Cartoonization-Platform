@@ -1169,16 +1169,15 @@ def secure_download():
     if not filename:
         return "Filename missing", 400
 
-    # Payment check: only required for non-premium users downloading image files.
-    # Video files are always served directly (no per-video payment system).
+    # Payment check: required for all non-premium users downloading any processed asset.
     file_path = settings.TEMP_FOLDER / filename
     if not file_path.exists():
-        return "File not found — the file may have been cleared from server storage. Please re-process your image.", 404
+        return "File not found — the file may have been cleared from server storage. Please re-process your image/video.", 404
 
     is_video = file_path.suffix.lower() in {'.mp4', '.webm', '.mov', '.avi', '.mkv'}
 
-    if not is_pro and not is_video:
-        # Strict payment gate for image downloads only
+    if not is_pro:
+        # Strict payment gate for both image and video downloads
         transaction = db.get_transaction_by_filename(user_id, filename)
         if not transaction or transaction['status'] != 'completed':
             return jsonify({"success": False, "message": "Payment required to download this file"}), 402
