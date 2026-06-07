@@ -181,11 +181,8 @@
             .dash-sidebar.open { transform: translateX(0); }
             .sidebar-close-btn { display:flex; }
             .sidebar-toggle-btn { display:flex; }
-            .dash-main { margin-left:0 !important; padding:20px 16px; }
-            .stat-grid { grid-template-columns: 1fr 1fr; gap:14px; }
-            .dash-header { flex-wrap:wrap; gap:12px; }
+            .dash-main { margin-left:0 !important; }
         }
-        @media (max-width: 420px) { .stat-grid { grid-template-columns: 1fr; } }
 
         /* ── MAIN ── */
         .dash-main {
@@ -204,7 +201,7 @@
             margin-bottom: 40px;
         }
 
-        .user-welcome-area { display: flex; align-items: center; gap: 18px; }
+        .user-welcome-area { display: flex; align-items: center; gap: 18px; min-width: 0; }
 
         .user-avatar-ring {
             position: relative;
@@ -233,6 +230,7 @@
             border: 3px solid #ffffff;
         }
 
+        .user-greeting { min-width: 0; }
         .user-greeting h1 {
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
@@ -240,6 +238,8 @@
             color: #1e293b;
             letter-spacing: -0.5px;
             line-height: 1.2;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         .user-greeting h1 .wave { display: inline-block; animation: wave 2.5s ease-in-out infinite; }
         @keyframes wave { 0%,100%{transform:rotate(0deg)} 20%{transform:rotate(20deg)} 40%{transform:rotate(-10deg)} 60%{transform:rotate(15deg)} 80%{transform:rotate(-5deg)} }
@@ -248,6 +248,7 @@
             color: #64748b;
             font-size: .85rem;
             margin-top: 3px;
+            word-break: break-all;
         }
 
         .user-plan-badge {
@@ -615,11 +616,20 @@
             .quick-actions { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
-            .dash-main { padding: 20px 16px; }
+            .dash-main { padding: 20px 16px; overflow-x: hidden; }
             .stat-grid { grid-template-columns: 1fr 1fr; gap:14px; }
             .dash-header { flex-wrap:wrap; gap:14px; }
             .quick-actions { grid-template-columns: 1fr; }
             .history-table th:nth-child(4), .history-table td:nth-child(4) { display:none; }
+            .user-welcome-area { width: 100%; max-width: 100%; }
+            .user-greeting h1 { font-size: 1.4rem; }
+        }
+        @media (max-width: 420px) {
+            .stat-grid { grid-template-columns: 1fr; }
+            .dash-header { justify-content: center; text-align: center; }
+            .user-welcome-area { flex-direction: column; text-align: center; gap: 10px; }
+            .header-cta { width: 100%; justify-content: center; }
+            .sidebar-toggle-btn { position: absolute; top: 20px; left: 16px; z-index: 10; }
         }
     </style>
 </head>
