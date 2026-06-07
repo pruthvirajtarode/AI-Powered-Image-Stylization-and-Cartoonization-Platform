@@ -234,16 +234,72 @@ class Authentication:
     def send_payment_success_email(receiver_email: str, username: str,
                                    filename: str, download_url: str,
                                    payment_id: str,
-                                   image_path: str = None) -> bool:
-        """Send a beautiful payment success email with the download link and image attachment."""
+                                   image_path: str = None,
+                                   amount: float = None) -> bool:
+        """
+        Send a beautiful payment success email with the download link.
+        Attaches the processed image/video if the file is <= 15 MB.
+        For larger files (e.g. long videos) only the download link is sent.
+        """
         if not settings.SMTP_USER or not settings.SMTP_PASS:
-            print(f"DEBUG: Payment success email would be sent to {receiver_email} (download: {download_url})")
+            print(f"[EMAIL] SMTP not configured — skipping payment email for {receiver_email}")
+            print(f"[EMAIL] To enable emails, set SMTP_USER and SMTP_PASS in backend/.env")
             return False
+
+        # Determine display amount
+        display_amount = f"&#8377;{amount:.2f}" if amount else f"&#8377;{settings.DOWNLOAD_PRICE:.2f}"
+
+        # Decide whether to attach the file (skip if > 15 MB to avoid SMTP timeouts)
+        MAX_ATTACH_SIZE = 15 * 1024 * 1024  # 15 MB
+        attach_file = False
+        attach_mime_type = 'application/octet-stream'
+        attach_subtype = 'octet-stream'
+        is_video_file = False
+
+        if image_path and os.path.exists(image_path):
+            file_size = os.path.getsize(image_path)
+            ext = os.path.splitext(image_path)[1].lower()
+            video_exts = {'.mp4', '.webm', '.mov', '.avi', '.mkv'}
+            image_exts = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+
+            if ext in video_exts:
+                is_video_file = True
+                attach_mime_type = {
+                    '.mp4': 'video/mp4', '.webm': 'video/webm',
+                    '.mov': 'video/quicktime', '.avi': 'video/x-msvideo',
+                    '.mkv': 'video/x-matroska'
+                }.get(ext, 'video/mp4')
+                attach_subtype = attach_mime_type.split('/')[1]
+            elif ext in image_exts:
+                attach_mime_type = {
+                    '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+                    '.png': 'image/png', '.gif': 'image/gif',
+                    '.webp': 'image/webp'
+                }.get(ext, 'image/jpeg')
+                attach_subtype = attach_mime_type.split('/')[1]
+
+            attach_file = file_size <= MAX_ATTACH_SIZE
+            if not attach_file:
+                print(f"[EMAIL] File too large ({file_size // (1024*1024)} MB) — skipping attachment, sending link only")
+
+        attachment_note = (
+            "<p style='color:#475569;font-size:0.9rem;margin:0 0 20px;'>"
+            "📎 Your processed file is attached to this email."
+            "</p>"
+        ) if attach_file else (
+            "<p style='color:#94a3b8;font-size:0.85rem;margin:0 0 20px;'>"
+            "(File not attached — use the download button above)"
+            "</p>"
+        )
+
+        file_icon = "🎬" if is_video_file else "🎨"
+        file_label = "AI-stylized video" if is_video_file else "AI-stylized artwork"
+
         try:
             msg = MIMEMultipart()
             msg['From'] = settings.SMTP_SENDER
             msg['To'] = receiver_email
-            msg['Subject'] = f"🎨 Your Toonify AI Artwork is Ready! — {settings.APP_NAME}"
+            msg['Subject'] = f"{file_icon} Your Toonify AI {('Video' if is_video_file else 'Artwork')} is Ready! — {settings.APP_NAME}"
 
             body = f"""
             <html>
@@ -252,26 +308,27 @@ class Authentication:
                 <!-- Header -->
                 <div style="background:linear-gradient(135deg,#ff7e5f,#feb47b);padding:40px 40px 30px;text-align:center;">
                   <div style="background:rgba(255,255,255,0.2);width:72px;height:72px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
-                    <span style="font-size:2.2rem;">🎨</span>
+                    <span style="font-size:2.2rem;">{file_icon}</span>
                   </div>
                   <h1 style="color:#fff;margin:0;font-size:1.9rem;font-weight:800;letter-spacing:-0.5px;">Payment Successful!</h1>
-                  <p style="color:rgba(255,255,255,0.88);margin:8px 0 0;font-size:1rem;">Your AI-stylized artwork is ready</p>
+                  <p style="color:rgba(255,255,255,0.88);margin:8px 0 0;font-size:1rem;">Your {file_label} is ready for download</p>
                 </div>
                 <!-- Body -->
                 <div style="padding:36px 40px;">
                   <p style="color:#1e293b;font-size:1.05rem;margin:0 0 8px;">Hi <strong>{username}</strong>,</p>
                   <p style="color:#475569;font-size:0.97rem;margin:0 0 28px;line-height:1.7;">
-                    Thank you for your purchase! 🙌 Your neural artwork has been generated and is ready for download.
-                    The high-resolution export is waiting below — no watermark, full quality.
+                    Thank you for your purchase! 🙌 Your {file_label} has been generated and is ready for download.
+                    Full quality, no watermark — click the button below.
                   </p>
                   <!-- Download CTA -->
-                  <div style="text-align:center;margin-bottom:28px;">
+                  <div style="text-align:center;margin-bottom:20px;">
                     <a href="{download_url}"
                        style="display:inline-block;background:linear-gradient(135deg,#ff7e5f,#feb47b);color:#fff;font-size:1.05rem;font-weight:700;padding:16px 40px;border-radius:50px;text-decoration:none;box-shadow:0 8px 24px rgba(255,126,95,0.35);">
-                      ⬇️ &nbsp; Download Your Artwork
+                      ⬇️ &nbsp; Download Your {('Video' if is_video_file else 'Artwork')}
                     </a>
-                    <p style="color:#94a3b8;font-size:0.78rem;margin:10px 0 0;">This link does not expire — you can download anytime</p>
+                    <p style="color:#94a3b8;font-size:0.78rem;margin:10px 0 0;">This link does not expire — download anytime</p>
                   </div>
+                  {attachment_note}
                   <!-- Transaction info -->
                   <div style="background:#f8fafc;border-radius:12px;padding:16px 20px;margin-bottom:28px;border:1px solid #e2e8f0;">
                     <p style="margin:0 0 6px;color:#64748b;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Transaction Details</p>
@@ -281,8 +338,12 @@ class Authentication:
                         <td style="color:#1e293b;font-size:0.85rem;font-family:monospace;text-align:right;">{payment_id}</td>
                       </tr>
                       <tr>
-                        <td style="color:#94a3b8;font-size:0.85rem;padding:4px 0;">Amount</td>
-                        <td style="color:#22c55e;font-size:0.85rem;font-weight:700;text-align:right;">&#8377;10</td>
+                        <td style="color:#94a3b8;font-size:0.85rem;padding:4px 0;">File</td>
+                        <td style="color:#1e293b;font-size:0.85rem;text-align:right;overflow:hidden;text-overflow:ellipsis;max-width:200px;">{filename}</td>
+                      </tr>
+                      <tr>
+                        <td style="color:#94a3b8;font-size:0.85rem;padding:4px 0;">Amount Paid</td>
+                        <td style="color:#22c55e;font-size:0.85rem;font-weight:700;text-align:right;">{display_amount}</td>
                       </tr>
                       <tr>
                         <td style="color:#94a3b8;font-size:0.85rem;padding:4px 0;">Status</td>
@@ -307,13 +368,17 @@ class Authentication:
             """
             msg.attach(MIMEText(body, 'html'))
 
-            # Attach processed image file if path provided and exists
-            if image_path and os.path.exists(image_path):
+            # Attach the processed image or video (if within size limit)
+            if attach_file:
+                mime_main, mime_sub = attach_mime_type.split('/', 1)
                 with open(image_path, 'rb') as f:
-                    part = MIMEBase('application', 'octet-stream')
+                    part = MIMEBase(mime_main, mime_sub)
                     part.set_payload(f.read())
                 encoders.encode_base64(part)
-                part.add_header('Content-Disposition', f'attachment; filename="{os.path.basename(image_path)}"')
+                part.add_header(
+                    'Content-Disposition',
+                    f'attachment; filename="toonify_{os.path.basename(image_path)}"'
+                )
                 msg.attach(part)
 
             server = smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT)
@@ -321,9 +386,10 @@ class Authentication:
             server.login(settings.SMTP_USER, settings.SMTP_PASS)
             server.send_message(msg)
             server.quit()
+            print(f"[EMAIL] Payment success email sent to {receiver_email} (attached={attach_file})")
             return True
         except Exception as e:
-            print(f"ERROR: Failed to send payment success email: {e}")
+            print(f"[EMAIL] ERROR: Failed to send payment success email to {receiver_email}: {e}")
             return False
 
     @staticmethod

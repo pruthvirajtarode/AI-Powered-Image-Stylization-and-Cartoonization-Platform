@@ -112,7 +112,7 @@ create_directories()
 # We explicitly override it to 'unsafe-none' so popups can communicate freely.
 @app.after_request
 def set_security_headers(response):
-    response.headers['Cross-Origin-Opener-Policy'] = 'unsafe-none'
+    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin-allow-popups'
     response.headers['Cross-Origin-Embedder-Policy'] = 'unsafe-none'
     return response
 
@@ -909,15 +909,16 @@ def verify_razorpay_payment():
                 email_sent = True
                 _app = app
                 _email = user_email
-                _username = username
+                _username = session['user'].get('fullname') or username
                 _pid = payment_id
                 _image_path = str(settings.TEMP_FOLDER / filename) if filename else None
+                _amount = amount / 100 if amount else None # Convert paise to rupees if available
 
                 def _send_email_bg():
                     with _app.app_context():
                         try:
                             Authentication.send_payment_success_email(
-                                _email, _username, filename, permanent_url, _pid, _image_path
+                                _email, _username, filename, permanent_url, _pid, _image_path, _amount
                             )
                         except Exception as e:
                             print(f"Payment email failed: {e}")
