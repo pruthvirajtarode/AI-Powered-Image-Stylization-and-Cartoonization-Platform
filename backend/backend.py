@@ -128,6 +128,11 @@ def favicon():
     A proper favicon can be served from /static/ if added later."""
     return '', 204
 
+@app.route('/robots.txt')
+@app.route('/sitemap.xml')
+def static_from_root():
+    return send_from_directory(app.static_folder, request.path[1:])
+
 @app.route('/api/config')
 def get_config():
     """Return public configuration for the frontend"""
