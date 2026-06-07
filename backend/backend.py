@@ -1142,40 +1142,48 @@ def secure_download():
     filename = request.args.get('filename')
     format_ext = request.args.get('format', 'jpg').lower()
     quality = int(request.args.get('quality', 95))
-    
-    # Access via Token (Task 17: Temporary Link)
+
     is_pro = False
+    user_id = None
+
     if token:
         try:
-            data = download_serializer.loads(token, max_age=604800) # 7 day validity
+            data = download_serializer.loads(token, max_age=604800)  # 7-day validity
             filename = data['f']
             user_id = data['u']
-            is_pro = False  # Token users still need to have paid
-        except:
+            # Re-check the user's actual plan/role from session (if available) or DB
+            if 'user' in session and session['user'].get('id') == user_id:
+                is_pro = is_premium_user(session['user'])
+            else:
+                db_user = db.get_user_by_id(user_id)
+                if db_user:
+                    is_pro = is_premium_user(db_user)
+        except Exception:
             return "Invalid or expired download link", 403
     elif 'user' in session:
         user_id = session['user']['id']
-        is_pro = session['user'].get('role') == 'admin' or session['user'].get('plan') in ['pro', 'elite']
+        is_pro = is_premium_user(session['user'])
     else:
         return "Authentication required", 401
 
     if not filename:
         return "Filename missing", 400
-    
-    # STRICT: Always verify payment for non-pro users
-    # Even if via session, check that payment was completed
-    if not is_pro:
-        transaction = db.get_transaction_by_filename(user_id, filename)
-        if not transaction or transaction['status'] != 'completed':
-            # Return 402 Payment Required status
-            return jsonify({"success": False, "message": "Payment required to download this file"}), 402
-        
-    # Process Format Conversion (Task 14)
+
+    # Payment check: only required for non-premium users downloading image files.
+    # Video files are always served directly (no per-video payment system).
     file_path = settings.TEMP_FOLDER / filename
     if not file_path.exists():
-        return "File not found", 404
-        
+        return "File not found — the file may have been cleared from server storage. Please re-process your image.", 404
+
     is_video = file_path.suffix.lower() in {'.mp4', '.webm', '.mov', '.avi', '.mkv'}
+
+    if not is_pro and not is_video:
+        # Strict payment gate for image downloads only
+        transaction = db.get_transaction_by_filename(user_id, filename)
+        if not transaction or transaction['status'] != 'completed':
+            return jsonify({"success": False, "message": "Payment required to download this file"}), 402
+
+    # --- VIDEO DOWNLOAD ---
     if is_video:
         video_mime = {
             '.mp4': 'video/mp4',
@@ -1191,26 +1199,42 @@ def secure_download():
             download_name=f"toonify_{filename}"
         )
 
+    # --- IMAGE DOWNLOAD (with format conversion) ---
     img = cv2.imread(str(file_path))
-    
-    import io
-    from flask import send_file
-    
+    if img is None:
+        return "File could not be read — it may be corrupt or in an unsupported format.", 500
+
+    import io as _io
+    from flask import send_file as _send_file
+
     if format_ext == 'png':
         _, img_encoded = cv2.imencode('.png', img)
-        return send_file(io.BytesIO(img_encoded), mimetype='image/png', as_attachment=True, download_name=f"toonify_{filename.replace('.jpg', '.png')}")
-    
+        return _send_file(
+            _io.BytesIO(img_encoded),
+            mimetype='image/png',
+            as_attachment=True,
+            download_name=f"toonify_{Path(filename).stem}.png"
+        )
     elif format_ext == 'pdf':
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         pil_img = Image.fromarray(img_rgb)
-        pdf_buffer = io.BytesIO()
+        pdf_buffer = _io.BytesIO()
         pil_img.save(pdf_buffer, format='PDF')
         pdf_buffer.seek(0)
-        return send_file(pdf_buffer, mimetype='application/pdf', as_attachment=True, download_name=f"toonify_{filename.replace('.jpg', '.pdf')}")
-        
-    else: # Default JPG
+        return _send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f"toonify_{Path(filename).stem}.pdf"
+        )
+    else:  # Default JPG
         _, img_encoded = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, quality])
-        return send_file(io.BytesIO(img_encoded), mimetype='image/jpeg', as_attachment=True, download_name=f"toonify_{filename}")
+        return _send_file(
+            _io.BytesIO(img_encoded),
+            mimetype='image/jpeg',
+            as_attachment=True,
+            download_name=f"toonify_{filename}"
+        )
 
 @app.route('/data/processed/<filename>')
 def get_processed_image(filename):
