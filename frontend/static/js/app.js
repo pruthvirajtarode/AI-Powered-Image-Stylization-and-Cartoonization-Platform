@@ -1613,7 +1613,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    amount: isUpgrade ? 1900 : 28, // INR prices
+                    amount: isUpgrade ? 1900 : 10, // INR prices (₹10 per download)
                     image_filename: window.currentImage
                 })
             });
