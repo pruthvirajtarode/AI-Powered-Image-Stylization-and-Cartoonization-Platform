@@ -1320,7 +1320,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonErr) {
+                // Server returned an empty or non-JSON response.
+                // This usually means the video was too long and the server timed out.
+                throw new Error(
+                    'The server timed out while processing your video. ' +
+                    'Please try a shorter clip (under 30 seconds) or a smaller file size.'
+                );
+            }
             if (!response.ok || !data.success) {
                 throw new Error(data.message || 'Video processing failed');
             }

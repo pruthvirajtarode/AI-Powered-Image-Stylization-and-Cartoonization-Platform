@@ -475,8 +475,14 @@ class ImageProcessor:
                           is_premium: bool = False) -> Tuple[bool, float, int, str]:
         """
         Process a video by stylizing key frames and reusing them for intermediate frames.
+        A hard 25-second wall-clock budget is enforced to prevent Render's 30s HTTP
+        timeout from killing the connection mid-response (which causes the frontend to
+        receive an empty body and crash with "Unexpected end of JSON input").
         Returns: (success, processing_time, output_frames, message)
         """
+        # Hard time budget: must finish (or give up gracefully) before Render cuts us off.
+        WALL_CLOCK_BUDGET_SECS = 25.0
+
         start_time = time.perf_counter()
         cap = cv2.VideoCapture(input_path)
         if not cap.isOpened():
@@ -530,10 +536,17 @@ class ImageProcessor:
         frame_index = 0
         written = 0
         last_processed = None
+        budget_exceeded = False
 
         while True:
             ok, frame = cap.read()
             if not ok:
+                break
+
+            # Enforce wall-clock budget — stop gracefully before Render kills us
+            elapsed = time.perf_counter() - start_time
+            if elapsed >= WALL_CLOCK_BUDGET_SECS:
+                budget_exceeded = True
                 break
 
             if (frame.shape[1], frame.shape[0]) != (out_w, out_h):
@@ -552,7 +565,9 @@ class ImageProcessor:
         if written == 0:
             return False, 0.0, 0, "No frames were processed"
 
-        return True, max(time.perf_counter() - start_time, 1e-6), written, "Video processed"
+        proc_time = max(time.perf_counter() - start_time, 1e-6)
+        msg = "Video processed (trimmed to fit time limit)" if budget_exceeded else "Video processed"
+        return True, proc_time, written, msg
 
     def get_image_statistics(self, image: np.ndarray) -> dict:
         """
