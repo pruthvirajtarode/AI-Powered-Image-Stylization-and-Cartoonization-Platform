@@ -732,9 +732,9 @@ class Database:
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute(f"""
-            SELECT l.*, u.username, u.email 
+            SELECT l.*, COALESCE(u.username, 'Guest') as username, COALESCE(u.email, 'N/A') as email 
             FROM user_logs l
-            JOIN users u ON l.user_id = u.id
+            LEFT JOIN users u ON l.user_id = u.id
             ORDER BY l.created_at DESC
             LIMIT {self.placeholder}
         """, (limit,))
@@ -747,9 +747,9 @@ class Database:
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute(f"""
-            SELECT l.*, u.username, u.email
+            SELECT l.*, COALESCE(u.username, 'Guest') as username, COALESCE(u.email, 'N/A') as email
             FROM user_logs l
-            JOIN users u ON l.user_id = u.id
+            LEFT JOIN users u ON l.user_id = u.id
             WHERE l.user_id = {self.placeholder}
             ORDER BY l.created_at DESC
             LIMIT {self.placeholder}
@@ -764,9 +764,9 @@ class Database:
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT t.*, u.username, u.email 
+            SELECT t.*, COALESCE(u.username, 'Guest') as username, COALESCE(u.email, 'N/A') as email 
             FROM transactions t
-            JOIN users u ON t.user_id = u.id
+            LEFT JOIN users u ON t.user_id = u.id
             ORDER BY t.created_at DESC
         """)
         transactions = [dict(row) for row in cursor.fetchall()]
