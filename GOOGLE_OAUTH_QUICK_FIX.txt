@@ -26,8 +26,10 @@ Copy and paste each line separately:
 
 https://toonify.live
 https://toonify.live/
+https://toonify.live/api/auth/google/verify_redirect
 http://localhost:5000
 http://localhost:5000/
+http://localhost:5000/api/auth/google/verify_redirect
 
 ────────────────────────────────────────────────────────────────
 
