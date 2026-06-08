@@ -1279,7 +1279,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             google.accounts.id.initialize({
                 client_id: config.google_client_id,
-                callback: handleCredentialResponse,
+                callback: window.handleCredentialResponse,
                 auto_select: false,
                 cancel_on_tap_outside: true
             });
@@ -1397,7 +1397,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     initGoogleAuth();
 
-    async function handleCredentialResponse(response) {
+    window.handleCredentialResponse = async (response) => {
         // This is the REAL token from Google
         const res = await fetch('/api/auth/google/verify', {
             method: 'POST',
@@ -1415,7 +1415,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             alert("Google Authentication Failed: " + data.message);
         }
-    }
+    };
 
 
     window.handleRegister = async () => {
