@@ -112,8 +112,7 @@ create_directories()
 # We explicitly override it to 'unsafe-none' so popups can communicate freely.
 @app.after_request
 def set_security_headers(response):
-    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin-allow-popups'
-    response.headers['Cross-Origin-Embedder-Policy'] = 'unsafe-none'
+    # Removing COOP headers completely to allow default behavior which fixes Google Login
     return response
 
 @app.route('/ping')
@@ -585,6 +584,92 @@ def verify_google_token():
         print(f"ERROR: Google Auth Exception: {str(e)}")
         print(traceback.format_exc())
         return jsonify({"success": False, "message": f"Security Handshake Failed: {str(e)}"})
+
+@app.route('/api/auth/google/verify_redirect', methods=['POST'])
+def verify_google_token_redirect():
+    # Guard: database must be available
+    if db is None:
+        return "Service temporarily unavailable. Database is offline.", 503
+
+    try:
+        # Google sends form data (application/x-www-form-urlencoded)
+        token = request.form.get('credential')
+        g_csrf_token = request.form.get('g_csrf_token')
+
+        if not token:
+            return "No Google token provided.", 400
+
+        # Verify CSRF token
+        cookie_csrf_token = request.cookies.get('g_csrf_token')
+        if not cookie_csrf_token or not g_csrf_token or cookie_csrf_token != g_csrf_token:
+            return "Failed to verify double submit cookie.", 400
+
+        # Verify the REAL token from Google
+        idinfo = id_token.verify_oauth2_token(
+            token,
+            requests.Request(),
+            settings.GOOGLE_CLIENT_ID
+        )
+
+        user_email = idinfo.get('email')
+        if not user_email:
+            return "Google did not return an email address.", 400
+
+        user_name = idinfo.get('name', user_email.split('@')[0])
+
+        user = db.get_user_by_email(user_email)
+        if not user:
+            user_id = db.create_user(
+                username=user_name.replace(" ", "").lower() + "_" + str(uuid.uuid4())[:4],
+                email=user_email,
+                password_hash="GOOGLE_AUTH_EXTERNAL",
+                full_name=user_name
+            )
+
+            if not user_id:
+                return "Failed to create your account.", 500
+
+            db.verify_user_email(user_email)
+            user = db.get_user_by_id(user_id)
+
+            if not user:
+                return "Account created but could not be retrieved.", 500
+
+            try:
+                auth.send_welcome_email(user_email, user_name)
+            except:
+                pass
+
+        try:
+            db.update_last_login(user['id'])
+        except:
+            pass
+
+        session_user = {
+            "id": user['id'],
+            "username": user['username'],
+            "email": user['email'],
+            "fullname": user.get('full_name') or user_name,
+            "role": user.get('role', 'user'),
+            "plan": user.get('plan', 'starter'),
+            "created_at": user['created_at'].isoformat() if hasattr(user.get('created_at'), 'isoformat') else user.get('created_at')
+        }
+
+        session['user'] = session_user
+        
+        # Redirect to the appropriate dashboard
+        if user.get('role') == 'admin':
+            return redirect('/admin')
+        return redirect('/dashboard')
+
+    except ValueError as e:
+        print(f"ERROR: Google redirect token verification failed: {str(e)}")
+        return "Google token is invalid or expired. Please try signing in again.", 400
+    except Exception as e:
+        import traceback
+        print(f"ERROR: Google Auth Redirect Exception: {str(e)}")
+        print(traceback.format_exc())
+        return f"Security Handshake Failed: {str(e)}", 500
 
 
 

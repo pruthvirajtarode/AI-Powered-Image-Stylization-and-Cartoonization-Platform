@@ -1279,7 +1279,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             google.accounts.id.initialize({
                 client_id: config.google_client_id,
-                callback: handleCredentialResponse,
+                ux_mode: 'redirect',
+                login_uri: 'https://toonify.live/api/auth/google/verify_redirect',
                 auto_select: false,
                 cancel_on_tap_outside: true
             });
@@ -1295,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     shape: 'pill'
                 });
             }
-            console.log("Google Auth Initialized and Button Rendered.");
+            console.log("Google Auth Initialized and Button Rendered in Redirect Mode.");
         } catch (err) {
             console.error("Neural Handshake Failed: Unable to load Google Config.");
         }
