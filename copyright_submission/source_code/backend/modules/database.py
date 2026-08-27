@@ -1,0 +1,813 @@
+"""
+Database operations for user management
+"""
+import sqlite3
+import os
+from datetime import datetime
+from pathlib import Path
+from typing import Optional, Dict, List
+import config.settings as settings
+
+# Attempt PostgreSQL Import for Production
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    HAS_POSTGRES = True
+except ImportError:
+    HAS_POSTGRES = False
+
+
+class Database:
+    """Handle all database operations"""
+    
+    def __init__(self, db_path: str = None):
+        """Initialize database connection"""
+        self.db_path = db_path or settings.DATABASE_PATH
+        # Render may inject either DATABASE_URL or DATABASE_URI depending on the integration type.
+        # Support both so the app works regardless of which one is set in the dashboard.
+        self.db_url = os.getenv("DATABASE_URL") or os.getenv("DATABASE_URI")
+        self.is_postgres = self.db_url is not None and HAS_POSTGRES
+        self.placeholder = "%s" if self.is_postgres else "?"
+        self.bool_true = "TRUE" if self.is_postgres else "1"
+        self.bool_false = "FALSE" if self.is_postgres else "0"
+        if self.is_postgres:
+            print(f"[OK] Database: PostgreSQL (Render)")
+        else:
+            # Ensure the SQLite data directory exists before connecting
+            Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
+            print(f"[WARN] Database: SQLite fallback at {self.db_path} -- set DATABASE_URL or DATABASE_URI for production!")
+        self.init_database()
+
+
+    def get_connection(self):
+        """Get database connection (PostgreSQL or SQLite) with production safety"""
+        if self.is_postgres:
+            # Render/Postgres URL fix: Ensure postgresql:// prefix
+            url = self.db_url
+            if url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql://", 1)
+            
+            # Helper to try connection
+            def try_connect(current_url):
+                try:
+                    # Attempt connection with SSL for production
+                    if "?" in current_url:
+                        ssl_url = f"{current_url}&sslmode=require" if "sslmode" not in current_url else current_url
+                    else:
+                        ssl_url = f"{current_url}?sslmode=require"
+                    return psycopg2.connect(ssl_url, cursor_factory=RealDictCursor)
+                except Exception as e:
+                    if "does not exist" in str(e) or "role" in str(e):
+                        raise e # Don't retry if it's an auth error
+                    return None
+
+            conn = try_connect(url)
+            if conn: return conn
+
+            # Fallback: If internal hostname fails to resolve, try external format if it's a standard Render dpg- URL
+            # Format: dpg-xxx-a -> dpg-xxx-a.oregon-postgres.render.com (adjusting for common region)
+            if "dpg-" in url and "@dpg-" in url and ".render.com" not in url:
+                print("[RETRY] DNS Error? Attempting Render External Hostname fallback...")
+                ext_url = url.replace("@dpg-", "@dpg-") # Identify pos
+                parts = url.split("@")
+                if len(parts) == 2:
+                    cred, host_path = parts[0], parts[1]
+                    host = host_path.split("/")[0]
+                    path = host_path.split("/")[1] if "/" in host_path else ""
+                    # Try appending the most common Render RDS suffix
+                    for region in ['oregon', 'frankfurt', 'ohio', 'singapore']:
+                        fallback_host = f"{host}.{region}-postgres.render.com"
+                        fallback_url = f"{cred}@{fallback_host}/{path}"
+                        conn = try_connect(fallback_url)
+                        if conn: 
+                            print(f"[OK] Failover Success: Connected via {region} external gateway.")
+                            return conn
+            
+            # Final attempt without SSL tweak if nothing else worked
+            return psycopg2.connect(url, cursor_factory=RealDictCursor)
+        else:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            return conn
+    
+    def init_database(self):
+        """Initialize database tables"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Determine ID syntax
+        id_serial = "SERIAL PRIMARY KEY" if self.is_postgres else "INTEGER PRIMARY KEY AUTOINCREMENT"
+        
+        # Tables will be created if they don't exist below.
+        # Removed DROP TABLE logic to prevent production data loss.
+
+        # Users table
+        cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS users (
+                id {id_serial},
+                username VARCHAR(50) UNIQUE NOT NULL,
+                email VARCHAR(100) UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                full_name VARCHAR(100),
+                role VARCHAR(20) DEFAULT 'user',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP WITH TIME ZONE,
+                is_active BOOLEAN DEFAULT {self.bool_true},
+                is_verified BOOLEAN DEFAULT {self.bool_false},
+                last_logout TIMESTAMP WITH TIME ZONE,
+                last_active TIMESTAMP WITH TIME ZONE
+            )
+        """)
+        # Commit CREATE TABLE before running add_column migrations.
+        # Without this, a rollback() inside add_column (triggered by a missing
+        # column SELECT) would undo the CREATE TABLE on a fresh database.
+        conn.commit()
+
+        # Migration Helper
+        def add_column(table, column, type_def):
+            try:
+                cursor.execute(f"SELECT {column} FROM {table} LIMIT 1")
+            except Exception:
+                # Need a rollback if the select failed in Postgres
+                if self.is_postgres:
+                    conn.rollback()
+                print(f"[MIGRATE] Migrating {table}: Adding '{column}'...")
+                cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {type_def}")
+                conn.commit()
+
+        add_column("users", "role", "VARCHAR(20) DEFAULT 'user'")
+        add_column("users", "last_logout", "TIMESTAMP WITH TIME ZONE")
+        add_column("users", "last_active", "TIMESTAMP WITH TIME ZONE")
+        add_column("users", "is_verified", f"BOOLEAN DEFAULT {self.bool_false}")
+        add_column("users", "auto_delete_days", "INTEGER DEFAULT 0") # 0 = Never
+        add_column("users", "failed_attempts", "INTEGER DEFAULT 0")
+        add_column("users", "lockout_until", "TIMESTAMP WITH TIME ZONE")
+        add_column("users", "plan", "VARCHAR(20) DEFAULT 'starter'")
+
+        # Create Default Admin User
+        try:
+            cursor.execute("SELECT id FROM users WHERE username = 'admin'")
+            admin_user = cursor.fetchone()
+            
+            if not admin_user:
+                import bcrypt
+                print("[INIT] Initializing System: Creating default administrator...")
+                pw = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                cursor.execute(f"""
+                    INSERT INTO users (username, email, password_hash, full_name, role, is_verified)
+                    VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
+                """, ("admin", "admin@toonify.ai", pw, "System Admin", "admin", True if self.is_postgres else 1))
+                conn.commit()
+        except Exception as e:
+            print(f"⚠️ Admin creation skipped or failed: {e}")
+            if self.is_postgres: conn.rollback()
+        
+        # Other Tables with correct Postgres types
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS verification_codes (id {id_serial}, email VARCHAR(100) NOT NULL, code VARCHAR(10) NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, expires_at TIMESTAMP WITH TIME ZONE NOT NULL)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS transactions (id {id_serial}, user_id INTEGER NOT NULL, transaction_id VARCHAR(100) UNIQUE NOT NULL, amount DOUBLE PRECISION NOT NULL, currency VARCHAR(10) DEFAULT 'usd', status VARCHAR(30) DEFAULT 'pending', payment_method VARCHAR(50), image_filename TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS processing_history (id {id_serial}, user_id INTEGER NOT NULL, original_filename TEXT NOT NULL, processed_filename TEXT NOT NULL, style VARCHAR(50) NOT NULL, processing_time DOUBLE PRECISION, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS user_logs (id {id_serial}, user_id INTEGER NOT NULL, action VARCHAR(50) NOT NULL, details TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)")
+
+        conn.commit()
+
+        # Create Indexes for performance (Milestone 3 optimization)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_history_user_id ON processing_history(user_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_history_filename ON processing_history(processed_filename)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_transactions_filename ON transactions(image_filename)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_history_user_style ON processing_history(user_id, style)")
+
+        conn.commit()
+        conn.close()
+    
+    # User Operations
+    def create_user(self, username: str, email: str, password_hash: str, 
+                   full_name: str = None) -> Optional[int]:
+        """Create a new user"""
+        conn = None
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            
+            if self.is_postgres:
+                # PostgreSQL requires RETURNING id
+                cursor.execute(f"""
+                    INSERT INTO users (username, email, password_hash, full_name)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id
+                """, (username, email, password_hash, full_name))
+                user_id = cursor.fetchone()['id']
+            else:
+                # SQLite uses lastrowid
+                cursor.execute(f"""
+                    INSERT INTO users (username, email, password_hash, full_name)
+                    VALUES (?, ?, ?, ?)
+                """, (username, email, password_hash, full_name))
+                user_id = cursor.lastrowid
+                
+            conn.commit()
+            return user_id
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            print(f"DATABASE ERROR during create_user: {str(e)}")
+            return None
+        finally:
+            if conn:
+                conn.close()
+    
+    def get_user_by_username(self, username: str) -> Optional[Dict]:
+        """Get user by username"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM users WHERE username = {self.placeholder}", (username,))
+        user = cursor.fetchone()
+        conn.close()
+        return dict(user) if user else None
+    
+    def get_user_by_email(self, email: str) -> Optional[Dict]:
+        """Get user by email"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM users WHERE email = {self.placeholder}", (email,))
+        user = cursor.fetchone()
+        conn.close()
+        return dict(user) if user else None
+    
+    def get_user_by_id(self, user_id: int) -> Optional[Dict]:
+        """Get user by ID"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM users WHERE id = {self.placeholder}", (user_id,))
+        user = cursor.fetchone()
+        conn.close()
+        return dict(user) if user else None
+    
+    def update_last_login(self, user_id: int):
+        """Update user's last login timestamp and log it"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            UPDATE users SET last_login = CURRENT_TIMESTAMP
+            WHERE id = {self.placeholder}
+        """, (user_id,))
+        conn.commit()
+        conn.close()
+        self.log_user_activity(user_id, "login", "User signed into the platform")
+
+    def update_last_logout(self, user_id: int):
+        """Update user's last logout timestamp and log it"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            UPDATE users SET last_logout = CURRENT_TIMESTAMP
+            WHERE id = {self.placeholder}
+        """, (user_id,))
+        conn.commit()
+        conn.close()
+        self.log_user_activity(user_id, "logout", "User signed out (Time-out)")
+
+    def update_last_active(self, user_id: int):
+        """Silently update user's last activity heartbeat"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            UPDATE users SET last_active = CURRENT_TIMESTAMP
+            WHERE id = {self.placeholder}
+        """, (user_id,))
+        conn.commit()
+        conn.close()
+
+    def update_user_lockout(self, user_id: int, attempts: int, lockout_until: datetime = None):
+        """Update failed login attempts and lockout timestamp"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            UPDATE users SET failed_attempts = {self.placeholder}, lockout_until = {self.placeholder}
+            WHERE id = {self.placeholder}
+        """, (attempts, lockout_until, user_id))
+        conn.commit()
+        conn.close()
+    
+    def log_user_activity(self, user_id: int, action: str, details: str = None):
+        """Log user activity for admin monitoring"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            INSERT INTO user_logs (user_id, action, details)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder})
+        """, (user_id, action, details))
+        conn.commit()
+        conn.close()
+    
+    def update_user_profile(self, user_id: int, **kwargs):
+        """Update user profile information"""
+        allowed_fields = ['full_name', 'email']
+        updates = {k: v for k, v in kwargs.items() if k in allowed_fields}
+        
+        if not updates:
+            return False
+        
+        set_clause = ", ".join([f"{k} = ?" for k in updates.keys()])
+        values = list(updates.values()) + [user_id]
+        
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE users SET {set_clause} WHERE id = {self.placeholder}", values)
+        conn.commit()
+        conn.close()
+        return True
+    
+    def update_user_plan(self, user_id: int, plan: str) -> bool:
+        """Update the subscription plan for a user"""
+        allowed_plans = ['starter', 'pro', 'elite']
+        if plan not in allowed_plans:
+            return False
+        conn = None
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                f"UPDATE users SET plan = {self.placeholder} WHERE id = {self.placeholder}",
+                (plan, user_id)
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            print(f"DATABASE ERROR during update_user_plan: {e}")
+            return False
+        finally:
+            if conn:
+                conn.close()
+
+    def update_user_settings(self, user_id: int, auto_delete_days: int):
+        """Update user privacy settings"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE users SET auto_delete_days = {self.placeholder} WHERE id = {self.placeholder}", 
+                      (auto_delete_days, user_id))
+        conn.commit()
+        conn.close()
+        return True
+
+    def change_password(self, user_id: int, new_password_hash: str):
+        """Update user password"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE users SET password_hash = {self.placeholder} WHERE id = {self.placeholder}", 
+                      (new_password_hash, user_id))
+        conn.commit()
+        conn.close()
+        return True
+    
+    # Transaction Operations
+    def create_transaction(self, user_id: int, transaction_id: str, 
+                          amount: float, image_filename: str = None, 
+                          payment_method: str = None) -> int:
+        """Create a new transaction record"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            INSERT INTO transactions 
+            (user_id, transaction_id, amount, image_filename, payment_method)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
+        """, (user_id, transaction_id, amount, image_filename, payment_method))
+        conn.commit()
+        trans_id = cursor.lastrowid
+        conn.close()
+        return trans_id
+
+    def repair_legacy_razorpay_amounts(self) -> Dict:
+        """
+        Repair legacy Razorpay rows saved with 0.33 and normalize currency.
+        Safe to call repeatedly.
+        """
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        fixed_amount = 0
+        fixed_currency = 0
+        try:
+            cursor.execute(f"""
+                UPDATE transactions
+                SET amount = {self.placeholder}
+                WHERE payment_method = 'razorpay'
+                  AND status = 'completed'
+                  AND amount < 1
+            """, (float(settings.DOWNLOAD_PRICE),))
+            fixed_amount = cursor.rowcount if cursor.rowcount is not None else 0
+
+            cursor.execute("""
+                UPDATE transactions
+                SET currency = 'inr'
+                WHERE payment_method = 'razorpay'
+                  AND (currency IS NULL OR LOWER(currency) != 'inr')
+            """)
+            fixed_currency = cursor.rowcount if cursor.rowcount is not None else 0
+
+            conn.commit()
+        finally:
+            conn.close()
+
+        return {
+            "fixed_amount_rows": fixed_amount,
+            "fixed_currency_rows": fixed_currency
+        }
+    
+    def update_transaction_status(self, transaction_id: str, status: str):
+        """Update transaction status"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            UPDATE transactions SET status = {self.placeholder}
+            WHERE transaction_id = {self.placeholder}
+        """, (status, transaction_id))
+        conn.commit()
+        conn.close()
+    
+    def get_user_transactions(self, user_id: int) -> List[Dict]:
+        """Get all transactions for a user"""
+        self.repair_legacy_razorpay_amounts()
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT * FROM transactions 
+            WHERE user_id = {self.placeholder}
+            ORDER BY created_at DESC
+        """, (user_id,))
+        transactions = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return transactions
+
+    def get_transaction_by_filename(self, user_id: int, filename: str) -> Optional[Dict]:
+        """Verify if a user has paid for a specific image"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT * FROM transactions
+            WHERE user_id = {self.placeholder} AND image_filename = {self.placeholder}
+            ORDER BY CASE WHEN status = 'completed' THEN 0 ELSE 1 END, created_at DESC
+            LIMIT 1
+        """, (user_id, filename))
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+    
+    def get_transaction_by_id(self, transaction_id: str) -> Optional[Dict]:
+        """Get transaction by transaction ID"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT * FROM transactions WHERE transaction_id = {self.placeholder}
+        """, (transaction_id,))
+        transaction = cursor.fetchone()
+        conn.close()
+        return dict(transaction) if transaction else None
+    
+    # Processing History Operations
+    def add_processing_history(self, user_id: int, original_filename: str,
+                               processed_filename: str, style: str,
+                               processing_time: float = None) -> int:
+        """Add image processing history record"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            INSERT INTO processing_history 
+            (user_id, original_filename, processed_filename, style, processing_time)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
+        """, (user_id, original_filename, processed_filename, style, processing_time))
+        conn.commit()
+        history_id = cursor.lastrowid
+        conn.close()
+        return history_id
+    
+    def get_user_history(self, user_id: int, limit: int = 10) -> List[Dict]:
+        """Get user's processing history"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT * FROM processing_history 
+            WHERE user_id = {self.placeholder} 
+            ORDER BY created_at DESC 
+            LIMIT {self.placeholder}
+        """, (user_id, limit))
+        history = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return history
+    
+    def get_advanced_history(self, user_id: int, style: str = None, sort_by: str = 'created_at', 
+                             order: str = 'DESC', limit: int = 20, offset: int = 0) -> Dict:
+        """Get paginated and filtered history"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Base query with JOIN to check payment status
+        query = f"""
+            SELECT ph.*, 
+                   CASE WHEN t.status = 'completed' THEN 1 ELSE 0 END as is_paid
+            FROM processing_history ph
+            LEFT JOIN transactions t ON ph.processed_filename = t.image_filename
+            WHERE ph.user_id = {self.placeholder}
+        """
+        params = [user_id]
+        
+        if style and style != 'all':
+            query += f" AND ph.style = {self.placeholder}"
+            params.append(style)
+            
+        # Count total for pagination (Simplified count)
+        count_query = f"SELECT COUNT(*) as total FROM processing_history WHERE user_id = {self.placeholder}"
+        count_params = [user_id]
+        if style and style != 'all':
+            count_query += f" AND style = {self.placeholder}"
+            count_params.append(style)
+            
+        cursor.execute(count_query, tuple(count_params))
+        row = cursor.fetchone()
+        total_count = row['total'] if self.is_postgres else row[0]
+        
+        # Sort and Page
+        valid_sorts = ['created_at', 'style', 'processing_time']
+        if sort_by not in valid_sorts: sort_by = 'created_at'
+        if order not in ['ASC', 'DESC']: order = 'DESC'
+        
+        query += f" ORDER BY ph.{sort_by} {order} LIMIT {self.placeholder} OFFSET {self.placeholder}"
+        params.extend([limit, offset])
+        
+        cursor.execute(query, tuple(params))
+        history = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        
+        return {
+            "items": history,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+
+    def delete_user_history(self, user_id: int, history_id: int = None):
+        """Delete specific image or all history for a user. Returns list of filenames to delete physically."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Get filenames first
+        if history_id:
+            cursor.execute(f"SELECT processed_filename FROM processing_history WHERE id = {self.placeholder} AND user_id = {self.placeholder}", (history_id, user_id))
+        else:
+            cursor.execute(f"SELECT processed_filename FROM processing_history WHERE user_id = {self.placeholder}", (user_id,))
+            
+        files = [row['processed_filename'] for row in cursor.fetchall()]
+        
+        # Delete from DB
+        if history_id:
+            cursor.execute(f"DELETE FROM processing_history WHERE id = {self.placeholder} AND user_id = {self.placeholder}", (history_id, user_id))
+        else:
+            cursor.execute(f"DELETE FROM processing_history WHERE user_id = {self.placeholder}", (user_id,))
+            
+        conn.commit()
+        conn.close()
+        return files
+    
+    # Statistics
+    def get_user_stats(self, user_id: int) -> Dict:
+        """Get user statistics (High precision aggregate version)"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        stats = {
+            'total_processed': 0,
+            'total_transactions': 0,
+            'total_spent': 0.0,
+            'favorite_style': "None"
+        }
+
+        try:
+            # 1. Total Processed count
+            cursor.execute(f"SELECT COUNT(*) FROM processing_history WHERE user_id = {self.placeholder}", (user_id,))
+            res = cursor.fetchone()
+            stats['total_processed'] = (res['count'] if self.is_postgres else res[0]) if res else 0
+
+            # 2. Transaction Stats (Completed only)
+            cursor.execute(f"""
+                SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total 
+                FROM transactions 
+                WHERE user_id = {self.placeholder} AND status = 'completed'
+            """, (user_id,))
+            res = cursor.fetchone()
+            if res:
+                stats['total_transactions'] = res['count'] if self.is_postgres else res[0]
+                stats['total_spent'] = float(res['total'] if self.is_postgres else res[1])
+
+            # 3. Favorite Style
+            cursor.execute(f"""
+                SELECT style FROM processing_history 
+                WHERE user_id = {self.placeholder} 
+                GROUP BY style ORDER BY COUNT(*) DESC LIMIT 1
+            """, (user_id,))
+            res = cursor.fetchone()
+            if res:
+                stats['favorite_style'] = res['style'] if self.is_postgres else res[0]
+
+        except Exception as e:
+            print(f"ERROR calculating user stats: {e}")
+        finally:
+            conn.close()
+
+        return stats
+
+    def get_user_usage_24h(self, user_id: int) -> int:
+        """Count how many images a user processed in the last 24 hours"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        interval_sql = "NOW() - INTERVAL '24 HOURS'" if self.is_postgres else "datetime('now', '-24 hours')"
+        cursor.execute(f"""
+            SELECT COUNT(*) as current FROM processing_history 
+            WHERE user_id = {self.placeholder} AND created_at >= {interval_sql}
+        """, (user_id,))
+        row = cursor.fetchone()
+        count = row['current'] if self.is_postgres else row[0]
+        conn.close()
+        return count
+
+    # Verification Operations
+    def store_verification_code(self, email: str, code: str, expires_at: datetime):
+        """Store a verification code for an email"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        # Delete any existing codes for this email
+        cursor.execute(f"DELETE FROM verification_codes WHERE email = {self.placeholder}", (email,))
+        cursor.execute(f"""
+            INSERT INTO verification_codes (email, code, expires_at)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder})
+        """, (email, code, expires_at))
+        conn.commit()
+        conn.close()
+
+    def get_verification_code(self, email: str) -> Optional[Dict]:
+        """Get the latest verification code for an email"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT * FROM verification_codes 
+            WHERE email = {self.placeholder} 
+            ORDER BY created_at DESC LIMIT 1
+        """, (email,))
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+
+    def verify_user_email(self, email: str):
+        """Mark a user as verified"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE users SET is_verified = {self.bool_true} WHERE email = {self.placeholder}", (email,))
+        # Also delete the used code
+        cursor.execute(f"DELETE FROM verification_codes WHERE email = {self.placeholder}", (email,))
+        conn.commit()
+        conn.close()
+
+    def cleanup_old_history(self, user_id: int):
+        """Delete history older than the user's auto_delete_days setting"""
+        user = self.get_user_by_id(user_id)
+        if not user or not user.get('auto_delete_days'):
+            return []
+            
+        days = user['auto_delete_days']
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        interval_sql = f"CURRENT_TIMESTAMP - INTERVAL '{days} days'" if self.is_postgres else f"datetime('now', '-{days} days')"
+        
+        # Get filenames
+        cursor.execute(f"""
+            SELECT processed_filename FROM processing_history 
+            WHERE user_id = {self.placeholder} AND created_at < {interval_sql}
+        """, (user_id,))
+        files = [row['processed_filename'] for row in cursor.fetchall()]
+        
+        if files:
+            cursor.execute(f"DELETE FROM processing_history WHERE user_id = {self.placeholder} AND created_at < {interval_sql}", (user_id,))
+            conn.commit()
+            
+        conn.close()
+        return files
+
+    # --- ADMIN DASHBOARD OPERATIONS ---
+    def get_admin_dashboard_stats(self) -> Dict:
+        """Get global stats for admin dashboard"""
+        self.repair_legacy_razorpay_amounts()
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT COUNT(*) as total FROM users")
+        total_users = cursor.fetchone()['total']
+        
+        cursor.execute("SELECT COUNT(*) as total FROM processing_history")
+        total_creations = cursor.fetchone()['total']
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(amount), 0) as total
+            FROM transactions
+            WHERE status = 'completed'
+        """)
+        total_revenue = cursor.fetchone()['total']
+        
+        interval_sql = "NOW() - INTERVAL '24 HOURS'" if self.is_postgres else "datetime('now', '-24 hours')"
+        cursor.execute(f"SELECT COUNT(*) as total FROM users WHERE last_login >= {interval_sql}")
+        active_today = cursor.fetchone()['total']
+        
+        conn.close()
+        return {
+            "total_users": total_users,
+            "total_creations": total_creations,
+            "total_revenue": total_revenue,
+            "active_today": active_today
+        }
+
+    def get_recent_activity_logs(self, limit: int = 50) -> List[Dict]:
+        """Get latest user logs for admin"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT l.*, COALESCE(u.username, 'Guest') as username, COALESCE(u.email, 'N/A') as email 
+            FROM user_logs l
+            LEFT JOIN users u ON l.user_id = u.id
+            ORDER BY l.created_at DESC
+            LIMIT {self.placeholder}
+        """, (limit,))
+        logs = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return logs
+
+    def get_user_activity_logs_admin(self, user_id: int, limit: int = 50) -> List[Dict]:
+        """Get activity logs for a specific user (admin-only usage)."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT l.*, COALESCE(u.username, 'Guest') as username, COALESCE(u.email, 'N/A') as email
+            FROM user_logs l
+            LEFT JOIN users u ON l.user_id = u.id
+            WHERE l.user_id = {self.placeholder}
+            ORDER BY l.created_at DESC
+            LIMIT {self.placeholder}
+        """, (user_id, limit))
+        logs = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return logs
+
+    def get_all_transactions_admin(self) -> List[Dict]:
+        """Get all transactions with user details"""
+        self.repair_legacy_razorpay_amounts()
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT t.*, COALESCE(u.username, 'Guest') as username, COALESCE(u.email, 'N/A') as email 
+            FROM transactions t
+            LEFT JOIN users u ON t.user_id = u.id
+            ORDER BY t.created_at DESC
+        """)
+        transactions = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return transactions
+
+    def get_all_users_admin(self) -> List[Dict]:
+        """Get all users with their summary stats"""
+        self.repair_legacy_razorpay_amounts()
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT u.*, 
+                   (SELECT COUNT(*) FROM processing_history WHERE user_id = u.id) as total_creations,
+                   (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND status = 'completed') as total_spent
+            FROM users u
+            ORDER BY u.created_at DESC
+        """)
+        users = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return users
+
+
+# Global database instance
+try:
+    db = Database()
+except Exception as _db_init_err:
+    import sys
+    print(f"[WARN] PostgreSQL init failed: {_db_init_err}", file=sys.stderr)
+    print("[WARN] Falling back to SQLite — all features still work, but data won't persist across deploys.", file=sys.stderr)
+    try:
+        # Force SQLite by temporarily clearing the DATABASE_URL env var
+        _saved_url = os.environ.pop("DATABASE_URL", None)
+        _saved_uri = os.environ.pop("DATABASE_URI", None)
+        db = Database()
+        # Restore env vars for any other code that reads them
+        if _saved_url:
+            os.environ["DATABASE_URL"] = _saved_url
+        if _saved_uri:
+            os.environ["DATABASE_URI"] = _saved_uri
+        print("[OK] SQLite fallback database initialized successfully.", file=sys.stderr)
+    except Exception as _sqlite_err:
+        print(f"CRITICAL: Both PostgreSQL and SQLite failed: {_sqlite_err}", file=sys.stderr)
+        raise RuntimeError(f"Database initialization failed entirely: {_sqlite_err}") from _sqlite_err

@@ -1,0 +1,98 @@
+"""
+Configuration settings for Toonify application
+"""
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Base directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Application Settings
+APP_NAME = os.getenv("APP_NAME", "Toonify")
+APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key_change_in_production")
+
+# Database Configuration
+DATABASE_PATH = os.getenv("DATABASE_PATH", str(BASE_DIR / "data" / "users.db"))
+
+# Payment Configuration
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY", "")
+PAYMENT_AMOUNT = int(os.getenv("PAYMENT_AMOUNT", "1000"))  # in paise (₹10)
+PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY", "inr")
+
+# Razorpay Configuration (Alternative)
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
+
+# Image Processing Settings
+MAX_IMAGE_SIZE = int(os.getenv("MAX_IMAGE_SIZE", "10485760"))  # 10MB
+ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"]
+PROCESSED_IMAGE_QUALITY = int(os.getenv("PROCESSED_IMAGE_QUALITY", "95"))
+TEMP_FOLDER = Path(os.getenv("TEMP_FOLDER", str(BASE_DIR / "data" / "processed_images")))
+CACHE_FOLDER = Path(os.getenv("CACHE_FOLDER", str(BASE_DIR / "data" / "cache")))
+FAST_PROCESSING = os.getenv("FAST_PROCESSING", "true").lower() == "true"
+FAST_STYLE_MAX_WIDTH = int(os.getenv("FAST_STYLE_MAX_WIDTH", "960"))
+FREE_MAX_WIDTH = int(os.getenv("FREE_MAX_WIDTH", "1024"))
+PREMIUM_MAX_WIDTH = int(os.getenv("PREMIUM_MAX_WIDTH", "2560"))
+OPENCV_NUM_THREADS = int(os.getenv("OPENCV_NUM_THREADS", "4"))
+BATCH_MAX_WORKERS = int(os.getenv("BATCH_MAX_WORKERS", "4"))
+MAX_VIDEO_SIZE = int(os.getenv("MAX_VIDEO_SIZE", str(100 * 1024 * 1024)))  # 100MB
+MAX_VIDEO_DURATION_SECONDS = int(os.getenv("MAX_VIDEO_DURATION_SECONDS", "90"))
+VIDEO_PROCESS_EVERY_N_FRAMES = int(os.getenv("VIDEO_PROCESS_EVERY_N_FRAMES", "2"))
+VIDEO_FREE_MAX_WIDTH = int(os.getenv("VIDEO_FREE_MAX_WIDTH", "854"))
+VIDEO_PREMIUM_MAX_WIDTH = int(os.getenv("VIDEO_PREMIUM_MAX_WIDTH", "1280"))
+
+# Create necessary directories
+TEMP_FOLDER.mkdir(parents=True, exist_ok=True)
+CACHE_FOLDER.mkdir(parents=True, exist_ok=True)
+(CACHE_FOLDER / "watermarked").mkdir(parents=True, exist_ok=True)
+(CACHE_FOLDER / "thumbnails").mkdir(parents=True, exist_ok=True)
+Path(DATABASE_PATH).parent.mkdir(parents=True, exist_ok=True)
+
+# Session Settings
+SESSION_TIMEOUT = int(os.getenv("SESSION_TIMEOUT", "3600"))  # 1 hour
+
+# Cartoon Effect Parameters
+CARTOON_PARAMS = {
+    "bilateral_d": 9,
+    "bilateral_sigma_color": 300,
+    "bilateral_sigma_space": 300,
+    "median_blur": 7,
+    "adaptive_threshold_block_size": 9,
+    "adaptive_threshold_c": 2,
+    "num_colors": 8  # for color quantization
+}
+
+# Image Processing Styles
+IMAGE_STYLES = {
+    "Classic Cartoon": "cartoon",
+    "Sketch Effect": "sketch",
+    "Pencil Color": "pencil_color",
+    "Oil Painting": "oil_painting",
+    "Watercolor": "watercolor",
+    "Pop Art": "pop_art",
+    "Vintage": "vintage",
+    "Anime": "anime",
+    "Studio Ghibli": "ghibli",
+    "Comic Book": "comic_book"
+}
+
+# Price per download in INR rupees (PAYMENT_AMOUNT is in paise, divide by 100)
+DOWNLOAD_PRICE = PAYMENT_AMOUNT / 100  # e.g. 1000 paise → ₹10
+
+# SMTP Configuration for Real Emails
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")  # Add your gmail here
+SMTP_PASS = os.getenv("SMTP_PASS", "")  # Add your gmail APP PASSWORD here
+# Default sender uses SMTP_USER so Gmail doesn't reject mismatched From address
+SMTP_SENDER = os.getenv("SMTP_SENDER", f"{APP_NAME} <{os.getenv('SMTP_USER', 'no-reply@toonify.ai')}>")
+
+# Real Google Auth Configuration
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com")

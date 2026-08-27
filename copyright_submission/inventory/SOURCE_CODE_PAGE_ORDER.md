@@ -1,0 +1,35 @@
+# Source Code Page Order
+
+1. `backend/backend.py`
+2. `backend/config/settings.py`
+3. `backend/modules/authentication.py`
+4. `backend/modules/database.py`
+5. `backend/modules/image_processing.py`
+6. `backend/modules/payment.py`
+7. `backend/modules/whatsapp.py`
+8. `backend/config/__init__.py`
+9. `backend/modules/__init__.py`
+10. `backend/scripts/init_db.py`
+11. `backend/scripts/processing_smoke.py`
+12. `backend/utils/helpers.py`
+13. `backend/utils/validators.py`
+14. `backend/utils/__init__.py`
+15. `frontend/static/css/styles.css`
+16. `frontend/static/js/app.js`
+17. `frontend/static/js/ar-engine.js`
+18. `frontend/static/js/lenses.js`
+19. `frontend/templates/admin.html`
+20. `frontend/templates/billing.html`
+21. `frontend/templates/dashboard.html`
+22. `frontend/templates/discord.html`
+23. `frontend/templates/docs.html`
+24. `frontend/templates/gallery.html`
+25. `frontend/templates/index.html`
+26. `frontend/templates/instagram.html`
+27. `frontend/templates/our_story.html`
+28. `frontend/templates/privacy_policy.html`
+29. `frontend/templates/profile.html`
+30. `frontend/templates/security.html`
+31. `frontend/templates/terms_of_service.html`
+32. `frontend/templates/tutorials.html`
+33. `frontend/templates/twitter.html`

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore our community art gallery showcasing stunning neural stylization and AI-generated portraits by Toonify AI users.">
+    <meta name="robots" content="index, follow">
+    <title>Art Gallery | Toonify AI Showcase</title>
+    <link rel="stylesheet" href="/static/css/styles.css?v=931">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .gallery-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 100px 5%;
+            text-align: center;
+            color: white;
+        }
+
+        .gallery-hero h1 {
+            font-family: 'Baloo 2';
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .gallery-filter {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 10px 25px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+
+        .filter-chip:hover,
+        .filter-chip.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 60px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .art-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: 0.4s;
+            position: relative;
+        }
+
+        .art-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .art-img-container {
+            position: relative;
+            aspect-ratio: 4/5;
+            overflow: hidden;
+        }
+
+        .art-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .art-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            padding: 30px 20px 20px;
+            color: white;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .art-card:hover .art-overlay {
+            opacity: 1;
+        }
+
+        .style-tag {
+            background: var(--primary);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .footer-cta {
+            background: #f8fafc;
+            padding: 80px 5%;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar" style="background: white; border-bottom: 1px solid #f1f5f9;">
+        <a href="/" class="logo">
+            <i class="fas fa-magic"></i>
+            <span class="logo-text">Toonify<span style="color: var(--primary);">.AI</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/docs">Docs</a>
+        </div>
+        <div class="auth-section">
+            <button class="btn-auth" id="loginHeaderBtn" onclick="window.location.href='/?auth=login'">Login</button>
+            <div id="profileDropdownContainer" style="position: relative; display: none;">
+                <button class="profile-pill" id="profilePillBtn">
+                    <!-- Dynamic -->
+                </button>
+                <div class="profile-dropdown" id="profileDropdown" style="display: none;">
+                    <a href="/dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+                    <a href="/profile"><i class="fas fa-user-gear"></i> Profile Settings</a>
+                    <a href="/billing"><i class="fas fa-history"></i> Payment History</a>
+                    <a href="/gallery"><i class="fas fa-images"></i> My Gallery</a>
+                    <hr style="margin: 10px 0; border: none; border-top: 1px solid #f1f5f9;">
+                    <a href="#" onclick="handleLogout(event)" style="color: #ef4444;"><i
+                            class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="gallery-hero">
+        <h1>Your Neural <span>Vault</span></h1>
+        <p>Manage, filter, and re-download all your personal neural masterpieces.</p>
+
+        <div style="display: flex; justify-content: center; gap: 20px; align-items: center; margin-top: 30px;">
+            <div
+                style="background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 14px; display: flex; gap: 10px; align-items: center;">
+                <label style="font-size: 0.8rem; color: #94a3b8;">Style:</label>
+                <select id="filterStyle" onchange="loadGallery(0)"
+                    style="background: transparent; border: none; color: white; outline: none; font-weight: 600;">
+                    <option value="all" style="color: black;">All Styles</option>
+                    <option value="cartoon" style="color: black;">Cartoon</option>
+                    <option value="pencil" style="color: black;">Pencil Sketch</option>
+                    <option value="anime" style="color: black;">Anime</option>
+                    <option value="pixar" style="color: black;">3D Pixar</option>
+                </select>
+            </div>
+
+            <div
+                style="background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 14px; display: flex; gap: 10px; align-items: center;">
+                <label style="font-size: 0.8rem; color: #94a3b8;">Sort By:</label>
+                <select id="sortBy" onchange="loadGallery(0)"
+                    style="background: transparent; border: none; color: white; outline: none; font-weight: 600;">
+                    <option value="created_at" style="color: black;">Date Created</option>
+                    <option value="style" style="color: black;">Alpha Style</option>
+                    <option value="processing_time" style="color: black;">Neural Speed</option>
+                </select>
+            </div>
+
+            <button onclick="downloadAllHistory()" class="btn-auth" style="background: white; color: var(--primary);"><i
+                    class="fas fa-file-zipper"></i> Download All (ZIP)</button>
+        </div>
+    </div>
+
+    <main class="gallery-grid" id="galleryGrid">
+        <!-- Dynamic History Items -->
+    </main>
+
+    <div id="pagination" style="display: flex; justify-content: center; gap: 10px; padding: 40px 5%;">
+        <!-- Pagination Buttons -->
+    </div>
+
+    <footer class="footer">
+        <p style="text-align: center; width: 100%;">© 2026 Toonify Creative Inc. | Managed History Vault</p>
+    </footer>
+
+    <script>
+        let currentOffset = 0;
+        const limit = 12;
+
+        function formatGalleryDate(value) {
+            if (!value) return 'N/A';
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleDateString();
+        }
+
+        async function loadGallery(offset = 0) {
+            currentOffset = offset;
+            const style = document.getElementById('filterStyle').value;
+            const sortBy = document.getElementById('sortBy').value;
+            const grid = document.getElementById('galleryGrid');
+            const pagin = document.getElementById('pagination');
+
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 100px;"><i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i><p style="margin-top: 20px; color: #64748b;">Consulting our neural archives...</p></div>';
+
+            try {
+                const response = await fetch(`/api/user/history/advanced?style=${style}&sort_by=${sortBy}&limit=${limit}&offset=${offset}`);
+                if (!response.ok) {
+                    throw new Error('Unable to load gallery');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const items = Array.isArray(data.data?.items) ? data.data.items : [];
+                    const total = Number(data.data?.total || 0);
+
+                    if (items.length === 0) {
+                        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 100px;"><i class="fas fa-ghost fa-3x" style="color: #cbd5e1;"></i><p style="margin-top: 20px; color: #64748b;">No masterpieces found in this category.</p></div>';
+                        pagin.innerHTML = '';
+                        return;
+                    }
+
+                    grid.innerHTML = items.map(item => {
+                        const isPaid = item.is_paid || false;
+                        const badgeColor = isPaid ? '#22c55e' : '#f59e0b';
+                        const badgeText = isPaid ? 'PAID' : 'PREVIEW';
+
+                        return `
+                        <div class="art-card">
+                            <div class="art-img-container">
+                                ${item.is_missing ?
+                                `<div class="art-img" style="background: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; gap: 15px;">
+                                        <i class="fas fa-ghost fa-3x"></i>
+                                        <span style="font-size: 0.8rem; font-weight: 600;">Neural data expired</span>
+                                    </div>` :
+                                `<img src="/data/processed/${item.processed_filename}?thumb=1" 
+                                         class="art-img" 
+                                         alt="${item.style}"
+                                         loading="lazy"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                    >
+                                    <div class="art-img" style="display: none; background: #f1f5f9; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; gap: 15px;">
+                                        <i class="fas fa-ghost fa-3x"></i>
+                                        <span style="font-size: 0.8rem; font-weight: 600;">Neural data expired</span>
+                                    </div>`
+                            }
+                                <div style="position: absolute; top: 15px; right: 15px; background: ${badgeColor}; color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; font-weight: 800;">
+                                    ${badgeText}
+                                </div>
+                                <div class="art-overlay" style="opacity: 1; background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                                    <span class="style-tag">${item.style || 'Unknown'}</span>
+                                    <h3 style="font-size: 0.9rem; font-weight: 500;">${formatGalleryDate(item.created_at)}</h3>
+                                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                        <button onclick="galleryDownload(event, '${item.processed_filename}')" 
+                                           class="btn-auth ${item.is_missing ? 'disabled' : ''}" 
+                                           style="padding: 8px 15px; font-size: 0.7rem; flex: 1; ${item.is_missing ? 'opacity: 0.5; cursor: not-allowed;' : ''}" 
+                                           ${item.is_missing ? 'disabled' : ''}>
+                                            <i class="fas fa-download"></i> ${isPaid ? 'Recover' : 'Export'}
+                                        </button>
+                                        <button onclick="deleteHistoryItem(${item.id})" class="btn-auth" style="padding: 8px 15px; font-size: 0.7rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('');
+
+                    // Pagination Logic
+                    const totalPages = Math.ceil(total / limit);
+                    const currentPage = Math.floor(offset / limit) + 1;
+
+                    let pagHtml = '';
+                    for (let i = 1; i <= totalPages; i++) {
+                        const activeCls = i === currentPage ? 'style="background: var(--primary); color: white;"' : 'style="background: white; border: 1px solid #e2e8f0; color: #64748b;"';
+                        pagHtml += `<button onclick="loadGallery(${(i - 1) * limit})" class="btn-auth" ${activeCls}>${i}</button>`;
+                    }
+                    pagin.innerHTML = pagHtml;
+
+                } else {
+                    window.location.href = '/?auth=login';
+                }
+            } catch (err) {
+                console.error("Gallery check error:", err);
+                grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 100px;">
+                    <i class="fas fa-exclamation-triangle fa-3x" style="color: #ef4444;"></i>
+                    <p style="margin-top: 20px; color: #1e293b; font-weight: 600;">Neural Synchronization Failed</p>
+                    <p style="color: #64748b; font-size: 0.9rem;">We couldn't reach your archives. Please try refreshing the page.</p>
+                    <button onclick="loadGallery(0)" class="btn-auth" style="margin-top: 20px;">Retry Now</button>
+                </div>`;
+            }
+        }
+
+        async function deleteHistoryItem(id) {
+            if (confirm("Permanently wipe this creation from your vault?")) {
+                try {
+                    const response = await fetch('/api/user/history/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ history_id: id })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        loadGallery(currentOffset);
+                    }
+                } catch (err) {
+                    alert("Wipe failed.");
+                }
+            }
+        }
+
+        async function galleryDownload(event, filename) {
+            event.preventDefault();
+            
+            const user = JSON.parse(localStorage.getItem('toonify_user'));
+            if (!user) {
+                window.location.href = '/?auth=login';
+                return;
+            }
+
+            const isPro = user.role === 'admin' || user.role === 'pro_member';
+            
+            if (!isPro) {
+                // Non-pro users MUST pay
+                try {
+                    const checkRes = await fetch(`/api/user/check-payment?filename=${filename}`);
+                    const checkData = await checkRes.json();
+                    
+                    if (!checkData.has_paid) {
+                        // User hasn't paid - open payment modal
+                        window.currentImage = filename;
+                        // Note: openPayment is defined in app.js
+                        if (typeof openPayment === 'function') {
+                            openPayment('jpg', '95');
+                        } else {
+                            alert('Payment modal not available. Please refresh the page.');
+                        }
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Error checking payment:', err);
+                    alert('Unable to verify payment status. Please try again.');
+                    return;
+                }
+            }
+
+            // User is Pro/Admin or has paid - allow download
+            const url = `/api/user/download?filename=${filename}&format=jpg&quality=95`;
+            window.location.href = url;
+        }
+
+
+        function downloadAllHistory() {
+            window.location.href = '/api/user/history/download-all';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => loadGallery(0));
+    </script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="/static/js/app.js?v=216"></script>
+
+    <!-- Scroll To Top Button -->
+    <button id="scrollTopBtn" aria-label="Scroll to top" style="display:none;position:fixed;bottom:30px;right:30px;z-index:9999;background:linear-gradient(45deg,#ff7e5f,#ff6a44);color:white;border:none;border-radius:50%;width:50px;height:50px;font-size:22px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 6px 22px rgba(255,100,60,0.5);transition:all 0.3s ease;">&#8593;</button>
+    <script>
+        (function () {
+            var btn = document.getElementById('scrollTopBtn');
+            if (!btn) return;
+            var nav = document.querySelector('nav') || document.querySelector('header');
+            if (nav && 'IntersectionObserver' in window) {
+                new IntersectionObserver(function (e) {
+                    btn.style.display = e[0].isIntersecting ? 'none' : 'flex';
+                }, { threshold: 0 }).observe(nav);
+            } else {
+                window.addEventListener('scroll', function () {
+                    btn.style.display = (window.scrollY || document.documentElement.scrollTop) > 200 ? 'flex' : 'none';
+                }, { passive: true });
+            }
+            btn.onclick = function () { window.scrollTo({ top: 0, behavior: 'smooth' }); };
+        })();
+    </script>
+
+
+    <div id="paymentModal" class="loader-overlay"
+        style="background: rgba(15, 23, 42, 0.9); display: none; z-index: 9999;">
+        <div class="app-container"
+            style="max-width: 500px; min-height: auto; grid-template-columns: 1fr; padding: 40px; text-align: center; position: relative;">
+            <h2 style="margin: 20px 0 10px;">Ready to <span>Download?</span></h2>
+            <!-- Test-mode UPI hint (hidden in live mode) -->
+            <div id="rzpTestNotice" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:12px 16px;margin-bottom:14px;text-align:left;font-size:0.85rem;color:#856404;">
+                <strong>⚠️ Test Mode:</strong> UPI QR scanning is disabled in test mode.
+                To test a payment, open Razorpay &rarr; UPI tab &rarr; type <strong>success@razorpay</strong> as the UPI ID and click Pay.
+            </div>
+            <div style="background: var(--light); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <h1 style="font-size: 3rem; color: var(--dark);">&#8377;10</h1>
+            </div>
+            <button class="btn-convert" id="payBtn" onclick="processPayment()">Complete Checkout <i
+                    class="fas fa-credit-card"></i></button>
+            <button class="btn-auth" style="background:transparent; color:var(--slate); margin-top:10px; border:none;"
+                onclick="closePayment()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Payment Success Modal -->
+    <div id="paySuccessModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,0.88);align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+        <div style="background:#fff;border-radius:28px;max-width:460px;width:100%;padding:0;text-align:center;position:relative;box-shadow:0 40px 100px rgba(0,0,0,0.45);overflow:hidden;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);">
+            <!-- Confetti container -->
+            <div id="confettiContainer" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;"></div>
+            <!-- Gradient header -->
+            <div style="background:linear-gradient(135deg,#ff7e5f,#feb47b);padding:40px 36px 32px;position:relative;z-index:1;">
+                <!-- Animated checkmark circle -->
+                <div style="width:80px;height:80px;margin:0 auto 20px;position:relative;">
+                    <svg class="pay-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" style="width:80px;height:80px;">
+                        <circle class="pay-checkmark__circle" cx="26" cy="26" r="25" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                        <circle class="pay-checkmark__ring" cx="26" cy="26" r="25" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="157" stroke-dashoffset="157" style="animation:drawRing 0.6s 0.1s ease forwards;transform-origin:center;transform:rotate(-90deg);"/>
+                        <path class="pay-checkmark__check" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" d="M14 27l8 8 16-16" stroke-dasharray="36" stroke-dashoffset="36" style="animation:drawCheck 0.4s 0.65s ease forwards;"/>
+                    </svg>
+                </div>
+                <h2 style="color:#fff;margin:0 0 6px;font-family:'Outfit',sans-serif;font-size:2rem;font-weight:800;">Payment Successful!</h2>
+                <p style="color:rgba(255,255,255,0.88);margin:0;font-size:0.97rem;">Your AI artwork is ready</p>
+            </div>
+            <!-- Body -->
+            <div style="padding:32px 36px;position:relative;z-index:1;">
+                <p id="paySuccessEmailMsg" style="color:#ff7e5f;font-size:0.88rem;font-weight:600;margin:0 0 20px;"></p>
+                <!-- Transaction tag -->
+                <div style="background:#f8fafc;border-radius:12px;padding:14px 18px;margin-bottom:24px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;">
+                    <div>
+                        <p style="margin:0 0 2px;color:#94a3b8;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Transaction ID</p>
+                        <p id="paySuccessTxnId" style="margin:0;color:#1e293b;font-size:0.8rem;font-weight:700;font-family:monospace;word-break:break-all;"></p>
+                    </div>
+                    <span style="background:#dcfce7;color:#16a34a;font-size:0.75rem;font-weight:700;padding:4px 10px;border-radius:50px;white-space:nowrap;">✓ Paid</span>
+                </div>
+                <!-- Download button -->
+                <a id="paySuccessDownloadBtn" href="#" style="display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#ff7e5f,#feb47b);color:#fff;font-size:1rem;font-weight:700;padding:15px 28px;border-radius:14px;text-decoration:none;box-shadow:0 8px 24px rgba(255,126,95,0.35);margin-bottom:12px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 30px rgba(255,126,95,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 8px 24px rgba(255,126,95,0.35)'">
+                    <i class="fas fa-download"></i> Download Your Artwork
+                </a>
+                <p id="paySuccessEmailedMsg" style="color:#94a3b8;font-size:0.8rem;margin:0 0 20px;display:none;"><i class="fas fa-envelope" style="margin-right:5px;color:#ff7e5f;"></i> A download link has been emailed to you</p>
+                <p id="paySuccessNoEmailMsg" style="color:#94a3b8;font-size:0.8rem;margin:0 0 20px;"><i class="fas fa-download" style="margin-right:5px;color:#ff7e5f;"></i> Use the button above to download — save it before closing!</p>
+                <button onclick="closePaySuccess()" style="background:none;border:1px solid #e2e8f0;color:#64748b;cursor:pointer;font-size:0.9rem;font-weight:600;padding:10px 28px;border-radius:50px;transition:all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Success Modal -->
+    <div id="paySuccessModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(15,23,42,0.88);align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+        <div style="background:#fff;border-radius:28px;max-width:460px;width:100%;padding:0;text-align:center;position:relative;box-shadow:0 40px 100px rgba(0,0,0,0.45);overflow:hidden;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);">
+            <!-- Confetti container -->
+            <div id="confettiContainer" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;"></div>
+            <!-- Gradient header -->
+            <div style="background:linear-gradient(135deg,#ff7e5f,#feb47b);padding:40px 36px 32px;position:relative;z-index:1;">
+                <!-- Animated checkmark circle -->
+                <div style="width:80px;height:80px;margin:0 auto 20px;position:relative;">
+                    <svg class="pay-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" style="width:80px;height:80px;">
+                        <circle class="pay-checkmark__circle" cx="26" cy="26" r="25" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                        <circle class="pay-checkmark__ring" cx="26" cy="26" r="25" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="157" stroke-dashoffset="157" style="animation:drawRing 0.6s 0.1s ease forwards;transform-origin:center;transform:rotate(-90deg);"/>
+                        <path class="pay-checkmark__check" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" d="M14 27l8 8 16-16" stroke-dasharray="36" stroke-dashoffset="36" style="animation:drawCheck 0.4s 0.65s ease forwards;"/>
+                    </svg>
+                </div>
+                <h2 style="color:#fff;margin:0 0 6px;font-family:'Outfit',sans-serif;font-size:2rem;font-weight:800;">Payment Successful!</h2>
+                <p style="color:rgba(255,255,255,0.88);margin:0;font-size:0.97rem;">Your AI artwork is ready</p>
+            </div>
+            <!-- Body -->
+            <div style="padding:32px 36px;position:relative;z-index:1;">
+                <p id="paySuccessEmailMsg" style="color:#ff7e5f;font-size:0.88rem;font-weight:600;margin:0 0 20px;"></p>
+                <!-- Transaction tag -->
+                <div style="background:#f8fafc;border-radius:12px;padding:14px 18px;margin-bottom:24px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;">
+                    <div>
+                        <p style="margin:0 0 2px;color:#94a3b8;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Transaction ID</p>
+                        <p id="paySuccessTxnId" style="margin:0;color:#1e293b;font-size:0.8rem;font-weight:700;font-family:monospace;word-break:break-all;"></p>
+                    </div>
+                    <span style="background:#dcfce7;color:#16a34a;font-size:0.75rem;font-weight:700;padding:4px 10px;border-radius:50px;white-space:nowrap;">✓ Paid</span>
+                </div>
+                <!-- Download button -->
+                <a id="paySuccessDownloadBtn" href="#" style="display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#ff7e5f,#feb47b);color:#fff;font-size:1rem;font-weight:700;padding:15px 28px;border-radius:14px;text-decoration:none;box-shadow:0 8px 24px rgba(255,126,95,0.35);margin-bottom:12px;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 30px rgba(255,126,95,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 8px 24px rgba(255,126,95,0.35)'">
+                    <i class="fas fa-download"></i> Download Your Artwork
+                </a>
+                <p id="paySuccessEmailedMsg" style="color:#94a3b8;font-size:0.8rem;margin:0 0 20px;display:none;"><i class="fas fa-envelope" style="margin-right:5px;color:#ff7e5f;"></i> A download link has been emailed to you</p>
+                <p id="paySuccessNoEmailMsg" style="color:#94a3b8;font-size:0.8rem;margin:0 0 20px;"><i class="fas fa-download" style="margin-right:5px;color:#ff7e5f;"></i> Use the button above to download — save it before closing!</p>
+                <button onclick="closePaySuccess()" style="background:none;border:1px solid #e2e8f0;color:#64748b;cursor:pointer;font-size:0.9rem;font-weight:600;padding:10px 28px;border-radius:50px;transition:all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">Close</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

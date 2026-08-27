@@ -1,0 +1,141 @@
+path,extension,language,category,application_source,supporting_source,test_source,documentation,development_utility,configuration,asset,generated,secret_risk,include_in_primary_source,reason
+.gitignore,,,configuration,False,False,False,False,False,True,False,False,False,False,"Supporting configuration, not primary source code"
+AI-Powered Image Stylization and Cartoonization Platform.docx,.docx,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+check_db.py,.py,Python,supporting_source,False,True,False,False,False,False,False,False,False,False,"Supporting script / health check, not core logic"
+check_users.py,.py,Python,supporting_source,False,True,False,False,False,False,False,False,False,False,"Supporting script / health check, not core logic"
+convert_diagrams.bat,.bat,,development_utility,False,False,False,False,True,False,False,False,False,False,Development/deployment script
+convert_diagrams.sh,.sh,,development_utility,False,False,False,False,True,False,False,False,False,False,Development/deployment script
+convert_diagrams_to_png.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+convert_html_to_png.js,.js,JavaScript,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+convert_to_png.js,.js,JavaScript,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+create_pngs.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+create_workflow_png.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+diag.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+DIAGRAMS_GUIDE.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+Dockerfile,,,configuration,False,False,False,False,False,True,False,False,False,False,"Supporting configuration, not primary source code"
+export_diagrams_png.bat,.bat,,development_utility,False,False,False,False,True,False,False,False,False,False,Development/deployment script
+export_png.bat,.bat,,development_utility,False,False,False,False,True,False,False,False,False,False,Development/deployment script
+export_png.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+fix_system_workflow_png.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+generate_diagrams.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+generate_pngs.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+generate_png_final.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+generate_presentation.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+Global_income_presentation .pptx,.pptx,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+GOOGLE_OAUTH_QUICK_FIX.txt,.txt,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+health_check.py,.py,Python,supporting_source,False,True,False,False,False,False,False,False,False,False,"Supporting script / health check, not core logic"
+LICENSE,,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+mermaid_diagrams_export.html,.html,HTML,development_utility,False,False,False,False,True,False,False,False,False,False,Diagram generation utility
+patch_payment.py,.py,Python,supporting_source,False,True,False,False,False,False,False,False,False,False,"Supporting script / health check, not core logic"
+PAYMENT_PROTECTION_IMPLEMENTATION.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+PNG_EXPORT_INSTRUCTIONS.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+POWERPOINT_GUIDE.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+prepare_copyright.py,.py,Python,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+Procfile,,,configuration,False,False,False,False,False,True,False,False,False,False,"Supporting configuration, not primary source code"
+quick_png_export.py,.py,Python,development_utility,False,False,False,False,True,False,False,False,False,False,Utility for generating architecture-diagram PNG files; not core Toonify AI application logic
+README.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+README_DIAGRAMS_PNG.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+render.yaml,.yaml,,configuration,False,False,False,False,False,True,False,False,False,False,"Supporting configuration, not primary source code"
+run.bat,.bat,,development_utility,False,False,False,False,True,False,False,False,False,False,Development/deployment script
+setup.bat,.bat,,development_utility,False,False,False,False,True,False,False,False,False,False,Development/deployment script
+Toonify_AI_Presentation.pptx,.pptx,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+backend/.dockerignore,,,configuration,False,False,False,False,False,True,False,False,False,False,"Supporting configuration, not primary source code"
+backend/.env,,,secret_risk,False,False,False,False,False,False,False,False,True,False,Contains actual secrets
+backend/.env.example,.example,,configuration,False,False,False,False,False,True,False,False,False,False,Configuration example
+backend/backend.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/clean_db.py,.py,Python,supporting_source,False,True,False,False,False,False,False,False,False,False,"Supporting script / health check, not core logic"
+backend/Dockerfile,,,configuration,False,False,False,False,False,True,False,False,False,False,"Supporting configuration, not primary source code"
+backend/gunicorn.conf.py,.py,Python,configuration,False,False,False,False,False,True,False,False,False,False,"Supporting configuration, not primary source code"
+backend/requirements.txt,.txt,,configuration,False,False,False,False,False,True,False,False,False,False,"Supporting configuration, not primary source code"
+backend/runtime.txt,.txt,,configuration,False,False,False,False,False,True,False,False,False,False,"Supporting configuration, not primary source code"
+backend/config/settings.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/config/__init__.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/modules/authentication.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/modules/database.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/modules/image_processing.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/modules/payment.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/modules/whatsapp.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/modules/__init__.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/scripts/init_db.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/scripts/processing_smoke.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/tests/test_auth.py,.py,Python,test_source,False,False,True,False,False,False,False,False,False,False,Test files are optional/supporting source
+backend/tests/test_payment.py,.py,Python,test_source,False,False,True,False,False,False,False,False,False,False,Test files are optional/supporting source
+backend/tests/test_processing.py,.py,Python,test_source,False,False,True,False,False,False,False,False,False,False,Test files are optional/supporting source
+backend/utils/helpers.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/utils/validators.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+backend/utils/__init__.py,.py,Python,application_source,True,False,False,False,False,False,False,False,False,True,Core backend application source
+docs/CAMERA_WHATSAPP_SETUP.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/DEMO_DAY_CHECKLIST.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/DEMO_GUIDE.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/DEMO_MASTER_INDEX.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/DEMO_PRESENTATION_OUTLINE.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/DEMO_QUICK_REFERENCE.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/developer_guide.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/FLOWCHART.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/GOOGLE_OAUTH_FIX_GUIDE.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/ISSUE_RESOLUTION_SUMMARY.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/NEW_FEATURES_GUIDE.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/PROJECT_REPORT.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/user_guide.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/WHATSAPP_BUSINESS_API_SETUP.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/WHATSAPP_DIRECT_SETUP.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/diagrams/class_diagram.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/diagrams/class_diagram.mmd,.mmd,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+docs/diagrams/README.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/diagrams/sequence_diagram.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/diagrams/sequence_diagram.mmd,.mmd,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+docs/diagrams/system_workflow.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/diagrams/system_workflow.mmd,.mmd,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+docs/diagrams/usecase_diagram.md,.md,,documentation,False,False,False,True,False,False,False,False,False,False,Documentation / presentation material
+docs/diagrams/usecase_diagram.mmd,.mmd,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+docs/diagrams/output/01_System_Workflow.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+docs/diagrams/output/02_UseCase_Diagram.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+docs/diagrams/output/03_Sequence_Diagram.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+docs/diagrams/output/04_Class_Diagram.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/google820b96aea865b931.html,.html,HTML,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/robots.txt,.txt,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/sitemap.xml,.xml,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/css/styles.css,.css,CSS,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend application source
+frontend/static/images/admin_avatar.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/cartoon_effect.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/gallery_3d_cartoon.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_anime_1772353051545.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_boy_anime_1772354129553.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_boy_comic_1772354167736.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_boy_original_1772354038120.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_boy_pixar_1772354102626.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_collage.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_collage_cartoon_1772351501189.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_collage_cool_cartoon_1772352569662.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_collage_demo_1772349601158.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_collage_dog_1772351574298.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_collage_man_1772352483909.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_comic_1772353085870.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_original_1772353000427.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/hero_pixar_1772353027026.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/homepage_ui.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/homepage_v2.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/stroke_style.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/backgrounds/cyberpunk.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/backgrounds/forest.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/images/backgrounds/tokyo.png,.png,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/js/app.js,.js,JavaScript,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend application source
+frontend/static/js/app.js_temp_onclick,.js_temp_onclick,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/static/js/ar-engine.js,.js,JavaScript,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend application source
+frontend/static/js/lenses.js,.js,JavaScript,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend application source
+frontend/static/videos/tutorial.mp4,.mp4,,asset,False,False,False,False,False,False,True,False,False,False,Asset or other file
+frontend/templates/admin.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/billing.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/dashboard.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/discord.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/docs.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/gallery.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/index.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/instagram.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/our_story.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/privacy_policy.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/profile.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/security.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/terms_of_service.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/tutorials.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
+frontend/templates/twitter.html,.html,HTML,application_source,True,False,False,False,False,False,False,False,False,True,Core frontend UI template
